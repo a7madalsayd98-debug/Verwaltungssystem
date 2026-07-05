@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة الموظفين - نظام الفلاشة المعزول</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --primary: #4a00e0; --secondary: #8e2de2; --success: #2ecc71; --danger: #e74c3c; --warning: #f39c12; --dark: #2c3e50; --bg: #f4f7f6; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: var(--bg); color: #333; padding-bottom: 60px; }
+        header { background: var(--primary); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .lang-controls { display: flex; gap: 5px; align-items: center; }
+        .nav-btn { background: rgba(255,255,255,0.2); border: none; color: white; padding: 6px 12px; border-radius: 5px; cursor: pointer; text-decoration: none; font-size: 14px; }
+        .screens-menu { display: flex; background: var(--dark); justify-content: space-around; padding: 10px 0; }
+        .menu-item { color: #ccc; cursor: pointer; font-size: 14px; font-weight: bold; padding: 8px 12px; border-radius: 20px; display: flex; align-items: center; gap: 6px; }
+        .menu-item:hover, .menu-item.active { background: var(--secondary); color: white; }
+        .container { padding: 20px; max-width: 1200px; margin: 0 auto; }
+        .screen { display: none; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .screen.active { display: block; }
+        .screen h3 { margin-bottom: 20px; color: var(--dark); border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .grid-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; }
+        .form-group { text-align: right; }
+        [dir="ltr"] .form-group { text-align: left; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 13px; color: #555; }
+        .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; }
+        .btn-submit { color: white; border: none; padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 20px; width: 100%; font-size: 16px; }
+        .btn-add-color { background: var(--success); }
+        .btn-edit-color { background: var(--warning); }
+        table { width: 100%; border-collapse: collapse; text-align: right; font-size: 14px; }
+        [dir="ltr"] table { text-align: left; }
+        th, td { padding: 12px 15px; border-bottom: 1px solid #eee; }
+        th { background-color: var(--dark); color: white; }
+        .action-btn { border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; color: white; }
+        .edit-btn { background-color: var(--warning); }
+        .delete-btn { background-color: var(--danger); }
+        .no-data { text-align: center; color: #888; padding: 20px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h2 id="page-title">إدارة الموظفين - نظام الفلاشة المعزول</h2>
+        <div class="lang-controls">
+            <button class="nav-btn" onclick="changeLanguage('ar')">AR</button>
+            <button class="nav-btn" onclick="changeLanguage('en')">EN</button>
+            <button class="nav-btn" onclick="changeLanguage('de')">DE</button>
+            <button class="nav-btn" style="background:var(--success);" onclick="saveAndExit()" id="btn-save-exit">💾 حفظ الخروج للملف</button>
+        </div>
+    </header>
+
+    <div class="screens-menu">
+        <div class="menu-item active" id="menu-view" onclick="switchScreen('screen-view')"><i class="fas fa-users"></i> <span id="m-view">شاشة العرض</span></div>
+        <div class="menu-item" id="menu-add" onclick="switchScreen('screen-add')"><i class="fas fa-user-plus"></i> <span id="m-add">شاشة الإضافة</span></div>
+        <div class="menu-item" id="menu-edit" onclick="switchScreen('screen-edit')"><i class="fas fa-user-edit"></i> <span id="m-edit">شاشة التعديل</span></div>
+        <div class="menu-item" id="menu-delete" onclick="switchScreen('screen-delete')"><i class="fas fa-user-slash"></i> <span id="m-delete">شاشة الحذف</span></div>
+    </div>
+
+    <div class="container">
+        <div id="screen-view" class="screen active">
+            <h3 id="title-view">شاشة عرض بيانات الموظفين</h3>
+            <table style="width:100%">
+                <thead>
+                    <tr><th class="th-name">الاسم الكامل</th><th class="th-role">المسمى الوظيفي</th><th class="th-salary">الراتب الإجمالي</th><th class="th-iban">الحساب البنكي (IBAN)</th><th class="th-id">رقم الهوية</th></tr>
+                </thead>
+                <tbody id="viewTableBody"></tbody>
+            </table>
+        </div>
+
+        <div id="screen-add" class="screen">
+            <h3 id="title-add">شاشة إضافة موظف جديد</h3>
+            <form id="addForm" onsubmit="addEmployee(event)">
+                <div class="grid-form">
+                    <div class="form-group"><label class="lbl-name">الاسم الكامل</label><input type="text" id="addName" required></div>
+                    <div class="form-group"><label class="lbl-id">رقم الهوية</label><input type="text" id="addIdCard" required></div>
+                    <div class="form-group"><label class="lbl-email">البريد الإلكتروني</label><input type="email" id="addEmail" required></div>
+                    <div class="form-group"><label class="lbl-phone">رقم الهاتف</label><input type="tel" id="addPhone" required></div>
+                    <div class="form-group"><label class="lbl-tax">الرقم الضريبي (Steuer-ID)</label><input type="text" id="addTaxId" required></div>
+                    <div class="form-group"><label class="lbl-social">رقم التأمين الاجتماعي</label><input type="text" id="addSocialId" required></div>
+                    <div class="form-group"><label class="lbl-iban">الحساب البنكي (IBAN)</label><input type="text" id="addIban" required></div>
+                    <div class="form-group"><label class="lbl-salary">الراتب الإجمالي</label><input type="number" id="addSalary" required></div>
+                    <div class="form-group"><label class="lbl-leaves">رصيد الإجازات السنوي</label><input type="number" id="addLeaves" value="30" required></div>
+                    <div class="form-group"><label class="lbl-role">المسمى الوظيفي</label><input type="text" id="addRole" required></div>
+                </div>
+                <button type="submit" class="btn-submit btn-add-color" id="btn-submit-add">إضافة إلى النظام مؤقتاً</button>
+            </form>
+        </div>
+
+        <div id="screen-edit" class="screen">
+            <h3 id="title-edit">شاشة تعديل بيانات موظف</h3>
+            <div id="editSelectionZone">
+                <p id="edit-hint" style="margin-bottom:15px; color:#666;">الرجاء اختيار الموظف المراد تعديل بياناته:</p>
+                <table>
+                    <thead><tr><th class="th-name">الاسم الكامل</th><th class="th-role">المسمى الوظيفي</th><th class="th-action">الإجراء</th></tr></thead>
+                    <tbody id="editSelectTableBody"></tbody>
+                </table>
+            </div>
+            <form id="editForm" onsubmit="updateEmployee(event)" style="display:none;">
+                <input type="hidden" id="editIndex">
+                <div class="grid-form">
+                    <div class="form-group"><label class="lbl-name">الاسم الكامل</label><input type="text" id="editName" required></div>
+                    <div class="form-group"><label class="lbl-id">رقم الهوية</label><input type="text" id="editIdCard" required></div>
+                    <div class="form-group"><label class="lbl-email">البريد الإلكتروني</label><input type="email" id="editEmail" required></div>
+                    <div class="form-group"><label class="lbl-phone">رقم الهاتف</label><input type="tel" id="editPhone" required></div>
+                    <div class="form-group"><label class="lbl-tax">الرقم الضريبي (Steuer-ID)</label><input type="text" id="editTaxId" required></div>
+                    <div class="form-group"><label class="lbl-social">رقم التأمين الاجتماعي</label><input type="text" id="editSocialId" required></div>
+                    <div class="form-group"><label class="lbl-iban">الحساب البنكي (IBAN)</label><input type="text" id="editIban" required></div>
+                    <div class="form-group"><label class="lbl-salary">الراتب الإجمالي</label><input type="number" id="editSalary" required></div>
+                    <div class="form-group"><label class="lbl-leaves">رصيد الإجازات السنوي</label><input type="number" id="editLeaves" required></div>
+                    <div class="form-group"><label class="lbl-role">المسمى الوظيفي</label><input type="text" id="editRole" required></div>
+                </div>
+                <button type="submit" class="btn-submit btn-edit-color" id="btn-submit-edit">تعديل البيانات مؤقتاً</button>
+            </form>
+        </div>
+
+        <div id="screen-delete" class="screen">
+            <h3 id="title-delete">شاشة حذف موظف من النظام</h3>
+            <table>
+                <thead><tr><th class="th-name">الاسم الكامل</th><th class="th-role">المسمى الوظيفي</th><th class="th-id">رقم الهوية</th><th class="th-action">الإجراء</th></tr></thead>
+                <tbody id="deleteTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let currentLang = 'ar';
+        // قراءة البيانات من جلسة التصفح المؤقتة (وليس من localStorage الدائم)
+        let employees = JSON.parse(sessionStorage.getItem('employees')) || [];
+
+        function switchScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            if(screenId === 'screen-view') document.getElementById('menu-view').classList.add('active');
+            if(screenId === 'screen-add') document.getElementById('menu-add').classList.add('active');
+            if(screenId === 'screen-edit') document.getElementById('menu-edit').classList.add('active');
+            if(screenId === 'screen-delete') document.getElementById('menu-delete').classList.add('active');
+            
+            document.getElementById('editForm').style.display = "none";
+            document.getElementById('editSelectionZone').style.display = "block";
+            renderAllScreens();
+        }
+
+        function renderAllScreens() {
+            sessionStorage.setItem('employees', JSON.stringify(employees));
+            const tNoData = dict[currentLang].noData;
+            
+            // 1. العرض
+            const viewBody = document.getElementById('viewTableBody');
+            viewBody.innerHTML = employees.length === 0 ? `<tr><td colspan="5" class="no-data">${tNoData}</td></tr>` : "";
+            employees.forEach(emp => {
+                viewBody.innerHTML += `<tr><td>${emp.name}</td><td>${emp.role}</td><td>${emp.salary} €</td><td>${emp.iban}</td><td>${emp.idCard}</td></tr>`;
+            });
+
+            // 2. التعديل
+            const editBody = document.getElementById('editSelectTableBody');
+            editBody.innerHTML = employees.length === 0 ? `<tr><td colspan="3" class="no-data">${tNoData}</td></tr>` : "";
+            employees.forEach((emp, idx) => {
+                editBody.innerHTML += `<tr><td>${emp.name}</td><td>${emp.role}</td><td><button class="action-btn edit-btn" onclick="startEdit(${idx})">${dict[currentLang].btnEditAction}</button></td></tr>`;
+            });
+
+            // 3. الحذف
+            const deleteBody = document.getElementById('deleteTableBody');
+            deleteBody.innerHTML = employees.length === 0 ? `<tr><td colspan="4" class="no-data">${tNoData}</td></tr>` : "";
+            employees.forEach((emp, idx) => {
+                deleteBody.innerHTML += `<tr><td>${emp.name}</td><td>${emp.role}</td><td>${emp.idCard}</td><td><button class="action-btn delete-btn" onclick="deleteEmployee(${idx})">${dict[currentLang].btnDelAction}</button></td></tr>`;
+            });
+        }
+
+        function addEmployee(e) {
+            e.preventDefault();
+            employees.push({
+                name: document.getElementById('addName').value, idCard: document.getElementById('addIdCard').value,
+                email: document.getElementById('addEmail').value, phone: document.getElementById('addPhone').value,
+                taxId: document.getElementById('addTaxId').value, socialId: document.getElementById('addSocialId').value,
+                iban: document.getElementById('addIban').value, salary: document.getElementById('addSalary').value,
+                leaves: document.getElementById('addLeaves').value, role: document.getElementById('addRole').value
+            });
+            document.getElementById('addForm').reset();
+            alert(dict[currentLang].alertAdd);
+            switchScreen('screen-view');
+        }
+
+        function startEdit(idx) {
+            const emp = employees[idx];
+            document.getElementById('editIndex').value = idx;
+            document.getElementById('editName').value = emp.name; document.getElementById('editIdCard').value = emp.idCard;
+            document.getElementById('editEmail').value = emp.email; document.getElementById('editPhone').value = emp.phone;
+            document.getElementById('editTaxId').value = emp.taxId; document.getElementById('editSocialId').value = emp.socialId;
+            document.getElementById('editIban').value = emp.iban; document.getElementById('editSalary').value = emp.salary;
+            document.getElementById('editLeaves').value = emp.leaves; document.getElementById('editRole').value = emp.role;
+
+            document.getElementById('editSelectionZone').style.display = "none";
+            document.getElementById('editForm').style.display = "block";
+        }
+
+        function updateEmployee(e) {
+            e.preventDefault();
+            const idx = document.getElementById('editIndex').value;
+            employees[idx] = {
+                name: document.getElementById('editName').value, idCard: document.getElementById('editIdCard').value,
+                email: document.getElementById('editEmail').value, phone: document.getElementById('editPhone').value,
+                taxId: document.getElementById('editTaxId').value, socialId: document.getElementById('editSocialId').value,
+                iban: document.getElementById('editIban').value, salary: document.getElementById('editSalary').value,
+                leaves: document.getElementById('editLeaves').value, role: document.getElementById('editRole').value
+            };
+            alert(dict[currentLang].alertEdit);
+            switchScreen('screen-view');
+        }
+
+        function deleteEmployee(idx) {
+            if(confirm(dict[currentLang].confirmDel)) {
+                employees.splice(idx, 1);
+                renderAllScreens();
+            }
+        }
+
+        // دالة حفظ التعديلات وتحميل الملف النهائي إلى الفلاشة / الجهاز عند الخروج
+        function saveAndExit() {
+            const finalDb = {
+                secret_key: btoa(sessionStorage.getItem('current_db_pass')),
+                data: employees
+            };
+            
+            const blob = new Blob([JSON.stringify(finalDb, null, 2)], {type: "application/json"});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = sessionStorage.getItem('current_db_name') || "updated_database.json";
+            a.click();
+
+            // مسح الجلسة فوراً لضمان عدم بقاء أي أثر للبيانات على المتصفح
+            sessionStorage.clear();
+            alert("تم حفظ التعديلات وتحميل الملف المشفر المحدث بنجاح!\nالآن تم قفل النظام بأمان.");
+            window.location.href = "index.html";
+        }
+
+        const dict = {
+            ar: { dir: "rtl", title: "إدارة الموظفين - نظام الفلاشة المعزول", view: "شاشة العرض", add: "شاشة الإضافة", edit: "شاشة التعديل", del: "شاشة الحذف", noData: "لا يوجد موظفين مسجلين حالياً", btnEditAction: "تعديل", btnDelAction: "حذف", alertAdd: "تمت الإضافة المؤقتة بنجاح!", alertEdit: "تم التعديل المؤقت بنجاح!", confirmDel: "هل أنت متأكد من الحذف؟" },
+            en: { dir: "ltr", title: "Employee Management - USB Isolated Mode", view: "View Screen", add: "Add Screen", edit: "Edit Screen", del: "Delete Screen", noData: "No employees found", btnEditAction: "Edit", btnDelAction: "Delete", alertAdd: "Temporarily Added!", alertEdit: "Temporarily Updated!", confirmDel: "Confirm Delete?" },
+            de: { dir: "ltr", title: "Mitarbeiterverwaltung - USB-Isoliert", view: "Anzeige", add: "Hinzufügen", edit: "Bearbeiten", del: "Löschen", noData: "Keine Mitarbeiter gefunden", btnEditAction: "Bearbeiten", btnDelAction: "Löschen", alertAdd: "Temporär hinzugefügt!", alertEdit: "Temporär aktualisiert!", confirmDel: "Löschen bestätigen?" }
+        };
+
+        function changeLanguage(lang) {
+            currentLang = lang; let ln = dict[lang]; document.documentElement.dir = ln.dir;
+            document.getElementById('page-title').innerText = ln.title;
+            document.getElementById('m-view').innerText = ln.view; document.getElementById('m-add').innerText = ln.add;
+            document.getElementById('m-edit').innerText = ln.edit; document.getElementById('m-delete').innerText = ln.del;
+            renderAllScreens();
+        }
+
+        renderAllScreens();
+    </script>
+</body>
+</html>

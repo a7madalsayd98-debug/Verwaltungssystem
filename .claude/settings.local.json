@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-Process gh -ErrorAction SilentlyContinue)",
+      "PowerShell(Start-Process \"https://github.com/login/device\")"
+    ]
+  }
+}

@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة المستودعات - نظام الفواتير المطور</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --primary: #2c3e50; --secondary: #34495e; --success: #2ecc71; --danger: #e74c3c; --warning: #f39c12; --info: #3498db; --bg: #f4f7f6; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: var(--bg); color: #333; padding-bottom: 60px; }
+        header { background: var(--primary); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .lang-controls { display: flex; gap: 5px; align-items: center; }
+        .nav-btn { background: rgba(255,255,255,0.2); border: none; color: white; padding: 6px 12px; border-radius: 5px; cursor: pointer; text-decoration: none; font-size: 14px; }
+        .screens-menu { display: flex; background: var(--secondary); justify-content: space-around; padding: 10px 0; overflow-x: auto; }
+        .menu-item { color: #ccc; cursor: pointer; font-size: 14px; font-weight: bold; padding: 8px 15px; border-radius: 20px; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+        .menu-item:hover, .menu-item.active { background: var(--primary); color: white; }
+        .container { padding: 20px; max-width: 1200px; margin: 0 auto; }
+        .screen { display: none; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .screen.active { display: block; }
+        .screen h3 { margin-bottom: 20px; color: var(--primary); border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .grid-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 15px; }
+        .form-group { text-align: right; }
+        [dir="ltr"] .form-group { text-align: left; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 13px; color: #555; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; }
+        .btn-submit { color: white; border: none; padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; font-size: 16px; }
+        table { width: 100%; border-collapse: collapse; text-align: right; font-size: 14px; margin-top: 15px; }
+        [dir="ltr"] table { text-align: left; }
+        th, td { padding: 12px 15px; border-bottom: 1px solid #eee; }
+        th { background-color: var(--primary); color: white; }
+        .action-btn { border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; color: white; margin-left: 5px; font-weight: bold; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stat-card { padding: 20px; border-radius: 8px; color: white; text-align: center; }
+        .no-data { text-align: center; color: #888; padding: 20px; }
+
+        /* تصميم نافذة الفاتورة المنبثقة (Modal) والطباعة */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 9999; }
+        .modal-content { background: white; padding: 30px; border-radius: 12px; width: 100%; max-width: 700px; max-height: 90vh; overflow-y: auto; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .invoice-box { border: 1px solid #ddd; padding: 20px; background: #fff; }
+        .invoice-header { display: flex; justify-content: space-between; border-bottom: 2px solid #2c3e50; padding-bottom: 15px; margin-bottom: 15px; }
+        .invoice-details { display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 13px; background: #f9f9f9; padding: 10px; border-radius: 6px; }
+        .print-actions { display: flex; gap: 10px; margin-top: 20px; }
+
+        @media print {
+            body * { visibility: hidden; }
+            .modal, .modal * { visibility: visible; }
+            .modal { position: absolute; top: 0; left: 0; width: 100%; background: none; }
+            .print-actions, .nav-btn { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h2 id="page-title">إدارة المستودعات والفواتير</h2>
+        <div class="lang-controls">
+            <button class="nav-btn" onclick="changeLanguage('ar')">AR</button>
+            <button class="nav-btn" onclick="changeLanguage('en')">EN</button>
+            <button class="nav-btn" style="background:var(--success);" onclick="saveAndExit()">💾 حفظ الخروج للملف</button>
+        </div>
+    </header>
+
+    <div class="screens-menu">
+        <div class="menu-item active" id="m-view" onclick="switchScreen('screen-view')"><i class="fas fa-boxes"></i> <span>عرض المنتجات</span></div>
+        <div class="menu-item" id="m-manage" onclick="switchScreen('screen-manage')"><i class="fas fa-tools"></i> <span>التحكم بالمنتجات</span></div>
+        <div class="menu-item" id="m-tx" onclick="switchScreen('screen-tx')"><i class="fas fa-exchange-alt"></i> <span>بيع / شراء</span></div>
+        <div class="menu-item" id="m-audit" onclick="switchScreen('screen-audit')"><i class="fas fa-calculator"></i> <span>الجرد المخزني</span></div>
+    </div>
+
+    <div class="container">
+        <div id="screen-view" class="screen active">
+            <h3>قائمة المنتجات الحالية في المستودع</h3>
+            <table>
+                <thead>
+                    <tr><th>باركود / كود</th><th>اسم المنتج</th><th>الكمية المتوفرة</th><th>سعر الشراء</th><th>سعر البيع</th></tr>
+                </thead>
+                <tbody id="viewProductsBody"></tbody>
+            </table>
+        </div>
+
+        <div id="screen-manage" class="screen">
+            <h3 id="manage-title">إضافة منتج جديد</h3>
+            <form id="productForm" onsubmit="handleProductSubmit(event)">
+                <input type="hidden" id="prodIndex">
+                <div class="grid-form">
+                    <div class="form-group"><label>كود المنتج / الباركود</label><input type="text" id="prodCode" required></div>
+                    <div class="form-group"><label>اسم المنتج</label><input type="text" id="prodName" required></div>
+                    <div class="form-group"><label>الكمية الابتدائية</label><input type="number" id="prodQty" min="0" required></div>
+                    <div class="form-group"><label>سعر الشراء (€)</label><input type="number" step="0.01" id="prodCost" required></div>
+                    <div class="form-group"><label>سعر البيع (€)</label><input type="number" step="0.01" id="prodPrice" required></div>
+                </div>
+                <button type="submit" class="btn-submit" style="background:var(--info);" id="btnProductSubmit">إضافة المنتج للمستودع</button>
+            </form>
+
+            <h3 style="margin-top:30px;">تعديل أو حذف المنتجات الحالية</h3>
+            <table>
+                <thead>
+                    <tr><th>اسم المنتج</th><th>الكود</th><th>الكمية</th><th>الإجراءات</th></tr>
+                </thead>
+                <tbody id="manageProductsBody"></tbody>
+            </table>
+        </div>
+
+        <div id="screen-tx" class="screen">
+            <h3>تسجيل عملية (بيع / شراء)</h3>
+            <form id="txForm" onsubmit="handleTransaction(event)">
+                <div class="grid-form">
+                    <div class="form-group">
+                        <label>نوع العملية</label>
+                        <select id="txType" required>
+                            <option value="sell">عملية بيع (إلى عميل)</option>
+                            <option value="buy">عملية شراء (من مورد/عميل)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>اختيار العميل</label>
+                        <select id="txCustomer" required>
+                            <option value="">-- اختر العميل المقترن --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>اختيار المنتج</label>
+                        <select id="txProduct" required>
+                            <option value="">-- اختر المنتج --</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>الكمية</label><input type="number" id="txQty" min="1" required></div>
+                </div>
+                <button type="submit" class="btn-submit" style="background:var(--success);">تنفيذ العملية وتحديث المخزن</button>
+            </form>
+
+            <h3 style="margin-top:30px;">سجل آخر العمليات والـفـواتـيـر</h3>
+            <table>
+                <thead>
+                    <tr><th>النوع</th><th>العميل</th><th>المنتج</th><th>الكمية</th><th>الفاتورة</th></tr>
+                </thead>
+                <tbody id="txHistoryBody"></tbody>
+            </table>
+        </div>
+
+        <div id="screen-audit" class="screen">
+            <h3>لوحة جرد المستودع الفورية</h3>
+            <div class="stats-grid">
+                <div class="stat-card" style="background:var(--primary);">
+                    <h4>إجمالي الأنواع الفرعية</h4>
+                    <p id="stat-total-types">0</p>
+                </div>
+                <div class="stat-card" style="background:var(--info);">
+                    <h4>إجمالي قطع المخزن الكلي</h4>
+                    <p id="stat-total-items">0</p>
+                </div>
+                <div class="stat-card" style="background:var(--success);">
+                    <h4>القيمة المالية للمخزن</h4>
+                    <p id="stat-total-value">0 €</p>
+                </div>
+            </div>
+            <table>
+                <thead><tr><th>اسم المنتج</th><th>الكمية الحالية</th><th>حالة التوفر</th></tr></thead>
+                <tbody id="auditTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="invoiceModal" class="modal">
+        <div class="modal-content">
+            <div class="invoice-box" id="printArea">
+                <div class="invoice-header">
+                    <div>
+                        <h2 style="color:var(--primary);">نظام الإدارة المحمول</h2>
+                        <p style="font-size:12px; color:#666;">فاتورة رسمية ضريبية رقمية</p>
+                    </div>
+                    <div style="text-align: left;">
+                        <h4 id="invId">رقم الفاتورة: #0000</h4>
+                        <p id="invDate" style="font-size:12px;"></p>
+                    </div>
+                </div>
+                <div class="invoice-details">
+                    <div>
+                        <strong>صادرة إلى الطرف الثاني:</strong>
+                        <p id="invCustName"></p>
+                        <p id="invCustDetails" style="color:#555; font-size:12px;"></p>
+                    </div>
+                    <div style="text-align: left;">
+                        <strong>نوع الحركة المالية:</strong>
+                        <p id="invTxType" style="font-weight: bold;"></p>
+                    </div>
+                </div>
+                <table>
+                    <thead>
+                        <tr><th>البيان / المنتج</th><th>الكمية</th><th>سعر الوحدة</th><th>الإجمالي الفرعي</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td id="invProdName"></td>
+                            <td id="invQty"></td>
+                            <td id="invUnitPrice"></td>
+                            <td id="invSubTotal"></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div style="margin-top:20px; text-align: left; font-size:14px; line-height:1.8;">
+                    <p>الإجمالي المالي قبل الضريبة: <span id="invCalcSub"></span> €</p>
+                    <p>ضريبة القيمة المضافة (19%): <span id="invCalcTax"></span> €</p>
+                    <hr style="margin:5px 0; border:0; border-top:1px dashed #aaa;">
+                    <p style="font-size:18px; font-weight:bold; color:var(--primary);">الصافي الإجمالي النهائي: <span id="invCalcTotal"></span> €</p>
+                </div>
+            </div>
+            <div class="print-actions">
+                <button class="action-btn" style="background:var(--success); padding:10px 20px;" onclick="window.print()"><i class="fas fa-print"></i> طباعة الفاتورة أو حفظ كـ PDF</button>
+                <button class="action-btn" style="background:var(--danger); padding:10px 20px;" onclick="closeInvoice()">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let products = JSON.parse(sessionStorage.getItem('products')) || [];
+        let customers = JSON.parse(sessionStorage.getItem('customers')) || [];
+        let transactions = JSON.parse(sessionStorage.getItem('transactions')) || [];
+
+        function switchScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            resetProductForm();
+            renderAll();
+        }
+
+        function renderAll() {
+            sessionStorage.setItem('products', JSON.stringify(products));
+            sessionStorage.setItem('transactions', JSON.stringify(transactions));
+
+            // تحديث شاشة العرض
+            const viewBody = document.getElementById('viewProductsBody');
+            viewBody.innerHTML = products.length === 0 ? '<tr><td colspan="5" class="no-data">المستودع فارغ</td></tr>' : '';
+            products.forEach(p => { viewBody.innerHTML += `<tr><td>${p.code}</td><td>${p.name}</td><td>${p.qty}</td><td>${p.cost} €</td><td>${p.price} €</td></tr>`; });
+
+            // تحديث شاشة التحكم
+            const manageBody = document.getElementById('manageProductsBody');
+            manageBody.innerHTML = products.length === 0 ? '<tr><td colspan="4" class="no-data">لا توجد منتجات</td></tr>' : '';
+            products.forEach((p, idx) => {
+                manageBody.innerHTML += `<tr><td>${p.name}</td><td>${p.code}</td><td>${p.qty}</td><td>
+                    <button class="action-btn" style="background:var(--warning)" onclick="editProduct(${idx})">تعديل</button>
+                    <button class="action-btn" style="background:var(--danger)" onclick="deleteProduct(${idx})">حذف</button>
+                </td></tr>`;
+            });
+
+            // تجهيز القوائم
+            const custSelect = document.getElementById('txCustomer');
+            custSelect.innerHTML = '<option value="">-- اختر العميل المقترن --</option>';
+            customers.forEach((c, idx) => { custSelect.innerHTML += `<option value="${idx}">${c.name}</option>`; });
+
+            const prodSelect = document.getElementById('txProduct');
+            prodSelect.innerHTML = '<option value="">-- اختر المنتج --</option>';
+            products.forEach((p, idx) => { prodSelect.innerHTML += `<option value="${idx}">${p.name} (المتاح: ${p.qty})</option>`; });
+
+            // تحديث جدول العمليات وتوليد الفاتورة
+            const txBody = document.getElementById('txHistoryBody');
+            txBody.innerHTML = transactions.length === 0 ? '<tr><td colspan="5" class="no-data">لا توجد عمليات</td></tr>' : '';
+            transactions.forEach((t, idx) => {
+                const badge = t.type === 'sell' ? '<span style="color:var(--danger)">بيع</span>' : '<span style="color:var(--success)">شراء</span>';
+                txBody.innerHTML += `<tr><td>${badge}</td><td>${t.customerName}</td><td>${t.productName}</td><td>${t.qty}</td><td>
+                    <button class="action-btn" style="background:var(--info)" onclick="generateInvoice(${idx})"><i class="fas fa-file-invoice-dollar"></i> الفاتورة</button>
+                </td></tr>`;
+            });
+
+            // شاشة الجرد
+            let totalItems = 0; let totalValue = 0;
+            const auditBody = document.getElementById('auditTableBody');
+            auditBody.innerHTML = '';
+            products.forEach(p => {
+                totalItems += parseInt(p.qty); totalValue += (parseInt(p.qty) * parseFloat(p.cost));
+                let status = parseInt(p.qty) <= 5 ? '<span style="color:var(--warning)">حرجة</span>' : '<span style="color:var(--success)">آمنة</span>';
+                auditBody.innerHTML += `<tr><td>${p.name}</td><td>${p.qty}</td><td>${status}</td></tr>`;
+            });
+            document.getElementById('stat-total-types').innerText = products.length;
+            document.getElementById('stat-total-items').innerText = totalItems;
+            document.getElementById('stat-total-value').innerText = totalValue.toFixed(2) + ' €';
+        }
+
+        function handleProductSubmit(e) {
+            e.preventDefault();
+            const idx = document.getElementById('prodIndex').value;
+            const data = {
+                code: document.getElementById('prodCode').value, name: document.getElementById('prodName').value,
+                qty: document.getElementById('prodQty').value, cost: document.getElementById('prodCost').value, price: document.getElementById('prodPrice').value
+            };
+            if(idx === "") products.push(data); else products[idx] = data;
+            switchScreen('screen-view');
+        }
+
+        function editProduct(idx) {
+            const p = products[idx]; document.getElementById('prodIndex').value = idx;
+            document.getElementById('prodCode').value = p.code; document.getElementById('prodName').value = p.name;
+            document.getElementById('prodQty').value = p.qty; document.getElementById('prodCost').value = p.cost; document.getElementById('prodPrice').value = p.price;
+            document.getElementById('manage-title').innerText = "تعديل المنتج";
+        }
+
+        function deleteProduct(idx) { if(confirm("تأكيد الحذف؟")) { products.splice(idx, 1); renderAll(); } }
+        function resetProductForm() { document.getElementById('productForm').reset(); document.getElementById('prodIndex').value = ""; document.getElementById('manage-title').innerText = "إضافة منتج جديد"; }
+
+        function handleTransaction(e) {
+            e.preventDefault();
+            const type = document.getElementById('txType').value;
+            const custIdx = document.getElementById('txCustomer').value;
+            const prodIdx = document.getElementById('txProduct').value;
+            const qty = parseInt(document.getElementById('txQty').value);
+
+            let product = products[prodIdx]; let customer = customers[custIdx];
+            if(type === 'sell' && parseInt(product.qty) < qty) { alert("المخزون غير كافٍ!"); return; }
+
+            product.qty = type === 'sell' ? parseInt(product.qty) - qty : parseInt(product.qty) + qty;
+
+            // حفظ بيانات الطرف الثاني والأسعار بدقة متناهية للفاتورة
+            transactions.unshift({
+                id: Math.floor(1000 + Math.random() * 9000), type: type,
+                customerName: customer.name, customerType: customer.type,
+                customerEmail: customer.email, customerPhone: customer.phone,
+                customerAddress: customer.address, crNo: customer.crNo || '', ustNo: customer.ustNo || '',
+                productName: product.name, qty: qty,
+                unitPrice: type === 'sell' ? product.price : product.cost,
+                date: new Date().toLocaleString()
+            });
+
+            document.getElementById('txForm').reset();
+            switchScreen('screen-view');
+        }
+
+        // دالة توليد وعرض الفاتورة الفورية
+        function generateInvoice(idx) {
+            const t = transactions[idx];
+            document.getElementById('invId').innerText = "رقم الفاتورة: #" + t.id;
+            document.getElementById('invDate').innerText = "التاريخ: " + t.date;
+            document.getElementById('invCustName').innerText = t.customerName;
+            
+            // صياغة بيانات العميل بناءً على كونه فرداً أو شركة قانونية
+            let details = `الهاتف: ${t.customerPhone} | العنوان: ${t.customerAddress}`;
+            if(t.customerType === 'company') details += `<br>سجل تجاري (HRB): ${t.crNo} | رقم ضريبي (Ust-IdNr): ${t.ustNo}`;
+            document.getElementById('invCustDetails').innerHTML = details;
+
+            document.getElementById('invTxType').innerText = t.type === 'sell' ? "فاتورة مبيعات صادرة" : "فاتورة توريد / مشتريات";
+            document.getElementById('invProdName').innerText = t.productName;
+            document.getElementById('invQty').innerText = t.qty;
+            document.getElementById('invUnitPrice').innerText = parseFloat(t.unitPrice).toFixed(2) + " €";
+            
+            // العمليات الحسابية والضريبية المعتمدة
+            const sub = t.qty * parseFloat(t.unitPrice);
+            const tax = sub * 0.19;
+            const total = sub + tax;
+
+            document.getElementById('invSubTotal').innerText = sub.toFixed(2) + " €";
+            document.getElementById('invCalcSub').innerText = sub.toFixed(2);
+            document.getElementById('invCalcTax').innerText = tax.toFixed(2);
+            document.getElementById('invCalcTotal').innerText = total.toFixed(2);
+
+            document.getElementById('invoiceModal').style.display = "flex";
+        }
+
+        function closeInvoice() { document.getElementById('invoiceModal').style.display = "none"; }
+
+        function saveAndExit() {
+            const finalDb = {
+                secret_key: btoa(sessionStorage.getItem('current_db_pass')),
+                data: JSON.parse(sessionStorage.getItem('employees')) || [],
+                customers: JSON.parse(sessionStorage.getItem('customers')) || [],
+                products: products, transactions: transactions
+            };
+            const blob = new Blob([JSON.stringify(finalDb, null, 2)], {type: "application/json"});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url;
+            a.download = sessionStorage.getItem('current_db_name') || "updated_database.json";
+            a.click();
+            sessionStorage.clear(); window.location.href = "index.html";
+        }
+        function changeLanguage(l){}
+        renderAll();
+    </script>
+</body>
+</html>

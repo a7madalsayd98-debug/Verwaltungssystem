@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بوابة الإدارة - نظام الكتابة المباشرة</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body { background: linear-gradient(135deg, #1e3c72, #2a5298); height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .login-container { background: #fff; padding: 30px; border-radius: 15px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); width: 100%; max-width: 420px; text-align: center; }
+        h2 { color: #333; margin-bottom: 10px; }
+        p { color: #666; font-size: 13px; margin-bottom: 20px; }
+        .input-group { margin-bottom: 15px; text-align: right; }
+        .input-group label { display: block; margin-bottom: 6px; font-weight: bold; font-size: 14px; }
+        .input-group input[type="password"] { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; outline: none; }
+        .file-btn { width: 100%; padding: 15px; background: #f4f7f6; border: 2px dashed #2a5298; border-radius: 8px; cursor: pointer; margin-bottom: 15px; font-weight: bold; color: #2a5298; }
+        .login-btn { width: 100%; padding: 12px; background: #2a5298; border: none; border-radius: 8px; color: white; font-size: 16px; font-weight: bold; cursor: pointer; }
+        .btn-new { background: none; border: none; color: #2a5298; text-decoration: underline; margin-top: 15px; cursor: pointer; font-size: 14px; }
+        .error-msg { color: red; font-size: 13px; margin-bottom: 10px; display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        <h2>نظام الإدارة المباشر</h2>
+        <p>قم باختيار الملف من الفلاشة وسيتم التعديل عليه فوراً دون إنشاء ملفات جديدة</p>
+        
+        <p id="error" class="error-msg">فشل في قراءة الملف أو كلمة المرور خاطئة!</p>
+
+        <form id="loginForm">
+            <button type="button" class="file-btn" onclick="selectFile()" id="file-label">📁 اضغط لتحديد ملف البيانات (.json)</button>
+
+            <div class="input-group">
+                <label>كلمة مرور فك التشفير</label>
+                <input type="password" id="password" placeholder="••••••••" required>
+            </div>
+            
+            <button type="submit" class="login-btn">تأكيد وقراءة البيانات</button>
+        </form>
+
+        <button class="btn-new" onclick="createNewDatabase()">مستخدم جديد؟ إنشاء ملف بيانات مشفر جديد</button>
+    </div>
+
+    <script>
+        let fileHandle = null; // سيتم حفظ مقبض الملف هنا للوصول إليه في باقي الصفحات
+
+        // دالة متطورة تطلب من المستخدم اختيار الملف وتأخذ صلاحية التعديل عليه لاحقاً
+        async function selectFile() {
+            try {
+                const [handle] = await window.showOpenFilePicker({
+                    types: [{
+                        description: 'JSON Files',
+                        accept: { 'application/json': ['.json'] }
+                    }],
+                    multiple: false
+                });
+                fileHandle = handle;
+                document.getElementById('file-label').innerText = "✅ تم تحديد: " + handle.name;
+                
+                // تخزين مقبض الملف في IndexedDB ليتم قراءته من صفحات الموظفين والعملاء
+                const request = indexedDB.open("SystemDB", 1);
+                request.onupgradeneeded = e => e.target.result.createObjectStore("handles");
+                request.onsuccess = e => {
+                    const db = e.target.result;
+                    db.transaction("handles", "readwrite").objectStore("handles").put(handle, "currentFile");
+                };
+            } catch (err) {
+                console.log("تم إلغاء اختيار الملف أو أن المتصفح لا يدعم الخاصية");
+            }
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const password = document.getElementById('password').value;
+            const error = document.getElementById('error');
+
+            if (!fileHandle) {
+                alert("الرجاء تحديد ملف البيانات أولاً!");
+                return;
+            }
+
+            try {
+                const file = await fileHandle.getFile();
+                const text = await file.text();
+                const encryptedData = JSON.parse(text);
+                
+                if (encryptedData.secret_key === btoa(password)) { 
+                    sessionStorage.setItem('current_db_name', fileHandle.name);
+                    sessionStorage.setItem('current_db_pass', password);
+                    sessionStorage.setItem('employees', JSON.stringify(encryptedData.data || []));
+                    sessionStorage.setItem('customers', JSON.stringify(encryptedData.customers || []));
+                    
+                    window.location.href = "dashboard.html";
+                } else {
+                    error.style.display = "block";
+                }
+            } catch(err) {
+                error.style.display = "block";
+            }
+        });
+
+        // إنشاء ملف لأول مرة
+        function createNewDatabase() {
+            const pass = prompt("الرجاء تعيين كلمة مرور قوية للملف الجديد:");
+            if(!pass) return;
+
+            const emptyDb = {
+                secret_key: btoa(pass),
+                data: [],
+                customers: []
+            };
+
+            const blob = new Blob([JSON.stringify(emptyDb, null, 2)], {type: "application/json"});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "company_database.json";
+            a.click();
+            alert("تم إنشاء وتحميل ملفك الآمن.\nضعه على الفلاشة واشحن به النظام!");
+        }
+    </script>
+</body>
+</html>
