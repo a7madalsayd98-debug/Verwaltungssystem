@@ -41,6 +41,7 @@
         <button class="btn-new" onclick="createNewDatabase()">مستخدم جديد؟ إنشاء ملف بيانات مشفر جديد</button>
     </div>
 
+    <script src="common.js"></script>
     <script>
         let fileHandle = null; // سيتم حفظ مقبض الملف هنا للوصول إليه في باقي الصفحات
 
@@ -82,14 +83,25 @@
             try {
                 const file = await fileHandle.getFile();
                 const text = await file.text();
-                const encryptedData = JSON.parse(text);
-                
-                if (encryptedData.secret_key === btoa(password)) { 
+                const fileData = JSON.parse(text);
+                let db = null;
+
+                if (fileData.format === "aes-gcm-v1") {
+                    // الملف الجديد المشفر فعلياً؛ فك التشفير يفشل تلقائياً عند كلمة مرور خاطئة
+                    db = await decryptDb(password, fileData);
+                } else if (fileData.secret_key === btoa(password)) {
+                    // ملف قديم غير مشفر؛ سيتم تشفيره تلقائياً عند أول حفظ
+                    db = fileData;
+                }
+
+                if (db) {
                     sessionStorage.setItem('current_db_name', fileHandle.name);
                     sessionStorage.setItem('current_db_pass', password);
-                    sessionStorage.setItem('employees', JSON.stringify(encryptedData.data || []));
-                    sessionStorage.setItem('customers', JSON.stringify(encryptedData.customers || []));
-                    
+                    sessionStorage.setItem('employees', JSON.stringify(db.data || []));
+                    sessionStorage.setItem('customers', JSON.stringify(db.customers || []));
+                    sessionStorage.setItem('products', JSON.stringify(db.products || []));
+                    sessionStorage.setItem('transactions', JSON.stringify(db.transactions || []));
+
                     window.location.href = "dashboard.html";
                 } else {
                     error.style.display = "block";
@@ -99,16 +111,17 @@
             }
         });
 
-        // إنشاء ملف لأول مرة
-        function createNewDatabase() {
+        // إنشاء ملف لأول مرة (مشفر بالكامل بخوارزمية AES-GCM)
+        async function createNewDatabase() {
             const pass = prompt("الرجاء تعيين كلمة مرور قوية للملف الجديد:");
             if(!pass) return;
 
-            const emptyDb = {
-                secret_key: btoa(pass),
+            const emptyDb = await encryptDb(pass, {
                 data: [],
-                customers: []
-            };
+                customers: [],
+                products: [],
+                transactions: []
+            });
 
             const blob = new Blob([JSON.stringify(emptyDb, null, 2)], {type: "application/json"});
             const url = URL.createObjectURL(blob);

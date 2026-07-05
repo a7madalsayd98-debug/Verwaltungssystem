@@ -133,7 +133,12 @@
         </div>
     </div>
 
+    <script src="common.js"></script>
     <script>
+        // حماية الصفحة: إذا لم تُفتح جلسة صالحة، يعود لصفحة الدخول
+        if(!sessionStorage.getItem('current_db_pass')) {
+            window.location.href = "index.html";
+        }
         let currentLang = 'ar';
         // لتجنب التداخل مع الموظفين، نقرأ مصفوفة العملاء المستقلة من نفس الجلسة المحملة
         let customers = JSON.parse(sessionStorage.getItem('customers')) || [];
@@ -166,23 +171,23 @@
             const viewBody = document.getElementById('viewTableBody');
             viewBody.innerHTML = customers.length === 0 ? `<tr><td colspan="5" class="no-data">${tNoData}</td></tr>` : "";
             customers.forEach(cust => {
-                const taxInfo = cust.type === 'company' ? `${cust.crNo} / ${cust.ustNo}` : '-';
+                const taxInfo = cust.type === 'company' ? `${esc(cust.crNo)} / ${esc(cust.ustNo)}` : '-';
                 const typeText = cust.type === 'company' ? dict[currentLang].company : dict[currentLang].individual;
-                viewBody.innerHTML += `<tr><td>${cust.name}</td><td>${typeText}</td><td>${cust.email}</td><td>${cust.phone}</td><td>${taxInfo}</td></tr>`;
+                viewBody.innerHTML += `<tr><td>${esc(cust.name)}</td><td>${typeText}</td><td>${esc(cust.email)}</td><td>${esc(cust.phone)}</td><td>${taxInfo}</td></tr>`;
             });
 
             // 2. التعديل
             const editBody = document.getElementById('editSelectTableBody');
             editBody.innerHTML = customers.length === 0 ? `<tr><td colspan="3" class="no-data">${tNoData}</td></tr>` : "";
             customers.forEach((cust, idx) => {
-                editBody.innerHTML += `<tr><td>${cust.name}</td><td>${cust.email}</td><td><button class="action-btn edit-btn" onclick="startEdit(${idx})">${dict[currentLang].btnEditAction}</button></td></tr>`;
+                editBody.innerHTML += `<tr><td>${esc(cust.name)}</td><td>${esc(cust.email)}</td><td><button class="action-btn edit-btn" onclick="startEdit(${idx})">${dict[currentLang].btnEditAction}</button></td></tr>`;
             });
 
             // 3. الحذف
             const deleteBody = document.getElementById('deleteTableBody');
             deleteBody.innerHTML = customers.length === 0 ? `<tr><td colspan="3" class="no-data">${tNoData}</td></tr>` : "";
             customers.forEach((cust, idx) => {
-                deleteBody.innerHTML += `<tr><td>${cust.name}</td><td>${cust.email}</td><td><button class="action-btn delete-btn" onclick="deleteCustomer(${idx})">${dict[currentLang].btnDelAction}</button></td></tr>`;
+                deleteBody.innerHTML += `<tr><td>${esc(cust.name)}</td><td>${esc(cust.email)}</td><td><button class="action-btn delete-btn" onclick="deleteCustomer(${idx})">${dict[currentLang].btnDelAction}</button></td></tr>`;
             });
         }
 
@@ -237,24 +242,10 @@
             }
         }
 
-        function saveAndExit() {
-            // حفظ كل البيانات (الموظفين والعملاء معاً) داخل نفس ملف الفلاشة الآمن الموحد
-            const finalDb = {
-                secret_key: btoa(sessionStorage.getItem('current_db_pass')),
-                data: JSON.parse(sessionStorage.getItem('employees')) || [],
-                customers: customers
-            };
-            
-            const blob = new Blob([JSON.stringify(finalDb, null, 2)], {type: "application/json"});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = sessionStorage.getItem('current_db_name') || "updated_database.json";
-            a.click();
-
-            sessionStorage.clear();
-            alert("تم حفظ كل التعديلات (الموظفين والعملاء) بنجاح وإغلاق الجلسة!");
-            window.location.href = "index.html";
+        // الحفظ الموحد: يحفظ كل الأقسام (موظفين + عملاء + منتجات + عمليات) مشفرة في الملف
+        async function saveAndExit() {
+            sessionStorage.setItem('customers', JSON.stringify(customers));
+            await saveDbAndExit("تم حفظ كل التعديلات بنجاح وإغلاق الجلسة!");
         }
 
         const dict = {

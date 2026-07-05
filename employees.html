@@ -122,7 +122,12 @@
         </div>
     </div>
 
+    <script src="common.js"></script>
     <script>
+        // حماية الصفحة: إذا لم تُفتح جلسة صالحة، يعود لصفحة الدخول
+        if(!sessionStorage.getItem('current_db_pass')) {
+            window.location.href = "index.html";
+        }
         let currentLang = 'ar';
         // قراءة البيانات من جلسة التصفح المؤقتة (وليس من localStorage الدائم)
         let employees = JSON.parse(sessionStorage.getItem('employees')) || [];
@@ -149,21 +154,21 @@
             const viewBody = document.getElementById('viewTableBody');
             viewBody.innerHTML = employees.length === 0 ? `<tr><td colspan="5" class="no-data">${tNoData}</td></tr>` : "";
             employees.forEach(emp => {
-                viewBody.innerHTML += `<tr><td>${emp.name}</td><td>${emp.role}</td><td>${emp.salary} €</td><td>${emp.iban}</td><td>${emp.idCard}</td></tr>`;
+                viewBody.innerHTML += `<tr><td>${esc(emp.name)}</td><td>${esc(emp.role)}</td><td>${esc(emp.salary)} €</td><td>${esc(emp.iban)}</td><td>${esc(emp.idCard)}</td></tr>`;
             });
 
             // 2. التعديل
             const editBody = document.getElementById('editSelectTableBody');
             editBody.innerHTML = employees.length === 0 ? `<tr><td colspan="3" class="no-data">${tNoData}</td></tr>` : "";
             employees.forEach((emp, idx) => {
-                editBody.innerHTML += `<tr><td>${emp.name}</td><td>${emp.role}</td><td><button class="action-btn edit-btn" onclick="startEdit(${idx})">${dict[currentLang].btnEditAction}</button></td></tr>`;
+                editBody.innerHTML += `<tr><td>${esc(emp.name)}</td><td>${esc(emp.role)}</td><td><button class="action-btn edit-btn" onclick="startEdit(${idx})">${dict[currentLang].btnEditAction}</button></td></tr>`;
             });
 
             // 3. الحذف
             const deleteBody = document.getElementById('deleteTableBody');
             deleteBody.innerHTML = employees.length === 0 ? `<tr><td colspan="4" class="no-data">${tNoData}</td></tr>` : "";
             employees.forEach((emp, idx) => {
-                deleteBody.innerHTML += `<tr><td>${emp.name}</td><td>${emp.role}</td><td>${emp.idCard}</td><td><button class="action-btn delete-btn" onclick="deleteEmployee(${idx})">${dict[currentLang].btnDelAction}</button></td></tr>`;
+                deleteBody.innerHTML += `<tr><td>${esc(emp.name)}</td><td>${esc(emp.role)}</td><td>${esc(emp.idCard)}</td><td><button class="action-btn delete-btn" onclick="deleteEmployee(${idx})">${dict[currentLang].btnDelAction}</button></td></tr>`;
             });
         }
 
@@ -215,24 +220,10 @@
             }
         }
 
-        // دالة حفظ التعديلات وتحميل الملف النهائي إلى الفلاشة / الجهاز عند الخروج
-        function saveAndExit() {
-            const finalDb = {
-                secret_key: btoa(sessionStorage.getItem('current_db_pass')),
-                data: employees
-            };
-            
-            const blob = new Blob([JSON.stringify(finalDb, null, 2)], {type: "application/json"});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = sessionStorage.getItem('current_db_name') || "updated_database.json";
-            a.click();
-
-            // مسح الجلسة فوراً لضمان عدم بقاء أي أثر للبيانات على المتصفح
-            sessionStorage.clear();
-            alert("تم حفظ التعديلات وتحميل الملف المشفر المحدث بنجاح!\nالآن تم قفل النظام بأمان.");
-            window.location.href = "index.html";
+        // الحفظ الموحد: يحفظ كل الأقسام (موظفين + عملاء + منتجات + عمليات) مشفرة في الملف
+        async function saveAndExit() {
+            sessionStorage.setItem('employees', JSON.stringify(employees));
+            await saveDbAndExit("تم حفظ كل التعديلات في الملف المشفر بنجاح!\nالآن تم قفل النظام بأمان.");
         }
 
         const dict = {

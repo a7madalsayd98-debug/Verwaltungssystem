@@ -55,8 +55,7 @@
     <header>
         <h2 id="page-title">إدارة المستودعات والفواتير</h2>
         <div class="lang-controls">
-            <button class="nav-btn" onclick="changeLanguage('ar')">AR</button>
-            <button class="nav-btn" onclick="changeLanguage('en')">EN</button>
+            <a href="dashboard.html" class="nav-btn">🏠 الرئيسية</a>
             <button class="nav-btn" style="background:var(--success);" onclick="saveAndExit()">💾 حفظ الخروج للملف</button>
         </div>
     </header>
@@ -213,7 +212,12 @@
         </div>
     </div>
 
+    <script src="common.js"></script>
     <script>
+        // حماية الصفحة: إذا لم تُفتح جلسة صالحة، يعود لصفحة الدخول
+        if(!sessionStorage.getItem('current_db_pass')) {
+            window.location.href = "index.html";
+        }
         let products = JSON.parse(sessionStorage.getItem('products')) || [];
         let customers = JSON.parse(sessionStorage.getItem('customers')) || [];
         let transactions = JSON.parse(sessionStorage.getItem('transactions')) || [];
@@ -233,13 +237,13 @@
             // تحديث شاشة العرض
             const viewBody = document.getElementById('viewProductsBody');
             viewBody.innerHTML = products.length === 0 ? '<tr><td colspan="5" class="no-data">المستودع فارغ</td></tr>' : '';
-            products.forEach(p => { viewBody.innerHTML += `<tr><td>${p.code}</td><td>${p.name}</td><td>${p.qty}</td><td>${p.cost} €</td><td>${p.price} €</td></tr>`; });
+            products.forEach(p => { viewBody.innerHTML += `<tr><td>${esc(p.code)}</td><td>${esc(p.name)}</td><td>${esc(p.qty)}</td><td>${esc(p.cost)} €</td><td>${esc(p.price)} €</td></tr>`; });
 
             // تحديث شاشة التحكم
             const manageBody = document.getElementById('manageProductsBody');
             manageBody.innerHTML = products.length === 0 ? '<tr><td colspan="4" class="no-data">لا توجد منتجات</td></tr>' : '';
             products.forEach((p, idx) => {
-                manageBody.innerHTML += `<tr><td>${p.name}</td><td>${p.code}</td><td>${p.qty}</td><td>
+                manageBody.innerHTML += `<tr><td>${esc(p.name)}</td><td>${esc(p.code)}</td><td>${esc(p.qty)}</td><td>
                     <button class="action-btn" style="background:var(--warning)" onclick="editProduct(${idx})">تعديل</button>
                     <button class="action-btn" style="background:var(--danger)" onclick="deleteProduct(${idx})">حذف</button>
                 </td></tr>`;
@@ -248,18 +252,18 @@
             // تجهيز القوائم
             const custSelect = document.getElementById('txCustomer');
             custSelect.innerHTML = '<option value="">-- اختر العميل المقترن --</option>';
-            customers.forEach((c, idx) => { custSelect.innerHTML += `<option value="${idx}">${c.name}</option>`; });
+            customers.forEach((c, idx) => { custSelect.innerHTML += `<option value="${idx}">${esc(c.name)}</option>`; });
 
             const prodSelect = document.getElementById('txProduct');
             prodSelect.innerHTML = '<option value="">-- اختر المنتج --</option>';
-            products.forEach((p, idx) => { prodSelect.innerHTML += `<option value="${idx}">${p.name} (المتاح: ${p.qty})</option>`; });
+            products.forEach((p, idx) => { prodSelect.innerHTML += `<option value="${idx}">${esc(p.name)} (المتاح: ${esc(p.qty)})</option>`; });
 
             // تحديث جدول العمليات وتوليد الفاتورة
             const txBody = document.getElementById('txHistoryBody');
             txBody.innerHTML = transactions.length === 0 ? '<tr><td colspan="5" class="no-data">لا توجد عمليات</td></tr>' : '';
             transactions.forEach((t, idx) => {
                 const badge = t.type === 'sell' ? '<span style="color:var(--danger)">بيع</span>' : '<span style="color:var(--success)">شراء</span>';
-                txBody.innerHTML += `<tr><td>${badge}</td><td>${t.customerName}</td><td>${t.productName}</td><td>${t.qty}</td><td>
+                txBody.innerHTML += `<tr><td>${badge}</td><td>${esc(t.customerName)}</td><td>${esc(t.productName)}</td><td>${esc(t.qty)}</td><td>
                     <button class="action-btn" style="background:var(--info)" onclick="generateInvoice(${idx})"><i class="fas fa-file-invoice-dollar"></i> الفاتورة</button>
                 </td></tr>`;
             });
@@ -334,8 +338,8 @@
             document.getElementById('invCustName').innerText = t.customerName;
             
             // صياغة بيانات العميل بناءً على كونه فرداً أو شركة قانونية
-            let details = `الهاتف: ${t.customerPhone} | العنوان: ${t.customerAddress}`;
-            if(t.customerType === 'company') details += `<br>سجل تجاري (HRB): ${t.crNo} | رقم ضريبي (Ust-IdNr): ${t.ustNo}`;
+            let details = `الهاتف: ${esc(t.customerPhone)} | العنوان: ${esc(t.customerAddress)}`;
+            if(t.customerType === 'company') details += `<br>سجل تجاري (HRB): ${esc(t.crNo)} | رقم ضريبي (Ust-IdNr): ${esc(t.ustNo)}`;
             document.getElementById('invCustDetails').innerHTML = details;
 
             document.getElementById('invTxType').innerText = t.type === 'sell' ? "فاتورة مبيعات صادرة" : "فاتورة توريد / مشتريات";
@@ -358,21 +362,12 @@
 
         function closeInvoice() { document.getElementById('invoiceModal').style.display = "none"; }
 
-        function saveAndExit() {
-            const finalDb = {
-                secret_key: btoa(sessionStorage.getItem('current_db_pass')),
-                data: JSON.parse(sessionStorage.getItem('employees')) || [],
-                customers: JSON.parse(sessionStorage.getItem('customers')) || [],
-                products: products, transactions: transactions
-            };
-            const blob = new Blob([JSON.stringify(finalDb, null, 2)], {type: "application/json"});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url;
-            a.download = sessionStorage.getItem('current_db_name') || "updated_database.json";
-            a.click();
-            sessionStorage.clear(); window.location.href = "index.html";
+        // الحفظ الموحد: يحفظ كل الأقسام مشفرة في الملف الأصلي مباشرة إن أمكن
+        async function saveAndExit() {
+            sessionStorage.setItem('products', JSON.stringify(products));
+            sessionStorage.setItem('transactions', JSON.stringify(transactions));
+            await saveDbAndExit("تم حفظ كل التعديلات بنجاح وإغلاق الجلسة!");
         }
-        function changeLanguage(l){}
         renderAll();
     </script>
 </body>
