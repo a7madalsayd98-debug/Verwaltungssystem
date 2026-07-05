@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "PowerShell(Get-Process gh -ErrorAction SilentlyContinue)",
-      "PowerShell(Start-Process \"https://github.com/login/device\")"
+      "PowerShell(Start-Process \"https://github.com/login/device\")",
+      "PowerShell($env:PATH += ';C:\\\\Program Files\\\\GitHub CLI'; gh repo view a7madalsayd98-debug/Verwaltungssystem --json name,isEmpty,pushedAt,url,visibility)",
+      "PowerShell(git add .claude/settings.local.json)",
+      "PowerShell(git pull origin main --rebase --allow-unrelated-histories)",
+      "PowerShell(git push -u origin main)"
     ]
   }
 }
