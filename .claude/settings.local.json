@@ -6,7 +6,8 @@
       "PowerShell($env:PATH += ';C:\\\\Program Files\\\\GitHub CLI'; gh repo view a7madalsayd98-debug/Verwaltungssystem --json name,isEmpty,pushedAt,url,visibility)",
       "PowerShell(git add .claude/settings.local.json)",
       "PowerShell(git pull origin main --rebase --allow-unrelated-histories)",
-      "PowerShell(git push -u origin main)"
+      "PowerShell(git push -u origin main)",
+      "PowerShell($env:PATH += ';C:\\\\Program Files\\\\GitHub CLI'; '{\"source\":{\"branch\":\"main\",\"path\":\"/\"}}' | gh api repos/a7madalsayd98-debug/Verwaltungssystem/pages -X POST --input -)"
     ]
   }
 }
