@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HZ · Selbsttest</title>
+<style>
+  body{font-family:"Segoe UI",Arial,sans-serif;background:#f5f6f7;color:#32363a;margin:0;padding:24px;}
+  h1{font-size:20px;margin:0 0 4px;}
+  .sub{color:#6a6d70;font-size:13px;margin:0 0 20px;}
+  .fall{background:#fff;border:1px solid #d9dde1;border-left-width:4px;border-radius:4px;
+        padding:10px 14px;margin-bottom:8px;font-size:13.5px;display:flex;gap:12px;align-items:flex-start;}
+  .fall.ok{border-left-color:#107e3e;}
+  .fall.fehler{border-left-color:#bb0000;background:#fdecec;}
+  .marke{font-weight:700;flex-shrink:0;width:66px;}
+  .fall.ok .marke{color:#107e3e;}
+  .fall.fehler .marke{color:#bb0000;}
+  .detail{color:#6a6d70;font-size:12px;margin-top:3px;font-family:Consolas,monospace;word-break:break-all;}
+  #summe{margin-top:18px;padding:14px 16px;border-radius:4px;font-weight:700;font-size:15px;}
+  #summe.ok{background:#eaf6ee;color:#107e3e;border:1px solid #c5e8d1;}
+  #summe.fehler{background:#fdecec;color:#bb0000;border:1px solid #f3c8c8;}
+</style>
+</head>
+<body>
+  <h1>HZ · Selbsttest der Krypto-Schicht</h1>
+  <p class="sub">Prueft Signatur, Verschluesselung, Passwortwechsel und die Erkennung von Manipulationen.</p>
+  <div id="ausgabe"></div>
+  <div id="summe"></div>
+
+<script src="../src/core/hz-crypto.js"></script>
+<script src="../src/core/hz-license.js"></script>
+<script src="../src/core/hz-keystore.js"></script>
+<script>
+(async function () {
+  var ausgabe = document.getElementById('ausgabe');
+  var bestanden = 0, gefallen = 0;
+
+  function melde(ok, name, detail) {
+    var d = document.createElement('div');
+    d.className = 'fall ' + (ok ? 'ok' : 'fehler');
+    d.innerHTML = '<div class="marke">' + (ok ? 'OK' : 'FEHLER') + '</div>' +
+                  '<div><div>' + name + '</div>' +
+                  (detail ? '<div class="detail">' + String(detail).replace(/</g, '&lt;') + '</div>' : '') +
+                  '</div>';
+    ausgabe.appendChild(d);
+    ok ? bestanden++ : gefallen++;
+  }
+
+  async function pruefe(name, fn) {
+    try {
+      var detail = await fn();
+      melde(true, name, detail);
+    } catch (e) {
+      melde(false, name, e && e.message ? e.message : String(e));
+    }
+  }
+
+  function behaupte(bedingung, text) {
+    if (!bedingung) throw new Error(text || 'Behauptung nicht erfuellt');
+  }
+
+  var K = HZ.crypto, L = HZ.license;
+
+  // ---------------------------------------------------------------
+  await pruefe('WebCrypto steht zur Verfuegung', function () {
+    behaupte(K.verfuegbar(), 'crypto.subtle fehlt - laeuft die Seite ueber http:// ?');
+    return 'crypto.subtle vorhanden';
+  });
+
+  await pruefe('base64url ueberlebt Hin- und Rueckweg', function () {
+    var roh = K.randomBytes(200);
+    var zurueck = K.b64uToBytes(K.bytesToB64u(roh));
+    behaupte(roh.length === zurueck.length, 'Laenge weicht ab');
+    for (var i = 0; i < roh.length; i++) behaupte(roh[i] === zurueck[i], 'Byte ' + i + ' weicht ab');
+    return '200 Bytes identisch';
+  });
+
+  await pruefe('Kanonische Form ist unabhaengig von der Schluesselreihenfolge', function () {
+    var a = K.canonical({ b: 1, a: { z: true, y: [3, 2] } });
+    var b = K.canonical({ a: { y: [3, 2], z: true }, b: 1 });
+    behaupte(a === b, 'Reihenfolge veraendert das Ergebnis');
+    behaupte(K.canonical({ a: 1, b: undefined }) === '{"a":1}', 'undefined nicht entfernt');
+    return a;
+  });
+
+  // ---------------------------------------------------------------
+  var HAUPTPASSWORT = 'haendler-hauptpasswort-2026';
+  var schluessel;
+
+  await pruefe('Haendler-Schluesselpaar wird erzeugt und wieder geoeffnet', async function () {
+    var erzeugt = await HZ.keystore.erzeugen(HAUPTPASSWORT);
+    behaupte(HZ.keystore.istKeystore(erzeugt.datei), 'Kein gueltiger Keystore');
+    behaupte(!erzeugt.datei.oeffentlich.signatur.d, 'Privater Anteil im oeffentlichen Schluessel!');
+    schluessel = await HZ.keystore.oeffnen(erzeugt.datei, HAUPTPASSWORT);
+    behaupte(schluessel.privat.signatur.d, 'Privater Schluessel fehlt nach dem Oeffnen');
+    return 'Kurve ' + erzeugt.datei.oeffentlich.signatur.crv;
+  });
+
+  await pruefe('Falsches Hauptpasswort oeffnet die Schluesseldatei nicht', async function () {
+    var erzeugt = await HZ.keystore.erzeugen(HAUPTPASSWORT);
+    try {
+      await HZ.keystore.oeffnen(erzeugt.datei, 'falsch');
+    } catch (e) {
+      behaupte(e.code === 'passwort', 'Falscher Fehlercode: ' + e.code);
+      return 'abgewiesen mit code=passwort';
+    }
+    throw new Error('Die Schluesseldatei liess sich mit falschem Passwort oeffnen');
+  });
+
+  // ---------------------------------------------------------------
+  var verifyKey = await K.verifyKeyImportieren(schluessel.oeffentlich.signatur);
+  var KUNDENPASSWORT = 'Kunden-Passwort-01';
+  var lizenz;
+
+  var inhaltVorlage = {
+    lizenzId: K.uuid(),
+    kunde: 'Müller & Söhne GmbH',
+    ausgestelltAm: new Date().toISOString(),
+    gueltigBis: '2027-12-31',
+    module: { zeiterfassung: true, hauptbuch: true, lager: false, lohn: false, crm: false },
+    daten: { zeiterfassung: { '2026-08-01': [{ kommen: '08:00', gehen: '16:30', pause1: 30 }] } }
+  };
+
+  await pruefe('Lizenz wird versiegelt', async function () {
+    lizenz = await L.versiegeln(inhaltVorlage, {
+      passwort: KUNDENPASSWORT,
+      signKey: schluessel.signKey,
+      haendlerPubJwk: schluessel.oeffentlich.transport
+    });
+    behaupte(L.istHZL2(lizenz.datei), 'Format nicht HZL2');
+    var roh = JSON.stringify(lizenz.datei);
+    behaupte(roh.indexOf('Müller') === -1, 'Kundenname steht im Klartext in der Datei!');
+    behaupte(roh.indexOf('zeiterfassung') === -1, 'Modulnamen stehen im Klartext in der Datei!');
+    return 'Datei ' + roh.length + ' Zeichen, nichts davon im Klartext';
+  });
+
+  await pruefe('Kunde oeffnet mit richtigem Passwort, Signatur gilt', async function () {
+    var auf = await L.oeffnenMitPasswort(lizenz.datei, KUNDENPASSWORT, verifyKey);
+    behaupte(auf.signaturOk === true, 'Signatur wurde nicht anerkannt');
+    behaupte(auf.inhalt.kunde === 'Müller & Söhne GmbH', 'Kundenname stimmt nicht');
+    behaupte(auf.inhalt.daten.zeiterfassung['2026-08-01'][0].kommen === '08:00', 'Nutzdaten fehlen');
+    return 'Umlaute und Nutzdaten unversehrt';
+  });
+
+  await pruefe('Falsches Kundenpasswort wird abgewiesen', async function () {
+    try {
+      await L.oeffnenMitPasswort(lizenz.datei, KUNDENPASSWORT + 'x', verifyKey);
+    } catch (e) {
+      behaupte(e.code === 'passwort', 'Falscher Fehlercode: ' + e.code);
+      return 'abgewiesen mit code=passwort';
+    }
+    throw new Error('Falsches Passwort wurde akzeptiert');
+  });
+
+  await pruefe('Haendler oeffnet dieselbe Lizenz ohne Kundenpasswort', async function () {
+    var auf = await L.oeffnenAlsHaendler(lizenz.datei, schluessel.privat.transport, verifyKey);
+    behaupte(auf.signaturOk === true, 'Signatur wurde nicht anerkannt');
+    behaupte(auf.inhalt.kunde === inhaltVorlage.kunde, 'Kundenname stimmt nicht');
+    return 'Verlaengerung ohne Kundenpasswort moeglich';
+  });
+
+  await pruefe('Fremder Haendlerschluessel oeffnet die Lizenz nicht', async function () {
+    var fremd = await HZ.keystore.erzeugen('anderes-passwort');
+    var fremdOffen = await HZ.keystore.oeffnen(fremd.datei, 'anderes-passwort');
+    try {
+      await L.oeffnenAlsHaendler(lizenz.datei, fremdOffen.privat.transport, verifyKey);
+    } catch (e) {
+      behaupte(e.code === 'falscher-haendlerschluessel', 'Falscher Fehlercode: ' + e.code);
+      return 'abgewiesen';
+    }
+    throw new Error('Fremder Schluessel konnte die Lizenz oeffnen');
+  });
+
+  // ---------------------------------------------------------------
+  // Die eigentlichen Angriffe
+  // ---------------------------------------------------------------
+  await pruefe('ANGRIFF Laufzeit verlaengern wird erkannt', async function () {
+    var auf = await L.oeffnenMitPasswort(lizenz.datei, KUNDENPASSWORT, verifyKey);
+    auf.inhalt.gueltigBis = '2099-12-31';
+    var kopie = JSON.parse(JSON.stringify(lizenz.datei));
+    await L.inhaltSchreiben(kopie, auf.dek, auf.inhalt);
+    var erneut = await L.oeffnenMitPasswort(kopie, KUNDENPASSWORT, verifyKey);
+    behaupte(erneut.signaturOk === false, 'Manipulierte Laufzeit wurde NICHT erkannt');
+    return 'signaturOk = false';
+  });
+
+  await pruefe('ANGRIFF Module freischalten wird erkannt', async function () {
+    var auf = await L.oeffnenMitPasswort(lizenz.datei, KUNDENPASSWORT, verifyKey);
+    auf.inhalt.module.lager = true;
+    auf.inhalt.module.crm = true;
+    var kopie = JSON.parse(JSON.stringify(lizenz.datei));
+    await L.inhaltSchreiben(kopie, auf.dek, auf.inhalt);
+    var erneut = await L.oeffnenMitPasswort(kopie, KUNDENPASSWORT, verifyKey);
+    behaupte(erneut.signaturOk === false, 'Selbstfreischaltung wurde NICHT erkannt');
+    return 'signaturOk = false';
+  });
+
+  await pruefe('ANGRIFF Felder loeschen laeuft ins Leere', async function () {
+    var auf = await L.oeffnenMitPasswort(lizenz.datei, KUNDENPASSWORT, verifyKey);
+    delete auf.inhalt.gueltigBis;
+    var kopie = JSON.parse(JSON.stringify(lizenz.datei));
+    await L.inhaltSchreiben(kopie, auf.dek, auf.inhalt);
+    var erneut = await L.oeffnenMitPasswort(kopie, KUNDENPASSWORT, verifyKey);
+    behaupte(erneut.signaturOk === false, 'Fehlendes Ablaufdatum wurde nicht erkannt');
+    behaupte(L.abgelaufen(erneut.inhalt) === true, 'Lizenz ohne Datum gilt faelschlich als gueltig');
+    return 'signaturOk = false und abgelaufen = true';
+  });
+
+  await pruefe('ANGRIFF Signatur entfernen wird erkannt', async function () {
+    var auf = await L.oeffnenMitPasswort(lizenz.datei, KUNDENPASSWORT, verifyKey);
+    delete auf.inhalt.sig;
+    var kopie = JSON.parse(JSON.stringify(lizenz.datei));
+    await L.inhaltSchreiben(kopie, auf.dek, auf.inhalt);
+    var erneut = await L.oeffnenMitPasswort(kopie, KUNDENPASSWORT, verifyKey);
+    behaupte(erneut.signaturOk === false, 'Fehlende Signatur wurde akzeptiert');
+    return 'signaturOk = false';
+  });
+
+  await pruefe('ANGRIFF Signatur einer anderen Lizenz einsetzen wird erkannt', async function () {
+    var andere = await L.versiegeln(
+      Object.assign({}, inhaltVorlage, { lizenzId: K.uuid(), kunde: 'Andere GmbH', gueltigBis: '2099-01-01' }),
+      { passwort: 'x', signKey: schluessel.signKey, haendlerPubJwk: schluessel.oeffentlich.transport });
+    var fremdeSig = andere.inhalt.sig;
+
+    var auf = await L.oeffnenMitPasswort(lizenz.datei, KUNDENPASSWORT, verifyKey);
+    auf.inhalt.gueltigBis = '2099-01-01';
+    auf.inhalt.sig = fremdeSig;
+    var kopie = JSON.parse(JSON.stringify(lizenz.datei));
+    await L.inhaltSchreiben(kopie, auf.dek, auf.inhalt);
+    var erneut = await L.oeffnenMitPasswort(kopie, KUNDENPASSWORT, verifyKey);
+    behaupte(erneut.signaturOk === false, 'Fremde Signatur wurde akzeptiert');
+    return 'signaturOk = false';
+  });
+
+  await pruefe('ANGRIFF Lizenz mit eigenem Schluessel neu signieren wird erkannt', async function () {
+    var angreifer = await HZ.keystore.erzeugen('angreifer');
+    var aOffen = await HZ.keystore.oeffnen(angreifer.datei, 'angreifer');
+    var eigene = await L.versiegeln(
+      Object.assign({}, inhaltVorlage, { gueltigBis: '2099-12-31',
+        module: { zeiterfassung: true, hauptbuch: true, lager: true, lohn: true, crm: true } }),
+      { passwort: 'x', signKey: aOffen.signKey, haendlerPubJwk: aOffen.oeffentlich.transport });
+
+    var auf = await L.oeffnenMitPasswort(eigene.datei, 'x', verifyKey);
+    behaupte(auf.signaturOk === false, 'Selbst ausgestellte Lizenz wurde anerkannt!');
+    return 'signaturOk = false - fremder Aussteller faellt auf';
+  });
+
+  await pruefe('Nutzdaten aendern laesst die Signatur unberuehrt', async function () {
+    var auf = await L.oeffnenMitPasswort(lizenz.datei, KUNDENPASSWORT, verifyKey);
+    auf.inhalt.daten.zeiterfassung['2026-08-02'] = [{ kommen: '09:00', gehen: '17:00', pause1: 45 }];
+    auf.inhalt.daten.hauptbuch = { konten: [], buchungen: [{ id: 1, betrag: 99.5 }] };
+    var kopie = JSON.parse(JSON.stringify(lizenz.datei));
+    await L.inhaltSchreiben(kopie, auf.dek, auf.inhalt);
+    var erneut = await L.oeffnenMitPasswort(kopie, KUNDENPASSWORT, verifyKey);
+    behaupte(erneut.signaturOk === true, 'Normales Speichern hat die Signatur zerstoert');
+    behaupte(erneut.inhalt.daten.hauptbuch.buchungen[0].betrag === 99.5, 'Buchung ging verloren');
+    return 'Kunde kann arbeiten, Signatur haelt';
+  });
+
+  await pruefe('Jedes Speichern nutzt einen neuen IV', async function () {
+    var auf = await L.oeffnenMitPasswort(lizenz.datei, KUNDENPASSWORT, verifyKey);
+    var a = JSON.parse(JSON.stringify(lizenz.datei));
+    var b = JSON.parse(JSON.stringify(lizenz.datei));
+    await L.inhaltSchreiben(a, auf.dek, auf.inhalt);
+    await L.inhaltSchreiben(b, auf.dek, auf.inhalt);
+    behaupte(a.payload.iv !== b.payload.iv, 'IV wurde wiederverwendet - schwerer Fehler');
+    return 'IVs unterscheiden sich';
+  });
+
+  // ---------------------------------------------------------------
+  await pruefe('Passwortwechsel behaelt Daten und Haendlerzugang', async function () {
+    var auf = await L.oeffnenMitPasswort(lizenz.datei, KUNDENPASSWORT, verifyKey);
+    var kopie = JSON.parse(JSON.stringify(lizenz.datei));
+    await L.passwortSetzen(kopie, auf.dek, 'Ganz-Neues-Passwort-99');
+
+    var mitNeu = await L.oeffnenMitPasswort(kopie, 'Ganz-Neues-Passwort-99', verifyKey);
+    behaupte(mitNeu.signaturOk === true, 'Signatur nach Passwortwechsel ungueltig');
+    behaupte(mitNeu.inhalt.daten.zeiterfassung['2026-08-01'][0].kommen === '08:00', 'Daten verloren');
+
+    try {
+      await L.oeffnenMitPasswort(kopie, KUNDENPASSWORT, verifyKey);
+      throw new Error('Altes Passwort funktioniert weiterhin');
+    } catch (e) {
+      behaupte(e.code === 'passwort', e.message);
+    }
+
+    var alsHaendler = await L.oeffnenAlsHaendler(kopie, schluessel.privat.transport, verifyKey);
+    behaupte(alsHaendler.inhalt.kunde === inhaltVorlage.kunde, 'Haendler ausgesperrt');
+    return 'altes Passwort tot, Haendlerzugang intakt';
+  });
+
+  await pruefe('Verlaengerung durch den Haendler erzeugt eine gueltige Signatur', async function () {
+    var auf = await L.oeffnenAlsHaendler(lizenz.datei, schluessel.privat.transport, verifyKey);
+    auf.inhalt.gueltigBis = '2028-06-30';
+    auf.inhalt.module.lager = true;
+    await L.neuSignieren(auf.inhalt, schluessel.signKey);
+    var kopie = JSON.parse(JSON.stringify(lizenz.datei));
+    await L.inhaltSchreiben(kopie, auf.dek, auf.inhalt);
+
+    var beimKunden = await L.oeffnenMitPasswort(kopie, KUNDENPASSWORT, verifyKey);
+    behaupte(beimKunden.signaturOk === true, 'Neu signierte Lizenz wird abgelehnt');
+    behaupte(beimKunden.inhalt.gueltigBis === '2028-06-30', 'Laufzeit nicht uebernommen');
+    behaupte(beimKunden.inhalt.module.lager === true, 'Modul nicht freigeschaltet');
+    behaupte(beimKunden.inhalt.daten.zeiterfassung['2026-08-01'], 'Kundendaten beim Upgrade verloren');
+    return 'Upgrade gueltig, Daten erhalten';
+  });
+
+  // ---------------------------------------------------------------
+  await pruefe('Ablaufpruefung rechnet in lokaler Zeit', function () {
+    behaupte(L.abgelaufen({ gueltigBis: '2000-01-01' }) === true, 'Altes Datum gilt als gueltig');
+    behaupte(L.abgelaufen({ gueltigBis: '2099-01-01' }) === false, 'Zukunft gilt als abgelaufen');
+    behaupte(L.abgelaufen({}) === true, 'Fehlendes Datum gilt als gueltig');
+    behaupte(L.abgelaufen({ gueltigBis: 'unsinn' }) === true, 'Unsinniges Datum gilt als gueltig');
+    var heute = new Date();
+    var heuteIso = heute.getFullYear() + '-' +
+      String(heute.getMonth() + 1).padStart(2, '0') + '-' +
+      String(heute.getDate()).padStart(2, '0');
+    behaupte(L.abgelaufen({ gueltigBis: heuteIso }) === false, 'Letzter Tag wird schon gesperrt');
+    behaupte(L.tageBisAblauf({ gueltigBis: heuteIso }) === 0, 'Restlaufzeit heute ist nicht 0');
+    return 'Heute = ' + heuteIso + ', gilt noch';
+  });
+
+  await pruefe('Passwortgenerator liefert genuegend Entropie', function () {
+    var pw = K.passwortErzeugen(14);
+    behaupte(pw.length === 14, 'Falsche Laenge');
+    behaupte(!/[IlO01]/.test(pw), 'Verwechselbare Zeichen enthalten: ' + pw);
+    var st = K.passwortStaerke(pw);
+    behaupte(st.bits >= 60, 'Zu schwach: ' + st.bits + ' Bit');
+    var alle = {};
+    for (var i = 0; i < 300; i++) alle[K.passwortErzeugen(14)] = 1;
+    behaupte(Object.keys(alle).length === 300, 'Doppelte Passwoerter erzeugt');
+    return pw + ' (' + st.bits + ' Bit, ' + st.text + ')';
+  });
+
+  await pruefe('Altformat wird als solches erkannt', function () {
+    var alt = { lizenzId: 'x', kunde: 'Alt GmbH', gueltigBis: '2026-01-01',
+                auth: { salt: 'aa', hash: 'bb' }, module: {}, daten: {} };
+    behaupte(L.istAltformat(alt) === true, 'Altformat nicht erkannt');
+    behaupte(L.istHZL2(alt) === false, 'Altformat faelschlich als HZL2 erkannt');
+    behaupte(L.istAltformat(lizenz.datei) === false, 'HZL2 faelschlich als Altformat erkannt');
+    return 'Unterscheidung funktioniert';
+  });
+
+  // ---------------------------------------------------------------
+  var summe = document.getElementById('summe');
+  summe.className = gefallen === 0 ? 'ok' : 'fehler';
+  summe.textContent = gefallen === 0
+    ? bestanden + ' von ' + bestanden + ' Pruefungen bestanden.'
+    : gefallen + ' von ' + (bestanden + gefallen) + ' Pruefungen fehlgeschlagen.';
+  document.title = (gefallen === 0 ? 'OK ' : 'FEHLER ') + bestanden + '/' + (bestanden + gefallen);
+  window.__testErgebnis = { bestanden: bestanden, gefallen: gefallen };
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,250 @@
+  <header class="gen-kopf">
+    <div class="gen-logo">HZ</div>
+    <div>
+      <div class="gen-name">HZ Lizenz-Generator</div>
+      <div class="gen-rolle">Interne Lizenzverwaltung</div>
+    </div>
+    <div class="hz-dehnen"></div>
+    <button type="button" class="hz-btn leise" id="theme-btn" title="Farbschema umschalten" aria-label="Farbschema umschalten">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>
+      </svg>
+      <span id="theme-text">System</span>
+    </button>
+  </header>
+
+  <main class="gen-inhalt">
+
+    <!-- ===================== SCHLUESSEL ===================== -->
+    <section class="hz-karte schluessel-karte" id="schluessel-karte">
+      <div class="schluessel-kopf">
+        <div class="schluessel-ampel" id="schluessel-ampel" aria-hidden="true"></div>
+        <div class="hz-dehnen">
+          <h3 id="schluessel-titel">Haendlerschluessel nicht geladen</h3>
+          <div class="schluessel-text" id="schluessel-text">
+            Ohne Ihren privaten Schluessel koennen keine gueltigen Lizenzen ausgestellt werden.
+          </div>
+        </div>
+      </div>
+
+      <div class="schluessel-aktionen" id="schluessel-aktionen">
+        <button type="button" class="hz-btn" id="btn-schluessel-oeffnen">Schluesseldatei oeffnen</button>
+        <button type="button" class="hz-btn sekundaer hz-versteckt" id="btn-schluessel-zuletzt">Zuletzt verwendete oeffnen</button>
+        <button type="button" class="hz-btn sekundaer" id="btn-schluessel-neu">Neues Schluesselpaar einrichten</button>
+      </div>
+
+      <div class="schluessel-aktionen hz-versteckt" id="schluessel-aktionen-offen">
+        <button type="button" class="hz-btn sekundaer" id="btn-schluessel-export">Oeffentlichen Schluessel exportieren</button>
+        <button type="button" class="hz-btn leise" id="btn-schluessel-sperren">Sperren</button>
+      </div>
+    </section>
+
+    <!-- ===================== REITER ===================== -->
+    <nav class="hz-reiter" id="gen-reiter" role="tablist">
+      <button type="button" class="aktiv" data-reiter="neu" role="tab">Neue Lizenz</button>
+      <button type="button" data-reiter="bearbeiten" role="tab">Lizenz verlaengern</button>
+      <button type="button" data-reiter="altformat" role="tab">Altformat uebernehmen</button>
+    </nav>
+
+    <!-- ===================== NEUE LIZENZ ===================== -->
+    <section id="reiter-neu">
+      <div class="hz-karte">
+        <h3>1 · Kundendaten</h3>
+        <div class="hz-box gefahr versteckt" id="neu-fehler"></div>
+
+        <div class="hz-feld">
+          <label for="neu-kunde">Kundenname</label>
+          <input type="text" id="neu-kunde" placeholder="z. B. Mustermann GmbH" autocomplete="off">
+        </div>
+
+        <div class="hz-feld">
+          <label for="neu-pass">Passwort fuer den Kunden</label>
+          <div class="hz-eingabe-gruppe">
+            <input type="text" id="neu-pass" placeholder="Passwort erzeugen lassen" autocomplete="off" spellcheck="false">
+            <button type="button" class="hz-btn sekundaer" id="btn-neu-pass">Erzeugen</button>
+          </div>
+          <div class="hz-staerke" id="neu-staerke" data-stufe="leer">
+            <div class="hz-staerke-balken"><i></i></div>
+            <span class="text">Kein Passwort</span>
+          </div>
+        </div>
+
+        <div class="hz-feld" style="margin-bottom:0;">
+          <label for="neu-gueltig">Gueltig bis</label>
+          <input type="date" id="neu-gueltig">
+          <div class="hz-chip-reihe" style="margin-top:8px;">
+            <button type="button" class="hz-chip-btn" data-tage="30">+ 1 Monat</button>
+            <button type="button" class="hz-chip-btn" data-tage="90">+ 3 Monate</button>
+            <button type="button" class="hz-chip-btn" data-tage="365">+ 1 Jahr</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="hz-karte">
+        <h3>2 · Module freischalten</h3>
+        <div class="modul-liste" id="neu-module"></div>
+      </div>
+
+      <button type="button" class="hz-btn breit" id="btn-neu-erstellen">Lizenzdatei erstellen</button>
+
+      <div class="hz-karte hz-versteckt" id="neu-ergebnis" style="margin-top:16px;">
+        <h3>Lizenz erstellt</h3>
+        <div class="hz-ergebnis">
+          <div><div class="marke-klein">Dateiname</div><div class="wert" id="neu-res-datei"></div></div>
+        </div>
+        <div class="hz-ergebnis">
+          <div><div class="marke-klein">Passwort</div><div class="wert" id="neu-res-pass"></div></div>
+          <button type="button" class="hz-btn sekundaer klein" data-kopieren="neu-res-pass">Kopieren</button>
+        </div>
+        <div class="hz-ergebnis">
+          <div><div class="marke-klein">Lizenz-ID</div><div class="wert" id="neu-res-id"></div></div>
+          <button type="button" class="hz-btn sekundaer klein" data-kopieren="neu-res-id">Kopieren</button>
+        </div>
+        <div class="hz-ergebnis">
+          <div><div class="marke-klein">Gueltig bis</div><div class="wert" id="neu-res-gueltig"></div></div>
+        </div>
+        <button type="button" class="hz-btn breit" id="btn-neu-download">Lizenzdatei speichern</button>
+        <div class="hz-box warn" style="margin:14px 0 0;">
+          Datei und Passwort <b>getrennt</b> versenden - etwa die Datei per WhatsApp,
+          das Passwort per SMS oder telefonisch. Die Datei selbst ist verschluesselt und
+          ohne dieses Passwort wertlos.
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== VERLAENGERN ===================== -->
+    <section id="reiter-bearbeiten" class="hz-versteckt">
+      <div class="hz-karte">
+        <h3>1 · Lizenzdatei des Kunden oeffnen</h3>
+        <div class="hz-box gefahr versteckt" id="bea-fehler"></div>
+        <div class="hz-box info" style="margin-top:0;">
+          Ihr Haendlerschluessel oeffnet die Datei auch dann, wenn der Kunde
+          sein Passwort inzwischen selbst geaendert hat.
+        </div>
+        <button type="button" class="hz-btn sekundaer breit" id="btn-bea-oeffnen">Lizenzdatei auswaehlen</button>
+        <div class="hz-dateichip hz-versteckt" id="bea-chip" style="margin-top:12px;"></div>
+      </div>
+
+      <div id="bea-formular" class="hz-versteckt">
+        <div class="hz-karte">
+          <h3>2 · Kundendaten und Laufzeit</h3>
+          <div class="hz-feld">
+            <label for="bea-kunde">Kundenname</label>
+            <input type="text" id="bea-kunde" autocomplete="off">
+          </div>
+          <div class="hz-feld">
+            <label for="bea-gueltig">Gueltig bis</label>
+            <input type="date" id="bea-gueltig">
+            <div class="hz-chip-reihe" style="margin-top:8px;">
+              <button type="button" class="hz-chip-btn" data-tage-bea="30">+ 1 Monat</button>
+              <button type="button" class="hz-chip-btn" data-tage-bea="90">+ 3 Monate</button>
+              <button type="button" class="hz-chip-btn" data-tage-bea="365">+ 1 Jahr</button>
+            </div>
+          </div>
+          <div class="hz-feld" style="margin-bottom:0;">
+            <label for="bea-pass">Neues Passwort <span class="hz-hinweis">(leer lassen = unveraendert)</span></label>
+            <div class="hz-eingabe-gruppe">
+              <input type="text" id="bea-pass" placeholder="nur ausfuellen, um das Passwort zu wechseln" autocomplete="off" spellcheck="false">
+              <button type="button" class="hz-btn sekundaer" id="btn-bea-pass">Erzeugen</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="hz-karte">
+          <h3>3 · Module</h3>
+          <div class="hz-box warn" id="bea-modul-warnung">
+            Die Haken zeigen den Stand aus der eingelesenen Datei. Bitte gegen Ihre
+            eigenen Unterlagen pruefen, bevor Sie neu ausstellen.
+          </div>
+          <div class="modul-liste" id="bea-module"></div>
+        </div>
+
+        <button type="button" class="hz-btn breit" id="btn-bea-speichern">Lizenz neu ausstellen</button>
+
+        <div class="hz-karte hz-versteckt" id="bea-ergebnis" style="margin-top:16px;">
+          <h3>Lizenz aktualisiert</h3>
+          <div class="hz-ergebnis">
+            <div><div class="marke-klein">Dateiname</div><div class="wert" id="bea-res-datei"></div></div>
+          </div>
+          <div class="hz-ergebnis hz-versteckt" id="bea-res-pass-zeile">
+            <div><div class="marke-klein">Neues Passwort</div><div class="wert" id="bea-res-pass"></div></div>
+            <button type="button" class="hz-btn sekundaer klein" data-kopieren="bea-res-pass">Kopieren</button>
+          </div>
+          <div class="hz-ergebnis">
+            <div><div class="marke-klein">Gueltig bis</div><div class="wert" id="bea-res-gueltig"></div></div>
+          </div>
+          <button type="button" class="hz-btn breit" id="btn-bea-download">Aktualisierte Datei speichern</button>
+          <div class="hz-box erfolg" style="margin:14px 0 0;">
+            Die erfassten Daten des Kunden - Zeiterfassung und Hauptbuch - bleiben
+            vollstaendig erhalten. Geaendert wurden nur Laufzeit, Module und
+            gegebenenfalls das Passwort.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== ALTFORMAT ===================== -->
+    <section id="reiter-altformat" class="hz-versteckt">
+      <div class="hz-karte">
+        <h3>Alte Lizenzdatei uebernehmen</h3>
+        <div class="hz-box gefahr versteckt" id="alt-fehler"></div>
+        <div class="hz-box warn" style="margin-top:0;">
+          Lizenzdateien aus der ersten Version sind unverschluesselt und nicht
+          signiert. Das ERP-System nimmt sie nicht mehr an. Hier lesen Sie eine
+          solche Datei ein und stellen sie mit allen erfassten Daten im neuen
+          Format neu aus.
+        </div>
+        <button type="button" class="hz-btn sekundaer breit" id="btn-alt-oeffnen">Alte Lizenzdatei auswaehlen</button>
+        <div class="hz-dateichip hz-versteckt" id="alt-chip" style="margin-top:12px;"></div>
+      </div>
+
+      <div id="alt-formular" class="hz-versteckt">
+        <div class="hz-karte">
+          <h3>Uebernommene Angaben pruefen</h3>
+          <div class="hz-feld">
+            <label for="alt-kunde">Kundenname</label>
+            <input type="text" id="alt-kunde" autocomplete="off">
+          </div>
+          <div class="hz-feld">
+            <label for="alt-gueltig">Gueltig bis</label>
+            <input type="date" id="alt-gueltig">
+          </div>
+          <div class="hz-feld">
+            <label for="alt-pass">Neues Passwort</label>
+            <div class="hz-eingabe-gruppe">
+              <input type="text" id="alt-pass" autocomplete="off" spellcheck="false">
+              <button type="button" class="hz-btn sekundaer" id="btn-alt-pass">Erzeugen</button>
+            </div>
+            <div class="hz-hinweis">
+              Das alte Passwort laesst sich nicht uebernehmen - gespeichert war nur
+              sein Hashwert. Der Kunde erhaelt ein neues.
+            </div>
+          </div>
+          <div class="hz-feld" style="margin-bottom:0;">
+            <label>Module</label>
+            <div class="modul-liste" id="alt-module"></div>
+          </div>
+        </div>
+
+        <div class="hz-karte" id="alt-daten-karte">
+          <h3>Uebernommene Daten</h3>
+          <div id="alt-daten-uebersicht"></div>
+        </div>
+
+        <button type="button" class="hz-btn breit" id="btn-alt-erstellen">Im neuen Format ausstellen</button>
+
+        <div class="hz-karte hz-versteckt" id="alt-ergebnis" style="margin-top:16px;">
+          <h3>Umstellung abgeschlossen</h3>
+          <div class="hz-ergebnis">
+            <div><div class="marke-klein">Dateiname</div><div class="wert" id="alt-res-datei"></div></div>
+          </div>
+          <div class="hz-ergebnis">
+            <div><div class="marke-klein">Neues Passwort</div><div class="wert" id="alt-res-pass"></div></div>
+            <button type="button" class="hz-btn sekundaer klein" data-kopieren="alt-res-pass">Kopieren</button>
+          </div>
+          <button type="button" class="hz-btn breit" id="btn-alt-download">Neue Lizenzdatei speichern</button>
+        </div>
+      </div>
+    </section>
+
+  </main>

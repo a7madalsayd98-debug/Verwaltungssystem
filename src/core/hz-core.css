@@ -1,0 +1,408 @@
+/* =============================================================
+   HZ · Gemeinsames Design-System
+   -------------------------------------------------------------
+   Farben, Schrift, Formularelemente, Tabellen, Toasts, Dialoge.
+   Beide Anwendungen bauen darauf auf; app-spezifisches Layout
+   steht in erp.css bzw. gen.css.
+
+   Farbschema: data-theme="hell" | "dunkel" auf <html>, gesetzt
+   von HZ.ui.themeAnwenden(). Kein Wert wird nur in einem
+   Media-Query definiert, damit der Umschalter in beide
+   Richtungen greift.
+   ============================================================= */
+
+:root,
+:root[data-theme="hell"] {
+  --shell:            #354a5f;
+  --shell-dark:       #28374a;
+  --shell-text:       #ffffff;
+
+  --primary:          #0a6ed1;
+  --primary-dark:     #085caf;
+  --primary-weich:    #eaf2fc;
+  --primary-rand:     #cfe2f8;
+
+  --bg:               #f2f4f6;
+  --flaeche:          #ffffff;
+  --flaeche-2:        #f7f8f9;
+  --flaeche-hover:    #eef1f4;
+  --rand:             #d9dde1;
+  --rand-stark:       #b9c0c7;
+
+  --text:             #1d2429;
+  --text-leise:       #5b6670;
+  --text-aus:         #9aa3ab;
+
+  --erfolg:           #0f7b3d;
+  --erfolg-weich:     #e8f5ed;
+  --erfolg-rand:      #bfe3cd;
+  --warn:             #b35900;
+  --warn-weich:       #fff4e5;
+  --warn-rand:        #f2d9b0;
+  --gefahr:           #b30000;
+  --gefahr-weich:     #fdecec;
+  --gefahr-rand:      #f2c7c7;
+
+  --schatten-1: 0 1px 2px rgba(16,24,32,.08), 0 1px 3px rgba(16,24,32,.06);
+  --schatten-2: 0 4px 12px rgba(16,24,32,.10), 0 2px 4px rgba(16,24,32,.06);
+  --schatten-3: 0 16px 40px rgba(16,24,32,.20), 0 4px 12px rgba(16,24,32,.12);
+
+  --radius:    8px;
+  --radius-s:  6px;
+  --radius-xs: 4px;
+  color-scheme: light;
+}
+
+:root[data-theme="dunkel"] {
+  --shell:            #1b2430;
+  --shell-dark:       #141b24;
+  --shell-text:       #e8edf2;
+
+  --primary:          #5aa9f0;
+  --primary-dark:     #7cbdf5;
+  --primary-weich:    #16273a;
+  --primary-rand:     #24405c;
+
+  --bg:               #10161d;
+  --flaeche:          #19212b;
+  --flaeche-2:        #1f2833;
+  --flaeche-hover:    #26313e;
+  --rand:             #2e3945;
+  --rand-stark:       #43505f;
+
+  --text:             #e6ebf0;
+  --text-leise:       #a3b0bd;
+  --text-aus:         #6c7885;
+
+  --erfolg:           #4cc57e;
+  --erfolg-weich:     #12291d;
+  --erfolg-rand:      #1f4530;
+  --warn:             #e8a34d;
+  --warn-weich:       #2c2113;
+  --warn-rand:        #4d3a1c;
+  --gefahr:           #f2706e;
+  --gefahr-weich:     #2d1616;
+  --gefahr-rand:      #542626;
+
+  --schatten-1: 0 1px 2px rgba(0,0,0,.4);
+  --schatten-2: 0 4px 12px rgba(0,0,0,.45);
+  --schatten-3: 0 16px 40px rgba(0,0,0,.6);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; }
+
+body {
+  font-family: "Segoe UI", "72", -apple-system, system-ui, Roboto, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Tastaturbedienung muss immer sichtbar sein. */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}
+
+/* ---------- Typografie ---------- */
+.hz-titel     { font-size: 20px; font-weight: 650; margin: 0 0 4px; letter-spacing: -.01em; }
+.hz-untertitel{ font-size: 13.5px; color: var(--text-leise); margin: 0 0 20px; }
+.hz-abschnitt { font-size: 11.5px; font-weight: 700; text-transform: uppercase;
+                letter-spacing: .06em; color: var(--text-aus); margin: 0 0 10px; }
+
+/* ---------- Flaechen ---------- */
+.hz-karte {
+  background: var(--flaeche);
+  border: 1px solid var(--rand);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--schatten-1);
+}
+.hz-karte > h3 { margin: 0 0 16px; font-size: 14.5px; font-weight: 650; }
+
+/* ---------- Formulare ---------- */
+.hz-feld { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+.hz-feld > label { font-size: 12.5px; font-weight: 600; color: var(--text-leise); }
+.hz-feld .hz-hinweis { font-size: 11.5px; color: var(--text-aus); }
+
+.hz-feld input, .hz-feld select, .hz-feld textarea,
+input.hz-eingabe, select.hz-eingabe {
+  border: 1px solid var(--rand-stark);
+  border-radius: var(--radius-s);
+  padding: 9px 11px;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--text);
+  background: var(--flaeche);
+  width: 100%;
+  transition: border-color .12s, box-shadow .12s;
+}
+.hz-feld input:hover, .hz-feld select:hover { border-color: var(--primary); }
+.hz-feld input:focus, .hz-feld select:focus, .hz-feld textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-weich);
+}
+.hz-feld input[type="date"], .hz-feld input[type="time"] { min-height: 38px; }
+.hz-feld-reihe { display: flex; gap: 12px; flex-wrap: wrap; }
+.hz-feld-reihe > .hz-feld { flex: 1; min-width: 150px; }
+
+/* Dunkelmodus: das Kalendersymbol in Datumsfeldern ist sonst schwarz */
+:root[data-theme="dunkel"] input[type="date"]::-webkit-calendar-picker-indicator,
+:root[data-theme="dunkel"] input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(1.6);
+}
+
+.hz-eingabe-gruppe { display: flex; gap: 8px; align-items: stretch; }
+.hz-eingabe-gruppe > input { flex: 1; }
+
+/* ---------- Schaltflaechen ---------- */
+.hz-btn {
+  border: 1px solid transparent;
+  background: var(--primary);
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 600;
+  font-family: inherit;
+  padding: 9px 16px;
+  border-radius: var(--radius-s);
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  transition: background .12s, border-color .12s, color .12s;
+}
+.hz-btn:hover:not(:disabled) { background: var(--primary-dark); }
+.hz-btn:disabled { opacity: .5; cursor: not-allowed; }
+:root[data-theme="dunkel"] .hz-btn.primaer,
+:root[data-theme="dunkel"] .hz-btn:not(.sekundaer):not(.leise):not(.gefahr) { color: #0d1620; }
+
+.hz-btn.sekundaer {
+  background: var(--flaeche);
+  color: var(--primary);
+  border-color: var(--rand-stark);
+}
+.hz-btn.sekundaer:hover:not(:disabled) { background: var(--primary-weich); border-color: var(--primary); }
+
+.hz-btn.leise { background: transparent; color: var(--text-leise); border-color: transparent; }
+.hz-btn.leise:hover:not(:disabled) { background: var(--flaeche-hover); color: var(--text); }
+
+.hz-btn.gefahr { background: transparent; color: var(--gefahr); border-color: var(--gefahr-rand); }
+.hz-btn.gefahr:hover:not(:disabled) { background: var(--gefahr-weich); }
+
+.hz-btn.breit { width: 100%; justify-content: center; padding: 11px; font-size: 14.5px; }
+.hz-btn.klein { padding: 6px 10px; font-size: 12px; }
+.hz-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+.hz-chip-btn {
+  border: 1px solid var(--rand-stark);
+  background: var(--flaeche);
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  padding: 6px 12px;
+  border-radius: 99px;
+  cursor: pointer;
+}
+.hz-chip-btn:hover { background: var(--primary-weich); border-color: var(--primary); }
+.hz-chip-reihe { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ---------- Meldungsboxen ---------- */
+.hz-box {
+  border: 1px solid var(--rand);
+  background: var(--flaeche-2);
+  border-radius: var(--radius-s);
+  padding: 11px 14px;
+  font-size: 13px;
+  line-height: 1.6;
+  margin-bottom: 14px;
+}
+.hz-box.info    { background: var(--primary-weich); border-color: var(--primary-rand); color: var(--text); }
+.hz-box.erfolg  { background: var(--erfolg-weich);  border-color: var(--erfolg-rand);  color: var(--erfolg); }
+.hz-box.warn    { background: var(--warn-weich);    border-color: var(--warn-rand);    color: var(--warn); }
+.hz-box.gefahr  { background: var(--gefahr-weich);  border-color: var(--gefahr-rand);  color: var(--gefahr); }
+.hz-box.versteckt { display: none; }
+.hz-box b { font-weight: 700; }
+
+/* ---------- Marken ---------- */
+.hz-marke {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+  padding: 3px 8px; border-radius: 99px;
+  background: var(--flaeche-hover); color: var(--text-leise);
+  border: 1px solid var(--rand);
+}
+.hz-marke.erfolg { background: var(--erfolg-weich); color: var(--erfolg); border-color: var(--erfolg-rand); }
+.hz-marke.warn   { background: var(--warn-weich);   color: var(--warn);   border-color: var(--warn-rand); }
+.hz-marke.gefahr { background: var(--gefahr-weich); color: var(--gefahr); border-color: var(--gefahr-rand); }
+.hz-marke.info   { background: var(--primary-weich); color: var(--primary); border-color: var(--primary-rand); }
+
+/* ---------- Tabellen ----------
+   Auf schmalen Fenstern scrollt die Tabelle in ihrem eigenen
+   Rahmen, nie die ganze Seite. */
+.hz-tabelle-rahmen { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.hz-tabelle {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  min-width: 480px;
+}
+.hz-tabelle th {
+  text-align: left;
+  font-weight: 650;
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--text-aus);
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--rand);
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  background: var(--flaeche);
+  z-index: 1;
+}
+.hz-tabelle td { padding: 9px 12px; border-bottom: 1px solid var(--rand); vertical-align: top; }
+.hz-tabelle tbody tr:hover td { background: var(--flaeche-2); }
+.hz-tabelle .zahl { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.hz-tabelle .mitte { text-align: center; }
+.hz-tabelle .gruppe td {
+  background: var(--flaeche-2); font-weight: 700; font-size: 11.5px;
+  text-transform: uppercase; letter-spacing: .04em; color: var(--text-leise);
+}
+.hz-tabelle tfoot td, .hz-tabelle .summe td {
+  font-weight: 700; border-top: 2px solid var(--rand-stark); border-bottom: none;
+  background: var(--flaeche-2);
+}
+.hz-leer { color: var(--text-aus); font-style: italic; padding: 18px 12px; text-align: center; }
+
+/* ---------- Leerzustand ---------- */
+.hz-leerzustand { text-align: center; padding: 40px 20px; color: var(--text-leise); }
+.hz-leerzustand svg { width: 40px; height: 40px; opacity: .35; margin-bottom: 12px; }
+.hz-leerzustand .titel { font-weight: 650; color: var(--text); margin-bottom: 4px; font-size: 14.5px; }
+.hz-leerzustand .text { font-size: 13px; max-width: 380px; margin: 0 auto 16px; }
+
+/* ---------- Reiter ---------- */
+.hz-reiter {
+  display: flex; gap: 3px; overflow-x: auto;
+  background: var(--flaeche); border: 1px solid var(--rand);
+  border-radius: var(--radius); padding: 4px; margin-bottom: 18px;
+}
+.hz-reiter button {
+  flex: 1 0 auto; border: none; background: transparent; color: var(--text-leise);
+  font-size: 13px; font-weight: 600; font-family: inherit;
+  padding: 9px 14px; border-radius: var(--radius-s); cursor: pointer; white-space: nowrap;
+}
+.hz-reiter button:hover { background: var(--flaeche-hover); color: var(--text); }
+.hz-reiter button.aktiv { background: var(--primary); color: #fff; }
+:root[data-theme="dunkel"] .hz-reiter button.aktiv { color: #0d1620; }
+
+/* ---------- Passwortstaerke ---------- */
+.hz-staerke { display: flex; align-items: center; gap: 10px; font-size: 11.5px; }
+.hz-staerke-balken { flex: 1; height: 5px; background: var(--flaeche-hover); border-radius: 99px; overflow: hidden; }
+.hz-staerke-balken i { display: block; height: 100%; width: 0; border-radius: 99px; transition: width .2s, background .2s; }
+.hz-staerke[data-stufe="schwach"] i { width: 22%; background: var(--gefahr); }
+.hz-staerke[data-stufe="mittel"]  i { width: 50%; background: var(--warn); }
+.hz-staerke[data-stufe="gut"]     i { width: 76%; background: var(--primary); }
+.hz-staerke[data-stufe="stark"]   i { width: 100%; background: var(--erfolg); }
+.hz-staerke .text { font-weight: 600; color: var(--text-leise); min-width: 78px; text-align: right; }
+
+/* ---------- Ergebniszeile (Kopierfeld) ---------- */
+.hz-ergebnis {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  background: var(--flaeche-2); border: 1px solid var(--rand);
+  border-radius: var(--radius-s); padding: 10px 14px; margin-bottom: 10px;
+}
+.hz-ergebnis .marke-klein {
+  font-size: 10.5px; color: var(--text-aus); font-weight: 700;
+  text-transform: uppercase; letter-spacing: .05em;
+}
+.hz-ergebnis .wert {
+  font-size: 14px; font-weight: 650; word-break: break-all;
+  font-family: Consolas, "SF Mono", Menlo, monospace;
+}
+
+/* ---------- Dateihinweis ---------- */
+.hz-dateichip {
+  display: flex; align-items: center; gap: 9px;
+  background: var(--primary-weich); border: 1px solid var(--primary-rand);
+  border-radius: var(--radius-s); padding: 9px 12px;
+  font-size: 12.5px; color: var(--primary); word-break: break-all;
+}
+.hz-dateichip svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+/* ---------- Toasts ---------- */
+.hz-toasts {
+  position: fixed; z-index: 9000; bottom: 20px; right: 20px;
+  display: flex; flex-direction: column; gap: 9px; align-items: flex-end;
+  pointer-events: none; max-width: min(400px, calc(100vw - 32px));
+}
+.hz-toast {
+  background: var(--flaeche); color: var(--text);
+  border: 1px solid var(--rand); border-left: 4px solid var(--text-aus);
+  border-radius: var(--radius-s); box-shadow: var(--schatten-2);
+  padding: 11px 16px; font-size: 13.5px; font-weight: 500;
+  opacity: 0; transform: translateY(10px); transition: opacity .2s, transform .2s;
+  pointer-events: auto;
+}
+.hz-toast.sichtbar { opacity: 1; transform: translateY(0); }
+.hz-toast.erfolg { border-left-color: var(--erfolg); }
+.hz-toast.fehler { border-left-color: var(--gefahr); }
+.hz-toast.warn   { border-left-color: var(--warn); }
+.hz-toast.info   { border-left-color: var(--primary); }
+
+/* ---------- Dialoge ---------- */
+.hz-dialog-overlay {
+  position: fixed; inset: 0; z-index: 8000;
+  background: rgba(10,16,22,.55);
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+  opacity: 0; transition: opacity .18s;
+  backdrop-filter: blur(2px);
+}
+.hz-dialog-overlay.offen { opacity: 1; }
+.hz-dialog {
+  background: var(--flaeche); border: 1px solid var(--rand);
+  border-radius: var(--radius); box-shadow: var(--schatten-3);
+  width: 100%; max-width: 480px; max-height: calc(100vh - 40px);
+  display: flex; flex-direction: column;
+  transform: translateY(8px) scale(.99); transition: transform .18s;
+}
+.hz-dialog-overlay.offen .hz-dialog { transform: none; }
+.hz-dialog-kopf { padding: 18px 22px 12px; border-bottom: 1px solid var(--rand); }
+.hz-dialog-kopf h3 { margin: 0; font-size: 16px; font-weight: 650; }
+.hz-dialog-kopf .unter { font-size: 12.5px; color: var(--text-leise); margin-top: 3px; }
+.hz-dialog-koerper { padding: 18px 22px; overflow-y: auto; font-size: 13.5px; line-height: 1.6; }
+.hz-dialog-koerper p { margin: 0 0 10px; }
+.hz-dialog-koerper p:last-child { margin-bottom: 0; }
+.hz-dialog-koerper .hz-feld:last-child { margin-bottom: 0; }
+.hz-dialog-fuss {
+  padding: 14px 22px 18px; border-top: 1px solid var(--rand);
+  display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap;
+}
+
+/* ---------- Hilfsklassen ---------- */
+.hz-versteckt { display: none !important; }
+.hz-dehnen { flex: 1; }
+.hz-nur-lesbar { user-select: all; }
+.hz-mono { font-family: Consolas, "SF Mono", Menlo, monospace; }
+
+@media (max-width: 620px) {
+  .hz-karte { padding: 16px; }
+  .hz-toasts { left: 16px; right: 16px; bottom: 16px; max-width: none; align-items: stretch; }
+  .hz-dialog-fuss { flex-direction: column-reverse; }
+  .hz-dialog-fuss .hz-btn { width: 100%; justify-content: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}

@@ -1,0 +1,81 @@
+/* =============================================================
+   HZ · Lizenz-Generator — Layout
+   Baut auf hz-core.css auf.
+   ============================================================= */
+
+.gen-kopf {
+  background: var(--shell);
+  color: var(--shell-text);
+  height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 18px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--schatten-2);
+}
+.gen-logo {
+  width: 32px; height: 32px; border-radius: var(--radius-s);
+  background: #fff; color: var(--shell);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 13px; flex-shrink: 0;
+}
+.gen-name  { font-size: 15px; font-weight: 650; line-height: 1.2; }
+.gen-rolle { font-size: 11.5px; opacity: .7; line-height: 1.3; }
+
+.gen-kopf .hz-btn.leise { color: var(--shell-text); }
+.gen-kopf .hz-btn.leise:hover { background: rgba(255,255,255,.14); color: var(--shell-text); }
+
+.gen-inhalt {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 24px 18px 80px;
+}
+
+/* ---------- Schluesselkarte ---------- */
+.schluessel-karte {
+  border-left: 4px solid var(--gefahr);
+  background: var(--gefahr-weich);
+  border-color: var(--gefahr-rand);
+}
+.schluessel-karte.offen {
+  border-left-color: var(--erfolg);
+  background: var(--erfolg-weich);
+  border-color: var(--erfolg-rand);
+}
+.schluessel-kopf { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 14px; }
+.schluessel-kopf h3 { margin: 0 0 3px; font-size: 14.5px; }
+.schluessel-text { font-size: 12.5px; color: var(--text-leise); line-height: 1.55; }
+
+.schluessel-ampel {
+  width: 11px; height: 11px; border-radius: 99px; flex-shrink: 0; margin-top: 5px;
+  background: var(--gefahr);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--gefahr) 22%, transparent);
+}
+.schluessel-karte.offen .schluessel-ampel {
+  background: var(--erfolg);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--erfolg) 22%, transparent);
+}
+
+.schluessel-aktionen { display: flex; gap: 9px; flex-wrap: wrap; }
+
+/* ---------- Modulliste ---------- */
+.modul-liste { display: flex; flex-direction: column; gap: 2px; }
+.modul-zeile {
+  display: flex; align-items: center; gap: 13px;
+  padding: 11px 10px; border-radius: var(--radius-s); cursor: pointer;
+  transition: background .12s;
+}
+.modul-zeile:hover { background: var(--flaeche-hover); }
+.modul-zeile input {
+  width: 18px; height: 18px; flex-shrink: 0; cursor: pointer; accent-color: var(--primary);
+}
+.modul-name { font-size: 14px; font-weight: 600; flex: 1; }
+
+@media (max-width: 620px) {
+  .gen-inhalt { padding: 18px 14px 70px; }
+  .gen-rolle { display: none; }
+  .schluessel-aktionen .hz-btn { flex: 1; justify-content: center; }
+}

@@ -1,0 +1,16 @@
+# =============================================================
+#  Der private Haendlerschluessel gehoert NIEMALS ins Repository.
+#  Wer diese Datei hat, kann Lizenzen ausstellen.
+# =============================================================
+hz-haendler-schluessel.json
+*haendler-schluessel*.json
+*.key.json
+
+# Ausgestellte Kundenlizenzen (enthalten Kundendaten)
+lizenzen/
+*.hzl
+
+# Betriebssystem
+Thumbs.db
+desktop.ini
+.DS_Store

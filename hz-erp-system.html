@@ -3,1465 +3,3276 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+<meta name="description" content="HZ Erp-System - Zeiterfassung und Hauptbuch, vollstaendig lokal.">
 <title>HZ Erp-System</title>
+<!--
+  Erzeugt von build.ps1 am 2026-08-23 16:39 - NICHT von Hand bearbeiten.
+  Die Quelldateien liegen unter src/, siehe README.md.
+-->
 <style>
-  :root{
-    --shell:#354a5f;
-    --shell-dark:#28374a;
-    --primary:#0a6ed1;
-    --primary-dark:#085caf;
-    --bg:#f5f6f7;
-    --tile-bg:#ffffff;
-    --border:#d9dde1;
-    --text:#32363a;
-    --text-muted:#6a6d70;
-    --success:#107e3e;
-    --warning:#e9730c;
-    --danger:#bb0000;
-    --grey-tile:#eef0f2;
-    --grey-text:#a9acae;
-  }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
-  body{
-    font-family:"Segoe UI","72",Arial,Helvetica,sans-serif;
-    background:var(--bg);
-    color:var(--text);
-    min-height:100vh;
-  }
+/* ===== core/hz-core.css ===== */
+/* =============================================================
+   HZ · Gemeinsames Design-System
+   -------------------------------------------------------------
+   Farben, Schrift, Formularelemente, Tabellen, Toasts, Dialoge.
+   Beide Anwendungen bauen darauf auf; app-spezifisches Layout
+   steht in erp.css bzw. gen.css.
 
-  /* ===== Login ===== */
-  .login-screen{
-    display:flex;
-    min-height:100vh;
-    align-items:center;justify-content:center;
-    background:linear-gradient(135deg,var(--shell) 0%,var(--shell-dark) 100%);
-    padding:20px;
-  }
-  .login-card{
-    background:#fff;border-radius:6px;width:100%;max-width:380px;
-    box-shadow:0 20px 50px rgba(0,0,0,.3);
-    padding:32px 28px 26px;
-  }
-  .login-logo{
-    width:44px;height:44px;border-radius:6px;background:var(--primary);
-    color:#fff;display:flex;align-items:center;justify-content:center;
-    font-weight:700;font-size:16px;letter-spacing:.5px;margin-bottom:16px;
-  }
-  .login-title{font-size:19px;font-weight:700;margin:0 0 4px;}
-  .login-sub{font-size:13px;color:var(--text-muted);margin:0 0 20px;}
-  .login-field{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
-  .login-field label{font-size:12px;font-weight:600;color:var(--text-muted);}
-  .login-field input{
-    border:1px solid var(--border);border-radius:4px;padding:9px 10px;font-size:14px;
-    font-family:inherit;color:var(--text);
-  }
-  .login-field input:focus{outline:2px solid var(--primary);outline-offset:0;border-color:var(--primary);}
-  .login-error{
-    display:none;background:#fdecec;color:var(--danger);border:1px solid #f3c8c8;
-    border-radius:4px;padding:8px 10px;font-size:12.5px;margin-bottom:14px;
-  }
-  .login-success{
-    display:none;background:#eaf6ee;color:var(--success);border:1px solid #c5e8d1;
-    border-radius:4px;padding:8px 10px;font-size:12.5px;margin-bottom:14px;
-  }
-  .login-btn{
-    width:100%;border:none;background:var(--primary);color:#fff;font-weight:600;
-    font-size:14.5px;padding:11px;border-radius:4px;cursor:pointer;margin-top:4px;
-  }
-  .login-btn:hover{background:var(--primary-dark);}
-  .login-btn:disabled{opacity:.55;cursor:not-allowed;}
-  .login-btn.secondary-outline{
-    background:#fff;color:var(--primary);border:1px solid var(--primary);margin-top:8px;
-  }
-  .login-btn.secondary-outline:hover{background:#eaf2fc;}
-  .file-chip{
-    display:none;align-items:center;gap:8px;background:#eaf2fc;border:1px solid #cfe2f8;
-    border-radius:4px;padding:8px 10px;font-size:12.5px;color:var(--primary-dark);margin-bottom:14px;
-    word-break:break-all;
-  }
-  .file-chip svg{flex-shrink:0;width:16px;height:16px;}
-  .login-note{
-    text-align:center;font-size:11.5px;color:var(--text-muted);margin-top:18px;
-    line-height:1.6;
-  }
-  .login-note a{color:var(--primary);text-decoration:none;font-weight:600;}
-  .login-note a:hover{text-decoration:underline;}
-  .login-divider{
-    display:flex;align-items:center;gap:10px;margin:16px 0;color:var(--text-muted);font-size:11.5px;
-  }
-  .login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:var(--border);}
-  .password-field-wrap{position:relative;}
-  .password-toggle{
-    position:absolute;right:8px;top:29px;background:none;border:none;cursor:pointer;
-    font-size:11.5px;color:var(--primary);font-weight:600;
-  }
+   Farbschema: data-theme="hell" | "dunkel" auf <html>, gesetzt
+   von HZ.ui.themeAnwenden(). Kein Wert wird nur in einem
+   Media-Query definiert, damit der Umschalter in beide
+   Richtungen greift.
+   ============================================================= */
 
-  /* ===== Banner ===== */
-  .banner{
-    background:#fff6e6;color:#7a4b00;border-bottom:1px solid #f0d999;
-    font-size:12.5px;padding:8px 16px;text-align:center;display:none;
-  }
+:root,
+:root[data-theme="hell"] {
+  --shell:            #354a5f;
+  --shell-dark:       #28374a;
+  --shell-text:       #ffffff;
 
-  /* ===== User menu ===== */
-  .user-wrap{position:relative;}
-  .user-menu{
-    display:none;position:absolute;top:38px;right:0;background:#fff;color:var(--text);
-    border:1px solid var(--border);border-radius:4px;min-width:190px;
-    box-shadow:0 8px 24px rgba(0,0,0,.18);z-index:60;overflow:hidden;
-  }
-  .user-menu.open{display:block;}
-  .user-menu-name{
-    padding:10px 14px;font-size:12.5px;font-weight:600;color:var(--text-muted);
-    border-bottom:1px solid var(--border);word-break:break-all;
-  }
-  .user-menu-item{
-    padding:10px 14px;font-size:13.5px;cursor:pointer;color:var(--text);
-  }
-  .user-menu-item:hover{background:#f0f2f4;}
-  .user-menu-validity{
-    padding:6px 14px 10px;font-size:11.5px;color:var(--text-muted);border-bottom:1px solid var(--border);
-  }
+  --primary:          #0a6ed1;
+  --primary-dark:     #085caf;
+  --primary-weich:    #eaf2fc;
+  --primary-rand:     #cfe2f8;
 
-  /* ===== Shell Bar ===== */
-  .shellbar{
-    background:var(--shell);color:#fff;height:48px;display:flex;align-items:center;
-    padding:0 12px;gap:12px;position:sticky;top:0;z-index:50;box-shadow:0 1px 3px rgba(0,0,0,.25);
-  }
-  .shellbar .logo{
-    width:28px;height:28px;border-radius:4px;background:#fff;color:var(--shell);
-    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;
-    letter-spacing:.5px;flex-shrink:0;
-  }
-  .shellbar .title{font-size:16px;font-weight:600;letter-spacing:.2px;white-space:nowrap;}
-  .shellbar .crumb{
-    font-size:13px;color:#c7d0d9;display:flex;align-items:center;gap:6px;
-    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-  }
-  .shellbar .spacer{flex:1;}
-  .save-status{font-size:11.5px;color:#c7d0d9;white-space:nowrap;}
-  .shellbar .user{
-    width:30px;height:30px;border-radius:50%;background:#5a7590;display:flex;
-    align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;cursor:pointer;
-  }
+  --bg:               #f2f4f6;
+  --flaeche:          #ffffff;
+  --flaeche-2:        #f7f8f9;
+  --flaeche-hover:    #eef1f4;
+  --rand:             #d9dde1;
+  --rand-stark:       #b9c0c7;
 
-  /* ===== Layout ===== */
-  .content{max-width:1180px;margin:0 auto;padding:20px 16px 60px;}
-  .page-title{font-size:22px;font-weight:600;margin:4px 0 4px;color:var(--text);}
-  .page-sub{font-size:13px;color:var(--text-muted);margin:0 0 20px;}
+  --text:             #1d2429;
+  --text-leise:       #5b6670;
+  --text-aus:         #9aa3ab;
 
-  /* ===== Dashboard tiles ===== */
-  .tile-group-label{
-    font-size:13px;font-weight:600;color:var(--text-muted);text-transform:uppercase;
-    letter-spacing:.4px;margin:24px 0 10px;
-  }
-  .tile-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(176px,1fr));gap:14px;}
-  .tile{
-    background:var(--tile-bg);border:1px solid var(--border);border-radius:4px;height:152px;
-    padding:14px;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;
-    position:relative;transition:box-shadow .15s ease, transform .1s ease;box-shadow:0 1px 2px rgba(0,0,0,.05);
-  }
-  .tile:hover{box-shadow:0 4px 12px rgba(0,0,0,.12);transform:translateY(-1px);}
-  .tile:active{transform:translateY(0);}
-  .tile-icon{
-    width:34px;height:34px;border-radius:4px;background:var(--primary);color:#fff;
-    display:flex;align-items:center;justify-content:center;
-  }
-  .tile-icon svg{width:19px;height:19px;}
-  .tile-name{font-size:14.5px;font-weight:600;color:var(--text);line-height:1.25;}
-  .tile-meta{font-size:12px;color:var(--text-muted);}
-  .tile-meta.hours{color:var(--primary);font-weight:600;font-size:20px;}
-  .tile.disabled{background:var(--grey-tile);box-shadow:none;}
-  .tile.disabled:hover{transform:none;box-shadow:none;}
-  .tile.disabled .tile-icon{background:#c4c9cd;color:#eef0f2;}
-  .tile.disabled .tile-name{color:var(--grey-text);}
-  .tile.disabled .tile-meta{color:var(--grey-text);}
-  .badge-soon{
-    position:absolute;top:10px;right:10px;background:#c4c9cd;color:#fff;font-size:9.5px;
-    font-weight:700;letter-spacing:.3px;padding:2px 6px;border-radius:3px;text-transform:uppercase;
-  }
-  .badge-locked{background:#e9730c;}
+  --erfolg:           #0f7b3d;
+  --erfolg-weich:     #e8f5ed;
+  --erfolg-rand:      #bfe3cd;
+  --warn:             #b35900;
+  --warn-weich:       #fff4e5;
+  --warn-rand:        #f2d9b0;
+  --gefahr:           #b30000;
+  --gefahr-weich:     #fdecec;
+  --gefahr-rand:      #f2c7c7;
 
-  /* ===== Back link ===== */
-  .back-link{
-    display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--primary);
-    cursor:pointer;margin-bottom:10px;font-weight:600;user-select:none;
-  }
-  .back-link:hover{text-decoration:underline;}
+  --schatten-1: 0 1px 2px rgba(16,24,32,.08), 0 1px 3px rgba(16,24,32,.06);
+  --schatten-2: 0 4px 12px rgba(16,24,32,.10), 0 2px 4px rgba(16,24,32,.06);
+  --schatten-3: 0 16px 40px rgba(16,24,32,.20), 0 4px 12px rgba(16,24,32,.12);
 
-  /* ===== Zeiterfassung: month bar ===== */
-  .month-bar{
-    display:flex;align-items:center;gap:10px;background:var(--tile-bg);border:1px solid var(--border);
-    border-radius:4px;padding:10px 14px;margin-bottom:14px;flex-wrap:wrap;
-  }
-  .month-bar .mb-label{font-size:16px;font-weight:600;min-width:150px;}
-  .icon-btn{
-    width:30px;height:30px;border-radius:4px;border:1px solid var(--border);background:#fff;
-    cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text);
-  }
-  .icon-btn:hover{background:#f0f2f4;}
-  .btn{
-    border:1px solid var(--primary);background:var(--primary);color:#fff;font-size:13px;
-    font-weight:600;padding:7px 14px;border-radius:4px;cursor:pointer;
-  }
-  .btn:hover{background:var(--primary-dark);}
-  .btn.secondary{background:#fff;color:var(--primary);}
-  .btn.secondary:hover{background:#eaf2fc;}
-  .btn.ghost{background:transparent;border:1px solid var(--border);color:var(--text);}
-  .btn.ghost:hover{background:#f0f2f4;}
-  .btn.danger-ghost{background:transparent;border:1px solid var(--border);color:var(--danger);padding:6px 10px;font-size:12px;}
-  .spacer-flex{flex:1;}
-  .month-summary{font-size:13px;color:var(--text-muted);}
-  .month-summary b{color:var(--text);}
+  --radius:    8px;
+  --radius-s:  6px;
+  --radius-xs: 4px;
+  color-scheme: light;
+}
 
-  /* ===== Calendar ===== */
-  .calendar{background:var(--tile-bg);border:1px solid var(--border);border-radius:4px;overflow:hidden;}
-  .cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);background:#fafbfc;border-bottom:1px solid var(--border);}
-  .cal-weekdays div{padding:8px 0;text-align:center;font-size:11.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.3px;}
-  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);}
-  .cal-cell{min-height:88px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:6px 8px;cursor:pointer;position:relative;background:#fff;}
-  .cal-cell:hover{background:#eaf2fc;}
-  .cal-cell.empty{cursor:default;background:#fafbfc;}
-  .cal-cell.empty:hover{background:#fafbfc;}
-  .cal-cell.weekend{background:#fafbfc;}
-  .cal-cell.weekend:hover{background:#eaf2fc;}
-  .cal-cell:nth-child(7n){border-right:none;}
-  .cal-daynum{font-size:13px;font-weight:600;color:var(--text);}
-  .cal-cell.today .cal-daynum{
-    display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
-    border-radius:50%;background:var(--primary);color:#fff;
-  }
-  .cal-hours{margin-top:10px;font-size:15px;font-weight:700;color:var(--success);}
-  .cal-hours.zero{color:var(--text-muted);font-weight:400;font-size:12px;}
-  .cal-bookings-count{font-size:10.5px;color:var(--text-muted);margin-top:2px;}
-  .cal-dot{position:absolute;top:8px;right:8px;width:6px;height:6px;border-radius:50%;background:var(--primary);}
+:root[data-theme="dunkel"] {
+  --shell:            #1b2430;
+  --shell-dark:       #141b24;
+  --shell-text:       #e8edf2;
 
-  /* ===== Modal (generic) ===== */
-  .modal-overlay{
-    display:none;position:fixed;inset:0;background:rgba(40,55,74,.45);z-index:100;
-    align-items:flex-start;justify-content:center;padding:5vh 14px;overflow-y:auto;
-  }
-  .modal-overlay.open{display:flex;}
-  .modal{background:#fff;border-radius:6px;max-width:480px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,.25);animation:pop .12s ease;}
-  .modal.wide{max-width:560px;}
-  @keyframes pop{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
-  .modal-head{
-    background:var(--shell);color:#fff;padding:14px 18px;border-radius:6px 6px 0 0;
-    display:flex;align-items:center;justify-content:space-between;
-  }
-  .modal-head h3{margin:0;font-size:15.5px;font-weight:600;}
-  .modal-head .sub{font-size:12px;color:#c7d0d9;margin-top:2px;}
-  .modal-close{background:transparent;border:none;color:#fff;font-size:20px;cursor:pointer;line-height:1;padding:2px 6px;opacity:.85;}
-  .modal-close:hover{opacity:1;}
-  .modal-body{padding:16px 18px;}
-  .modal-body p{font-size:13.5px;line-height:1.6;color:var(--text);margin:0 0 12px;}
+  --primary:          #5aa9f0;
+  --primary-dark:     #7cbdf5;
+  --primary-weich:    #16273a;
+  --primary-rand:     #24405c;
 
-  .booking-card{border:1px solid var(--border);border-radius:4px;padding:12px;margin-bottom:12px;background:#fafbfc;}
-  .booking-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
-  .booking-card-head .lbl{font-size:12.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.3px;}
-  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
-  .field{display:flex;flex-direction:column;gap:4px;}
-  .field label{font-size:11.5px;color:var(--text-muted);font-weight:600;}
-  .field input{border:1px solid var(--border);border-radius:4px;padding:7px 8px;font-size:13.5px;font-family:inherit;color:var(--text);}
-  .field input:focus{outline:2px solid var(--primary);outline-offset:0;border-color:var(--primary);}
-  .booking-net{font-size:12.5px;color:var(--text-muted);margin-top:2px;}
-  .booking-net b{color:var(--success);}
-  .add-booking-btn{
-    width:100%;border:1.5px dashed var(--border);background:transparent;color:var(--primary);
-    font-weight:600;font-size:13px;padding:9px;border-radius:4px;cursor:pointer;margin-bottom:14px;
-  }
-  .add-booking-btn:hover{background:#eaf2fc;border-color:var(--primary);}
-  .day-total{
-    display:flex;justify-content:space-between;align-items:center;background:#eaf2fc;
-    border-radius:4px;padding:10px 12px;margin-bottom:14px;font-size:13.5px;
-  }
-  .day-total b{font-size:17px;color:var(--primary-dark);}
-  .modal-foot{display:flex;justify-content:flex-end;gap:8px;padding:12px 18px 16px;border-top:1px solid var(--border);}
-  .empty-state{text-align:center;color:var(--text-muted);font-size:13px;padding:18px 0;}
-  .wa-btn{
-    display:inline-flex;align-items:center;gap:8px;background:#25D366;color:#fff;
-    border:none;border-radius:4px;padding:9px 14px;font-weight:600;font-size:13.5px;
-    text-decoration:none;cursor:pointer;
-  }
-  .wa-btn:hover{background:#1ebe57;}
+  --bg:               #10161d;
+  --flaeche:          #19212b;
+  --flaeche-2:        #1f2833;
+  --flaeche-hover:    #26313e;
+  --rand:             #2e3945;
+  --rand-stark:       #43505f;
 
-  @media (max-width:480px){
-    .field-row{grid-template-columns:1fr 1fr;}
-    .tile-grid{grid-template-columns:repeat(2,1fr);}
-    .month-bar .mb-label{font-size:14px;min-width:auto;}
-  }
+  --text:             #e6ebf0;
+  --text-leise:       #a3b0bd;
+  --text-aus:         #6c7885;
 
-  /* ===== Hauptbuch ===== */
-  .hb-tabbar{
-    display:flex;gap:4px;background:#fff;border:1px solid var(--border);border-radius:4px;
-    padding:4px;margin-bottom:14px;overflow-x:auto;
+  --erfolg:           #4cc57e;
+  --erfolg-weich:     #12291d;
+  --erfolg-rand:      #1f4530;
+  --warn:             #e8a34d;
+  --warn-weich:       #2c2113;
+  --warn-rand:        #4d3a1c;
+  --gefahr:           #f2706e;
+  --gefahr-weich:     #2d1616;
+  --gefahr-rand:      #542626;
+
+  --schatten-1: 0 1px 2px rgba(0,0,0,.4);
+  --schatten-2: 0 4px 12px rgba(0,0,0,.45);
+  --schatten-3: 0 16px 40px rgba(0,0,0,.6);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; }
+
+body {
+  font-family: "Segoe UI", "72", -apple-system, system-ui, Roboto, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Tastaturbedienung muss immer sichtbar sein. */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}
+
+/* ---------- Typografie ---------- */
+.hz-titel     { font-size: 20px; font-weight: 650; margin: 0 0 4px; letter-spacing: -.01em; }
+.hz-untertitel{ font-size: 13.5px; color: var(--text-leise); margin: 0 0 20px; }
+.hz-abschnitt { font-size: 11.5px; font-weight: 700; text-transform: uppercase;
+                letter-spacing: .06em; color: var(--text-aus); margin: 0 0 10px; }
+
+/* ---------- Flaechen ---------- */
+.hz-karte {
+  background: var(--flaeche);
+  border: 1px solid var(--rand);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--schatten-1);
+}
+.hz-karte > h3 { margin: 0 0 16px; font-size: 14.5px; font-weight: 650; }
+
+/* ---------- Formulare ---------- */
+.hz-feld { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+.hz-feld > label { font-size: 12.5px; font-weight: 600; color: var(--text-leise); }
+.hz-feld .hz-hinweis { font-size: 11.5px; color: var(--text-aus); }
+
+.hz-feld input, .hz-feld select, .hz-feld textarea,
+input.hz-eingabe, select.hz-eingabe {
+  border: 1px solid var(--rand-stark);
+  border-radius: var(--radius-s);
+  padding: 9px 11px;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--text);
+  background: var(--flaeche);
+  width: 100%;
+  transition: border-color .12s, box-shadow .12s;
+}
+.hz-feld input:hover, .hz-feld select:hover { border-color: var(--primary); }
+.hz-feld input:focus, .hz-feld select:focus, .hz-feld textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-weich);
+}
+.hz-feld input[type="date"], .hz-feld input[type="time"] { min-height: 38px; }
+.hz-feld-reihe { display: flex; gap: 12px; flex-wrap: wrap; }
+.hz-feld-reihe > .hz-feld { flex: 1; min-width: 150px; }
+
+/* Dunkelmodus: das Kalendersymbol in Datumsfeldern ist sonst schwarz */
+:root[data-theme="dunkel"] input[type="date"]::-webkit-calendar-picker-indicator,
+:root[data-theme="dunkel"] input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(1.6);
+}
+
+.hz-eingabe-gruppe { display: flex; gap: 8px; align-items: stretch; }
+.hz-eingabe-gruppe > input { flex: 1; }
+
+/* ---------- Schaltflaechen ---------- */
+.hz-btn {
+  border: 1px solid transparent;
+  background: var(--primary);
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 600;
+  font-family: inherit;
+  padding: 9px 16px;
+  border-radius: var(--radius-s);
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  transition: background .12s, border-color .12s, color .12s;
+}
+.hz-btn:hover:not(:disabled) { background: var(--primary-dark); }
+.hz-btn:disabled { opacity: .5; cursor: not-allowed; }
+:root[data-theme="dunkel"] .hz-btn.primaer,
+:root[data-theme="dunkel"] .hz-btn:not(.sekundaer):not(.leise):not(.gefahr) { color: #0d1620; }
+
+.hz-btn.sekundaer {
+  background: var(--flaeche);
+  color: var(--primary);
+  border-color: var(--rand-stark);
+}
+.hz-btn.sekundaer:hover:not(:disabled) { background: var(--primary-weich); border-color: var(--primary); }
+
+.hz-btn.leise { background: transparent; color: var(--text-leise); border-color: transparent; }
+.hz-btn.leise:hover:not(:disabled) { background: var(--flaeche-hover); color: var(--text); }
+
+.hz-btn.gefahr { background: transparent; color: var(--gefahr); border-color: var(--gefahr-rand); }
+.hz-btn.gefahr:hover:not(:disabled) { background: var(--gefahr-weich); }
+
+.hz-btn.breit { width: 100%; justify-content: center; padding: 11px; font-size: 14.5px; }
+.hz-btn.klein { padding: 6px 10px; font-size: 12px; }
+.hz-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+.hz-chip-btn {
+  border: 1px solid var(--rand-stark);
+  background: var(--flaeche);
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  padding: 6px 12px;
+  border-radius: 99px;
+  cursor: pointer;
+}
+.hz-chip-btn:hover { background: var(--primary-weich); border-color: var(--primary); }
+.hz-chip-reihe { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ---------- Meldungsboxen ---------- */
+.hz-box {
+  border: 1px solid var(--rand);
+  background: var(--flaeche-2);
+  border-radius: var(--radius-s);
+  padding: 11px 14px;
+  font-size: 13px;
+  line-height: 1.6;
+  margin-bottom: 14px;
+}
+.hz-box.info    { background: var(--primary-weich); border-color: var(--primary-rand); color: var(--text); }
+.hz-box.erfolg  { background: var(--erfolg-weich);  border-color: var(--erfolg-rand);  color: var(--erfolg); }
+.hz-box.warn    { background: var(--warn-weich);    border-color: var(--warn-rand);    color: var(--warn); }
+.hz-box.gefahr  { background: var(--gefahr-weich);  border-color: var(--gefahr-rand);  color: var(--gefahr); }
+.hz-box.versteckt { display: none; }
+.hz-box b { font-weight: 700; }
+
+/* ---------- Marken ---------- */
+.hz-marke {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+  padding: 3px 8px; border-radius: 99px;
+  background: var(--flaeche-hover); color: var(--text-leise);
+  border: 1px solid var(--rand);
+}
+.hz-marke.erfolg { background: var(--erfolg-weich); color: var(--erfolg); border-color: var(--erfolg-rand); }
+.hz-marke.warn   { background: var(--warn-weich);   color: var(--warn);   border-color: var(--warn-rand); }
+.hz-marke.gefahr { background: var(--gefahr-weich); color: var(--gefahr); border-color: var(--gefahr-rand); }
+.hz-marke.info   { background: var(--primary-weich); color: var(--primary); border-color: var(--primary-rand); }
+
+/* ---------- Tabellen ----------
+   Auf schmalen Fenstern scrollt die Tabelle in ihrem eigenen
+   Rahmen, nie die ganze Seite. */
+.hz-tabelle-rahmen { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.hz-tabelle {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  min-width: 480px;
+}
+.hz-tabelle th {
+  text-align: left;
+  font-weight: 650;
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--text-aus);
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--rand);
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  background: var(--flaeche);
+  z-index: 1;
+}
+.hz-tabelle td { padding: 9px 12px; border-bottom: 1px solid var(--rand); vertical-align: top; }
+.hz-tabelle tbody tr:hover td { background: var(--flaeche-2); }
+.hz-tabelle .zahl { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.hz-tabelle .mitte { text-align: center; }
+.hz-tabelle .gruppe td {
+  background: var(--flaeche-2); font-weight: 700; font-size: 11.5px;
+  text-transform: uppercase; letter-spacing: .04em; color: var(--text-leise);
+}
+.hz-tabelle tfoot td, .hz-tabelle .summe td {
+  font-weight: 700; border-top: 2px solid var(--rand-stark); border-bottom: none;
+  background: var(--flaeche-2);
+}
+.hz-leer { color: var(--text-aus); font-style: italic; padding: 18px 12px; text-align: center; }
+
+/* ---------- Leerzustand ---------- */
+.hz-leerzustand { text-align: center; padding: 40px 20px; color: var(--text-leise); }
+.hz-leerzustand svg { width: 40px; height: 40px; opacity: .35; margin-bottom: 12px; }
+.hz-leerzustand .titel { font-weight: 650; color: var(--text); margin-bottom: 4px; font-size: 14.5px; }
+.hz-leerzustand .text { font-size: 13px; max-width: 380px; margin: 0 auto 16px; }
+
+/* ---------- Reiter ---------- */
+.hz-reiter {
+  display: flex; gap: 3px; overflow-x: auto;
+  background: var(--flaeche); border: 1px solid var(--rand);
+  border-radius: var(--radius); padding: 4px; margin-bottom: 18px;
+}
+.hz-reiter button {
+  flex: 1 0 auto; border: none; background: transparent; color: var(--text-leise);
+  font-size: 13px; font-weight: 600; font-family: inherit;
+  padding: 9px 14px; border-radius: var(--radius-s); cursor: pointer; white-space: nowrap;
+}
+.hz-reiter button:hover { background: var(--flaeche-hover); color: var(--text); }
+.hz-reiter button.aktiv { background: var(--primary); color: #fff; }
+:root[data-theme="dunkel"] .hz-reiter button.aktiv { color: #0d1620; }
+
+/* ---------- Passwortstaerke ---------- */
+.hz-staerke { display: flex; align-items: center; gap: 10px; font-size: 11.5px; }
+.hz-staerke-balken { flex: 1; height: 5px; background: var(--flaeche-hover); border-radius: 99px; overflow: hidden; }
+.hz-staerke-balken i { display: block; height: 100%; width: 0; border-radius: 99px; transition: width .2s, background .2s; }
+.hz-staerke[data-stufe="schwach"] i { width: 22%; background: var(--gefahr); }
+.hz-staerke[data-stufe="mittel"]  i { width: 50%; background: var(--warn); }
+.hz-staerke[data-stufe="gut"]     i { width: 76%; background: var(--primary); }
+.hz-staerke[data-stufe="stark"]   i { width: 100%; background: var(--erfolg); }
+.hz-staerke .text { font-weight: 600; color: var(--text-leise); min-width: 78px; text-align: right; }
+
+/* ---------- Ergebniszeile (Kopierfeld) ---------- */
+.hz-ergebnis {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  background: var(--flaeche-2); border: 1px solid var(--rand);
+  border-radius: var(--radius-s); padding: 10px 14px; margin-bottom: 10px;
+}
+.hz-ergebnis .marke-klein {
+  font-size: 10.5px; color: var(--text-aus); font-weight: 700;
+  text-transform: uppercase; letter-spacing: .05em;
+}
+.hz-ergebnis .wert {
+  font-size: 14px; font-weight: 650; word-break: break-all;
+  font-family: Consolas, "SF Mono", Menlo, monospace;
+}
+
+/* ---------- Dateihinweis ---------- */
+.hz-dateichip {
+  display: flex; align-items: center; gap: 9px;
+  background: var(--primary-weich); border: 1px solid var(--primary-rand);
+  border-radius: var(--radius-s); padding: 9px 12px;
+  font-size: 12.5px; color: var(--primary); word-break: break-all;
+}
+.hz-dateichip svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+/* ---------- Toasts ---------- */
+.hz-toasts {
+  position: fixed; z-index: 9000; bottom: 20px; right: 20px;
+  display: flex; flex-direction: column; gap: 9px; align-items: flex-end;
+  pointer-events: none; max-width: min(400px, calc(100vw - 32px));
+}
+.hz-toast {
+  background: var(--flaeche); color: var(--text);
+  border: 1px solid var(--rand); border-left: 4px solid var(--text-aus);
+  border-radius: var(--radius-s); box-shadow: var(--schatten-2);
+  padding: 11px 16px; font-size: 13.5px; font-weight: 500;
+  opacity: 0; transform: translateY(10px); transition: opacity .2s, transform .2s;
+  pointer-events: auto;
+}
+.hz-toast.sichtbar { opacity: 1; transform: translateY(0); }
+.hz-toast.erfolg { border-left-color: var(--erfolg); }
+.hz-toast.fehler { border-left-color: var(--gefahr); }
+.hz-toast.warn   { border-left-color: var(--warn); }
+.hz-toast.info   { border-left-color: var(--primary); }
+
+/* ---------- Dialoge ---------- */
+.hz-dialog-overlay {
+  position: fixed; inset: 0; z-index: 8000;
+  background: rgba(10,16,22,.55);
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+  opacity: 0; transition: opacity .18s;
+  backdrop-filter: blur(2px);
+}
+.hz-dialog-overlay.offen { opacity: 1; }
+.hz-dialog {
+  background: var(--flaeche); border: 1px solid var(--rand);
+  border-radius: var(--radius); box-shadow: var(--schatten-3);
+  width: 100%; max-width: 480px; max-height: calc(100vh - 40px);
+  display: flex; flex-direction: column;
+  transform: translateY(8px) scale(.99); transition: transform .18s;
+}
+.hz-dialog-overlay.offen .hz-dialog { transform: none; }
+.hz-dialog-kopf { padding: 18px 22px 12px; border-bottom: 1px solid var(--rand); }
+.hz-dialog-kopf h3 { margin: 0; font-size: 16px; font-weight: 650; }
+.hz-dialog-kopf .unter { font-size: 12.5px; color: var(--text-leise); margin-top: 3px; }
+.hz-dialog-koerper { padding: 18px 22px; overflow-y: auto; font-size: 13.5px; line-height: 1.6; }
+.hz-dialog-koerper p { margin: 0 0 10px; }
+.hz-dialog-koerper p:last-child { margin-bottom: 0; }
+.hz-dialog-koerper .hz-feld:last-child { margin-bottom: 0; }
+.hz-dialog-fuss {
+  padding: 14px 22px 18px; border-top: 1px solid var(--rand);
+  display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap;
+}
+
+/* ---------- Hilfsklassen ---------- */
+.hz-versteckt { display: none !important; }
+.hz-dehnen { flex: 1; }
+.hz-nur-lesbar { user-select: all; }
+.hz-mono { font-family: Consolas, "SF Mono", Menlo, monospace; }
+
+@media (max-width: 620px) {
+  .hz-karte { padding: 16px; }
+  .hz-toasts { left: 16px; right: 16px; bottom: 16px; max-width: none; align-items: stretch; }
+  .hz-dialog-fuss { flex-direction: column-reverse; }
+  .hz-dialog-fuss .hz-btn { width: 100%; justify-content: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}
+
+
+/* ===== erp/erp.css ===== */
+/* =============================================================
+   HZ · ERP-System — Layout
+   Baut auf hz-core.css auf.
+   ============================================================= */
+
+/* ===================== ANMELDUNG ===================== */
+.anmeldung {
+  display: flex;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background:
+    radial-gradient(1100px 520px at 15% -10%, rgba(10,110,209,.28), transparent 60%),
+    linear-gradient(135deg, var(--shell) 0%, var(--shell-dark) 100%);
+}
+.anmelde-karte {
+  background: var(--flaeche);
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 400px;
+  box-shadow: var(--schatten-3);
+  padding: 34px 30px 22px;
+  border: 1px solid var(--rand);
+}
+.anmelde-logo {
+  width: 46px; height: 46px; border-radius: 10px;
+  background: var(--primary); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 16px; margin-bottom: 18px;
+}
+.anmelde-titel { font-size: 21px; font-weight: 650; margin: 0 0 4px; }
+.anmelde-unter { font-size: 13.5px; color: var(--text-leise); margin: 0 0 22px; }
+
+.pass-wrap { position: relative; }
+.pass-wrap input { padding-right: 84px; }
+.pass-zeigen {
+  position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; cursor: pointer;
+  font-size: 11.5px; font-weight: 650; color: var(--primary);
+  font-family: inherit; padding: 6px 8px; border-radius: var(--radius-xs);
+}
+.pass-zeigen:hover { background: var(--primary-weich); }
+
+.anmelde-fuss {
+  margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--rand);
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.anmelde-kontakt { font-size: 11.5px; color: var(--text-leise); text-align: right; flex: 1; line-height: 1.6; }
+.anmelde-kontakt a { color: var(--primary); text-decoration: none; font-weight: 650; }
+.anmelde-kontakt a:hover { text-decoration: underline; }
+
+/* ===================== HUELLE ===================== */
+.huelle { display: flex; min-height: 100vh; }
+
+/* ---------- Seitenleiste ---------- */
+.seitenleiste {
+  width: 236px;
+  flex-shrink: 0;
+  background: var(--shell);
+  color: var(--shell-text);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+.sl-kopf { display: flex; align-items: center; gap: 11px; padding: 16px 18px; height: 56px; }
+.sl-logo {
+  width: 30px; height: 30px; border-radius: var(--radius-s);
+  background: #fff; color: var(--shell);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 12.5px; flex-shrink: 0;
+}
+.sl-name { font-size: 15px; font-weight: 650; }
+.sl-schliessen {
+  display: none; margin-left: auto; background: none; border: none;
+  color: var(--shell-text); font-size: 26px; line-height: 1; cursor: pointer; padding: 0 6px;
+}
+
+.sl-nav { flex: 1; padding: 10px 10px; overflow-y: auto; }
+.sl-eintrag {
+  width: 100%; display: flex; align-items: center; gap: 11px;
+  background: transparent; border: none; color: rgba(255,255,255,.78);
+  font-family: inherit; font-size: 13.5px; font-weight: 550;
+  padding: 10px 12px; border-radius: var(--radius-s); cursor: pointer;
+  text-align: left; margin-bottom: 2px;
+}
+.sl-eintrag svg { width: 17px; height: 17px; flex-shrink: 0; }
+.sl-eintrag span { flex: 1; }
+.sl-eintrag:hover { background: rgba(255,255,255,.10); color: #fff; }
+.sl-eintrag.aktiv { background: var(--primary); color: #fff; }
+.sl-eintrag.gesperrt { color: rgba(255,255,255,.40); }
+.sl-eintrag.gesperrt:hover { background: rgba(255,255,255,.06); }
+.sl-eintrag .schloss { width: 13px; height: 13px; opacity: .7; }
+
+.sl-fuss { padding: 14px 16px; border-top: 1px solid rgba(255,255,255,.12); }
+.sl-lizenz-text { font-size: 11px; color: rgba(255,255,255,.60); margin-top: 6px; line-height: 1.5; }
+
+.seitenleiste-schleier { display: none; }
+
+/* ---------- Hauptbereich ---------- */
+.haupt { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+.kopfleiste {
+  height: 56px;
+  background: var(--flaeche);
+  border-bottom: 1px solid var(--rand);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+  position: sticky;
+  top: 0;
+  z-index: 90;
+}
+.nav-auf { display: none; padding: 8px; }
+.nav-auf svg { width: 20px; height: 20px; }
+.pfad { font-size: 14.5px; font-weight: 650; }
+
+/* Speicherstand */
+.speicherstand {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 12px; color: var(--text-leise);
+  padding: 5px 11px; border-radius: 99px;
+  background: var(--flaeche-2); border: 1px solid var(--rand);
+}
+.speicherstand .punkt {
+  width: 7px; height: 7px; border-radius: 99px; background: var(--erfolg); flex-shrink: 0;
+}
+.speicherstand[data-zustand="offen"]  .punkt { background: var(--warn); }
+.speicherstand[data-zustand="laeuft"] .punkt { background: var(--primary); animation: hz-puls 1s ease-in-out infinite; }
+.speicherstand[data-zustand="fehler"] .punkt { background: var(--gefahr); }
+.speicherstand[data-zustand="offen"]  { color: var(--warn); border-color: var(--warn-rand); background: var(--warn-weich); }
+.speicherstand[data-zustand="fehler"] { color: var(--gefahr); border-color: var(--gefahr-rand); background: var(--gefahr-weich); }
+@keyframes hz-puls { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+
+/* Nutzermenue */
+.nutzer-wrap { position: relative; }
+.nutzer {
+  width: 34px; height: 34px; border-radius: 99px;
+  background: var(--primary); color: #fff; border: none;
+  font-family: inherit; font-size: 12.5px; font-weight: 700;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+.nutzer:hover { background: var(--primary-dark); }
+:root[data-theme="dunkel"] .nutzer { color: #0d1620; }
+
+.nutzer-menue {
+  display: none; position: absolute; top: 44px; right: 0;
+  background: var(--flaeche); border: 1px solid var(--rand);
+  border-radius: var(--radius); min-width: 250px;
+  box-shadow: var(--schatten-3); z-index: 120; overflow: hidden;
+}
+.nutzer-menue.offen { display: block; }
+.nm-kopf { padding: 13px 16px; border-bottom: 1px solid var(--rand); background: var(--flaeche-2); }
+.nm-name { font-size: 13.5px; font-weight: 650; word-break: break-word; }
+.nm-lizenz { font-size: 11.5px; color: var(--text-leise); margin-top: 3px; }
+.nm-eintrag {
+  width: 100%; display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; padding: 11px 16px; border: none; background: transparent;
+  font-family: inherit; font-size: 13.5px; color: var(--text);
+  cursor: pointer; text-align: left;
+}
+.nm-eintrag:hover { background: var(--flaeche-hover); }
+.nm-eintrag.gefahr { color: var(--gefahr); border-top: 1px solid var(--rand); }
+.nm-taste {
+  font-size: 10.5px; color: var(--text-aus); font-family: Consolas, monospace;
+  border: 1px solid var(--rand); border-radius: var(--radius-xs); padding: 2px 5px;
+}
+
+.schreib-banner { margin: 14px 22px -4px; }
+
+.inhalt { flex: 1; padding: 26px 22px 70px; max-width: 1180px; width: 100%; }
+
+/* ===================== KACHELN ===================== */
+.kachel-gitter {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 14px;
+}
+.kachel {
+  position: relative;
+  background: var(--flaeche);
+  border: 1px solid var(--rand);
+  border-radius: var(--radius);
+  padding: 20px 18px;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 148px;
+  box-shadow: var(--schatten-1);
+  transition: transform .12s, box-shadow .12s, border-color .12s;
+  color: var(--text);
+}
+.kachel:hover { transform: translateY(-2px); box-shadow: var(--schatten-2); border-color: var(--primary); }
+.kachel.gesperrt { cursor: pointer; opacity: .62; }
+.kachel.gesperrt:hover { transform: none; border-color: var(--rand-stark); box-shadow: var(--schatten-1); }
+
+.kachel-symbol {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: var(--primary-weich); color: var(--primary);
+  display: flex; align-items: center; justify-content: center; margin-bottom: 10px;
+}
+.kachel-symbol svg { width: 21px; height: 21px; }
+.kachel.gesperrt .kachel-symbol { background: var(--flaeche-hover); color: var(--text-aus); }
+.kachel-name { font-size: 15px; font-weight: 650; }
+.kachel-text { font-size: 12.5px; color: var(--text-leise); }
+.kachel .hz-marke { position: absolute; top: 12px; right: 12px; }
+
+/* ===================== ZEITERFASSUNG ===================== */
+.monatsleiste {
+  display: flex; align-items: center; gap: 9px; flex-wrap: wrap;
+  background: var(--flaeche); border: 1px solid var(--rand);
+  border-radius: var(--radius); padding: 10px 14px; margin-bottom: 14px;
+}
+.hz-btn.rund {
+  width: 32px; height: 32px; padding: 0; justify-content: center;
+  border-radius: 99px; font-size: 19px; line-height: 1;
+  border: 1px solid var(--rand-stark); color: var(--text);
+}
+.hz-btn.rund:hover { background: var(--flaeche-hover); }
+.monatsname { font-size: 15px; font-weight: 650; min-width: 148px; text-align: center; }
+.monatssumme { font-size: 13px; color: var(--text-leise); }
+.monatssumme b { color: var(--text); font-size: 14.5px; margin-left: 4px; }
+
+.kalender {
+  background: var(--flaeche); border: 1px solid var(--rand);
+  border-radius: var(--radius); overflow: hidden; box-shadow: var(--schatten-1);
+}
+.kal-wochentage {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  background: var(--flaeche-2); border-bottom: 1px solid var(--rand);
+}
+.kal-wochentage div {
+  padding: 9px 6px; text-align: center;
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .05em; color: var(--text-aus);
+}
+.kal-gitter { display: grid; grid-template-columns: repeat(7, 1fr); }
+.kal-zelle {
+  min-height: 88px; border-right: 1px solid var(--rand); border-bottom: 1px solid var(--rand);
+  padding: 8px; background: var(--flaeche); cursor: pointer; font-family: inherit;
+  display: flex; flex-direction: column; gap: 3px; align-items: flex-start;
+  text-align: left; color: var(--text); transition: background .1s;
+}
+.kal-zelle:nth-child(7n) { border-right: none; }
+.kal-zelle:hover { background: var(--primary-weich); }
+.kal-zelle.leer { background: var(--flaeche-2); cursor: default; }
+.kal-zelle.leer:hover { background: var(--flaeche-2); }
+.kal-zelle.wochenende { background: var(--flaeche-2); }
+.kal-zelle.wochenende:hover { background: var(--primary-weich); }
+.kal-tag { font-size: 13px; font-weight: 650; }
+.kal-zelle.heute .kal-tag {
+  background: var(--primary); color: #fff;
+  width: 23px; height: 23px; border-radius: 99px;
+  display: flex; align-items: center; justify-content: center; font-size: 12px;
+}
+:root[data-theme="dunkel"] .kal-zelle.heute .kal-tag { color: #0d1620; }
+.kal-stunden { font-size: 12.5px; font-weight: 650; color: var(--erfolg); }
+.kal-anzahl { font-size: 10.5px; color: var(--text-aus); }
+
+.tages-kopf {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--flaeche-2); border: 1px solid var(--rand);
+  border-radius: var(--radius-s); padding: 11px 14px; margin-bottom: 14px;
+  font-size: 13.5px;
+}
+.tages-kopf b { font-size: 16px; }
+
+.buchung {
+  border: 1px solid var(--rand); border-radius: var(--radius-s);
+  padding: 13px; margin-bottom: 10px; background: var(--flaeche-2);
+}
+.buchung-kopf { display: flex; align-items: center; justify-content: space-between; margin-bottom: 11px; }
+.buchung-nr {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .05em; color: var(--text-aus);
+}
+.buchung-netto {
+  font-size: 12.5px; color: var(--text-leise);
+  border-top: 1px solid var(--rand); padding-top: 9px; margin-top: 2px;
+}
+.buchung-netto b { color: var(--text); }
+
+/* ===================== HAUPTBUCH ===================== */
+.konto-kopf { font-size: 14px; font-weight: 650; margin: 16px 0 10px; }
+.seiten-titel {
+  font-size: 11.5px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .06em; color: var(--text-aus); margin-bottom: 8px;
+}
+.bilanz-spalten { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+
+.ergebnis-box {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 15px 18px; border-radius: var(--radius-s); margin-top: 20px;
+  font-weight: 700; font-size: 15px;
+}
+.ergebnis-box.gewinn  { background: var(--erfolg-weich); color: var(--erfolg); border: 1px solid var(--erfolg-rand); }
+.ergebnis-box.verlust { background: var(--gefahr-weich); color: var(--gefahr); border: 1px solid var(--gefahr-rand); }
+
+/* ===================== KLEINE FENSTER ===================== */
+@media (max-width: 900px) {
+  .bilanz-spalten { grid-template-columns: 1fr; gap: 18px; }
+}
+
+@media (max-width: 768px) {
+  .seitenleiste {
+    position: fixed; left: 0; top: 0; z-index: 200;
+    transform: translateX(-100%); transition: transform .22s ease;
+    box-shadow: var(--schatten-3);
   }
-  .hb-tab{
-    border:none;background:transparent;color:var(--text-muted);font-size:13px;font-weight:600;
-    padding:8px 14px;border-radius:4px;cursor:pointer;white-space:nowrap;flex-shrink:0;
+  .seitenleiste.offen { transform: none; }
+  .sl-schliessen { display: block; }
+  .seitenleiste-schleier {
+    display: block; position: fixed; inset: 0; z-index: 150;
+    background: rgba(10,16,22,.5); opacity: 0; pointer-events: none; transition: opacity .22s;
   }
-  .hb-tab:hover{background:#f0f2f4;color:var(--text);}
-  .hb-tab.active{background:var(--primary);color:#fff;}
-  .hb-panel{background:#fff;border:1px solid var(--border);border-radius:4px;padding:18px;}
-  .hb-panel h4{margin:0 0 12px;font-size:14.5px;font-weight:700;color:var(--text);}
-  .hb-panel h4.spaced{margin-top:22px;}
-  .hb-table{width:100%;border-collapse:collapse;font-size:13.5px;margin-bottom:6px;}
-  .hb-table th{
-    text-align:left;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;
-    letter-spacing:.3px;padding:7px 8px;border-bottom:2px solid var(--border);
-  }
-  .hb-table td{padding:8px;border-bottom:1px solid var(--border);}
-  .hb-table tr:hover td{background:#fafbfc;}
-  .hb-table td.num{text-align:right;font-variant-numeric:tabular-nums;}
-  .hb-table td.center{text-align:center;}
-  .hb-group-row td{
-    background:#f2f4f6;font-weight:700;font-size:12px;color:var(--text-muted);
-    text-transform:uppercase;letter-spacing:.3px;padding:6px 8px;
-  }
-  .hb-total-row td{font-weight:700;border-top:2px solid var(--border);border-bottom:none;}
-  .hb-form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
-  .hb-form-row.three{grid-template-columns:1fr 1fr 1fr;}
-  .hb-field{display:flex;flex-direction:column;gap:5px;}
-  .hb-field label{font-size:11.5px;color:var(--text-muted);font-weight:600;}
-  .hb-field input, .hb-field select{
-    border:1px solid var(--border);border-radius:4px;padding:8px 9px;font-size:13.5px;font-family:inherit;
-  }
-  .hb-field input:focus, .hb-field select:focus{outline:2px solid var(--primary);outline-offset:0;border-color:var(--primary);}
-  .hb-mini-form{
-    display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-top:16px;padding-top:14px;
-    border-top:1px dashed var(--border);
-  }
-  .hb-bilanz-cols{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
-  .hb-bilanz-cols .side-title{
-    font-size:12.5px;font-weight:700;color:var(--primary-dark);text-transform:uppercase;
-    letter-spacing:.3px;margin-bottom:8px;
-  }
-  .hb-result-box{
-    margin-top:16px;padding:12px 14px;border-radius:4px;font-size:14px;font-weight:700;
-    display:flex;justify-content:space-between;align-items:center;
-  }
-  .hb-result-box.profit{background:#eaf6ee;color:var(--success);}
-  .hb-result-box.loss{background:#fdecec;color:var(--danger);}
-  .hb-empty{color:var(--text-muted);font-size:13px;padding:10px 0;}
-  @media (max-width:600px){
-    .hb-form-row, .hb-form-row.three{grid-template-columns:1fr;}
-    .hb-bilanz-cols{grid-template-columns:1fr;}
-  }
+  .seitenleiste-schleier.offen { opacity: 1; pointer-events: auto; }
+  .nav-auf { display: inline-flex; }
+  .inhalt { padding: 18px 14px 60px; }
+  .schreib-banner { margin: 12px 14px -2px; }
+  .speicherstand .text { display: none; }
+  .speicherstand { padding: 7px; }
+  .kal-zelle { min-height: 66px; padding: 5px; }
+  .kal-anzahl { display: none; }
+  .monatsname { min-width: 118px; font-size: 14px; }
+  .monatssumme { width: 100%; text-align: right; }
+}
+
 </style>
 </head>
 <body>
+  <!-- ===================== ANMELDUNG ===================== -->
+  <div class="anmeldung" id="ansicht-anmeldung">
+    <div class="anmelde-karte">
+      <div class="anmelde-logo">HZ</div>
+      <h1 class="anmelde-titel">HZ Erp-System</h1>
+      <p class="anmelde-unter">Melden Sie sich mit Ihrer Lizenzdatei an.</p>
 
-  <!-- ===================== LOGIN ===================== -->
-  <div class="login-screen" id="view-login">
-    <div class="login-card">
-      <div class="login-logo">HZ</div>
-      <div class="login-title">HZ Erp-System</div>
-      <div class="login-sub">Melden Sie sich mit Ihrer Lizenzdatei an.</div>
+      <div class="hz-box gefahr versteckt" id="anmelde-fehler"></div>
 
-      <div class="login-error" id="login-error"></div>
-      <div class="login-success" id="login-success"></div>
+      <button type="button" class="hz-btn sekundaer breit hz-versteckt" id="btn-zuletzt"></button>
 
-      <input type="file" id="file-input" accept=".json,application/json" style="display:none;">
-      <button type="button" class="login-btn secondary-outline" id="pick-file-btn" onclick="pickLicenseFile()">
-        Lizenzdatei auswählen (.json)
+      <button type="button" class="hz-btn sekundaer breit" id="btn-datei-waehlen" style="margin-top:8px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>
+        </svg>
+        Lizenzdatei auswaehlen
       </button>
 
-      <div class="file-chip" id="file-chip">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
-        <span id="file-chip-name">Keine Datei</span>
+      <div class="hz-dateichip hz-versteckt" id="anmelde-chip" style="margin-top:14px;"></div>
+
+      <div class="hz-feld hz-versteckt" id="anmelde-passfeld" style="margin-top:14px;margin-bottom:0;">
+        <label for="anmelde-pass">Passwort</label>
+        <div class="pass-wrap">
+          <input type="password" id="anmelde-pass" autocomplete="current-password">
+          <button type="button" class="pass-zeigen" id="btn-pass-zeigen" aria-label="Passwort anzeigen">anzeigen</button>
+        </div>
       </div>
 
-      <div class="login-field password-field-wrap" id="password-wrap" style="display:none;">
-        <label>Passwort</label>
-        <input type="password" id="login-pass" autocomplete="current-password">
-        <button type="button" class="password-toggle" onclick="togglePasswordVisibility()">anzeigen</button>
-      </div>
+      <button type="button" class="hz-btn breit hz-versteckt" id="btn-anmelden" style="margin-top:12px;">Anmelden</button>
 
-      <button type="button" class="login-btn" id="login-btn" style="display:none;" onclick="handleLogin()">Anmelden</button>
-
-      <div class="login-divider">oder</div>
-      <div class="login-note">
-        Noch keine Lizenz? Kontaktieren Sie uns per<br>
-        <a href="https://wa.me/49XXXXXXXXXX" target="_blank" rel="noopener">WhatsApp</a>, um ein Abo einzurichten.
+      <div class="anmelde-fuss">
+        <button type="button" class="hz-btn leise klein" id="btn-theme-anmeldung">Farbschema</button>
+        <div class="anmelde-kontakt">
+          Noch keine Lizenz?
+          <a href="https://wa.me/49XXXXXXXXXX" target="_blank" rel="noopener noreferrer">Per WhatsApp anfragen</a>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- ===================== BANNER ===================== -->
-  <div class="banner" id="fs-banner">Ihr Browser unterstützt kein direktes Speichern in die Lizenzdatei. Nach jeder Änderung wird eine aktualisierte Datei heruntergeladen &ndash; bitte ersetzen Sie damit Ihre bisherige Datei.</div>
+  <!-- ===================== ANWENDUNG ===================== -->
+  <div class="huelle hz-versteckt" id="ansicht-app">
 
-  <!-- ===================== APP ===================== -->
-  <div id="app-shell" style="display:none;">
-
-    <div class="shellbar">
-      <div class="logo">HZ</div>
-      <div class="title">HZ Erp-System</div>
-      <div class="crumb" id="crumb">/ Dashboard</div>
-      <div class="spacer"></div>
-      <div class="save-status" id="save-status"></div>
-      <div class="user-wrap">
-        <div class="user" id="user-initials" onclick="toggleUserMenu()">KD</div>
-        <div class="user-menu" id="user-menu">
-          <div class="user-menu-name" id="user-name-label"></div>
-          <div class="user-menu-validity" id="license-validity" style="display:none;"></div>
-          <div class="user-menu-item" onclick="openPasswordModal()">Passwort ändern</div>
-          <div class="user-menu-item" onclick="manualSave()">Datei jetzt speichern</div>
-          <div class="user-menu-item" onclick="logout()">Abmelden</div>
-        </div>
+    <aside class="seitenleiste" id="seitenleiste">
+      <div class="sl-kopf">
+        <div class="sl-logo">HZ</div>
+        <div class="sl-name">Erp-System</div>
+        <button type="button" class="sl-schliessen" id="btn-nav-zu" aria-label="Navigation schliessen">&times;</button>
       </div>
-    </div>
-
-    <div class="content">
-
-      <!-- ===================== DASHBOARD ===================== -->
-      <div id="view-dashboard">
-        <div class="page-title">Willkommen zurück</div>
-        <div class="page-sub">Wählen Sie eine Anwendung aus, um zu starten.</div>
-        <div class="tile-group-label">Anwendungen</div>
-        <div class="tile-grid" id="tile-grid"></div>
+      <nav class="sl-nav" id="sl-nav" aria-label="Hauptnavigation"></nav>
+      <div class="sl-fuss">
+        <div class="sl-lizenz" id="sl-lizenz"></div>
       </div>
+    </aside>
+    <div class="seitenleiste-schleier" id="seitenleiste-schleier"></div>
 
-      <!-- ===================== ZEITERFASSUNG ===================== -->
-      <div id="view-zeiterfassung" style="display:none;">
-        <div class="back-link" onclick="goToDashboard()">&larr; Zurück zum Dashboard</div>
-        <div class="page-title">Zeiterfassung</div>
-        <div class="page-sub">Klicken Sie auf einen Tag, um Buchungen zu erfassen.</div>
+    <div class="haupt">
+      <header class="kopfleiste">
+        <button type="button" class="hz-btn leise nav-auf" id="btn-nav-auf" aria-label="Navigation oeffnen">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M3 6h18M3 12h18M3 18h18"/>
+          </svg>
+        </button>
+        <div class="pfad" id="pfad">Uebersicht</div>
+        <div class="hz-dehnen"></div>
 
-        <div class="month-bar">
-          <button class="icon-btn" onclick="shiftMonth(-1)" aria-label="Vorheriger Monat">&#8249;</button>
-          <div class="mb-label" id="month-label">August 2026</div>
-          <button class="icon-btn" onclick="shiftMonth(1)" aria-label="Nächster Monat">&#8250;</button>
-          <button class="btn secondary" onclick="goToToday()">Heute</button>
-          <div class="spacer-flex"></div>
-          <div class="month-summary">Monatssumme: <b id="month-total">0,0 Std</b></div>
+        <div class="speicherstand" id="speicherstand" title="Speicherstand">
+          <span class="punkt"></span><span class="text">Gespeichert</span>
         </div>
 
-        <div class="calendar">
-          <div class="cal-weekdays"><div>Mo</div><div>Di</div><div>Mi</div><div>Do</div><div>Fr</div><div>Sa</div><div>So</div></div>
-          <div class="cal-grid" id="cal-grid"></div>
-        </div>
-      </div>
+        <button type="button" class="hz-btn leise" id="btn-theme" title="Farbschema umschalten" aria-label="Farbschema umschalten">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>
+          </svg>
+        </button>
 
-      <!-- ===================== HAUPTBUCH ===================== -->
-      <div id="view-hauptbuch" style="display:none;">
-        <div class="back-link" onclick="goToDashboard()">&larr; Zurück zum Dashboard</div>
-        <div class="page-title">Hauptbuch</div>
-        <div class="page-sub">Kontenplan, Buchungen, Kontenblätter, Bilanz und GuV.</div>
-
-        <div class="hb-tabbar">
-          <button class="hb-tab" data-tab="konten" onclick="switchHbTab('konten')">Kontenplan</button>
-          <button class="hb-tab" data-tab="buchen" onclick="switchHbTab('buchen')">Buchen</button>
-          <button class="hb-tab" data-tab="kontenblatt" onclick="switchHbTab('kontenblatt')">Kontenblatt</button>
-          <button class="hb-tab" data-tab="bilanz" onclick="switchHbTab('bilanz')">Bilanz</button>
-          <button class="hb-tab" data-tab="guv" onclick="switchHbTab('guv')">GuV</button>
-        </div>
-
-        <div id="hb-panel-konten" class="hb-panel"></div>
-        <div id="hb-panel-buchen" class="hb-panel" style="display:none;"></div>
-        <div id="hb-panel-kontenblatt" class="hb-panel" style="display:none;"></div>
-        <div id="hb-panel-bilanz" class="hb-panel" style="display:none;"></div>
-        <div id="hb-panel-guv" class="hb-panel" style="display:none;"></div>
-      </div>
-
-    </div>
-
-    <!-- ===================== MODAL: Tagesbuchung ===================== -->
-    <div class="modal-overlay" id="modal-overlay">
-      <div class="modal">
-        <div class="modal-head">
-          <div><h3>Zeitbuchung</h3><div class="sub" id="modal-date-label">Datum</div></div>
-          <button class="modal-close" onclick="closeModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div class="day-total"><span>Gesamtzeit an diesem Tag</span><b id="modal-day-total">0,0 Std</b></div>
-          <div id="bookings-container"></div>
-          <button class="add-booking-btn" onclick="addBookingRow()">+ Weitere Buchung (nächstes Kommen / Gehen)</button>
-        </div>
-        <div class="modal-foot">
-          <button class="btn ghost" onclick="closeModal()">Abbrechen</button>
-          <button class="btn" onclick="saveDay()">Speichern</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ===================== MODAL: Passwort ändern ===================== -->
-    <div class="modal-overlay" id="pw-modal-overlay">
-      <div class="modal">
-        <div class="modal-head">
-          <div><h3>Passwort ändern</h3><div class="sub">Wird in Ihrer Lizenzdatei gespeichert</div></div>
-          <button class="modal-close" onclick="closePasswordModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div class="login-error" id="pw-modal-error"></div>
-          <div class="field" style="margin-bottom:12px;">
-            <label>Neues Passwort</label>
-            <input type="password" id="pw-new1">
-          </div>
-          <div class="field">
-            <label>Neues Passwort wiederholen</label>
-            <input type="password" id="pw-new2">
+        <div class="nutzer-wrap">
+          <button type="button" class="nutzer" id="btn-nutzer" aria-haspopup="menu" aria-expanded="false">
+            <span id="nutzer-kuerzel">KD</span>
+          </button>
+          <div class="nutzer-menue" id="nutzer-menue" role="menu">
+            <div class="nm-kopf">
+              <div class="nm-name" id="nutzer-name"></div>
+              <div class="nm-lizenz" id="nutzer-lizenz"></div>
+            </div>
+            <button type="button" class="nm-eintrag" id="btn-speichern" role="menuitem">
+              Jetzt speichern <span class="nm-taste">Strg+S</span>
+            </button>
+            <button type="button" class="nm-eintrag" id="btn-passwort" role="menuitem">Passwort aendern</button>
+            <button type="button" class="nm-eintrag" id="btn-kopie" role="menuitem">Sicherungskopie herunterladen</button>
+            <button type="button" class="nm-eintrag gefahr" id="btn-abmelden" role="menuitem">Abmelden</button>
           </div>
         </div>
-        <div class="modal-foot">
-          <button class="btn ghost" onclick="closePasswordModal()">Abbrechen</button>
-          <button class="btn" onclick="changePassword()">Ändern &amp; speichern</button>
-        </div>
-      </div>
-    </div>
+      </header>
 
-    <!-- ===================== MODAL: Info / Modul gesperrt ===================== -->
-    <div class="modal-overlay" id="info-modal-overlay">
-      <div class="modal">
-        <div class="modal-head">
-          <div><h3 id="info-modal-title">Hinweis</h3></div>
-          <button class="modal-close" onclick="closeInfoModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-          <p id="info-modal-text"></p>
-          <a class="wa-btn" id="info-modal-wa" href="https://wa.me/49XXXXXXXXXX" target="_blank" rel="noopener" style="display:none;">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.35 5.08L2 22l5.05-1.32C8.5 21.5 10.2 22 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm0 18c-1.6 0-3.1-.44-4.38-1.2l-.31-.19-3 .78.8-2.93-.2-.3A7.94 7.94 0 0 1 4 12c0-4.41 3.59-8 8-8s8 3.59 8 8-3.59 8-8 8z"/></svg>
-            WhatsApp kontaktieren
-          </a>
-        </div>
-        <div class="modal-foot"><button class="btn ghost" onclick="closeInfoModal()">Schließen</button></div>
+      <div class="hz-box warn schreib-banner hz-versteckt" id="schreib-banner">
+        Ihr Browser kann nicht direkt in die Lizenzdatei schreiben. Aenderungen werden
+        als neue Datei heruntergeladen &ndash; bitte ersetzen Sie damit Ihre bisherige.
+        Mit Chrome oder Edge entfaellt dieser Schritt.
       </div>
-    </div>
 
-  </div><!-- /app-shell -->
+      <main class="inhalt" id="inhalt">
+        <!-- Uebersicht -->
+        <section id="ansicht-uebersicht">
+          <h1 class="hz-titel" id="willkommen">Willkommen zurueck</h1>
+          <p class="hz-untertitel">Waehlen Sie eine Anwendung, um zu starten.</p>
+          <div class="hz-abschnitt">Anwendungen</div>
+          <div class="kachel-gitter" id="kachel-gitter"></div>
+        </section>
+
+        <!-- Module rendern hierhin -->
+        <section id="ansicht-modul" class="hz-versteckt"></section>
+      </main>
+    </div>
+  </div>
 
 <script>
-  // ===================== Kryptografie-Helfer =====================
-  async function sha256Hex(str){
-    const enc = new TextEncoder().encode(str);
-    const buf = await crypto.subtle.digest('SHA-256', enc);
-    return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-  }
-  function randomSalt(){
-    const arr = new Uint8Array(16);
-    crypto.getRandomValues(arr);
-    return Array.from(arr).map(b=>b.toString(16).padStart(2,'0')).join('');
-  }
+/* ===== core/hz-crypto.js ===== */
+/* =============================================================
+   HZ · Krypto-Grundlagen
+   -------------------------------------------------------------
+   Reine Primitive, keine Fachlogik. Alles ueber die native
+   WebCrypto-API des Browsers, keine Fremdbibliotheken.
 
-  // ===================== Modul-Konfiguration =====================
-  const MODULE_CONFIG = [
-    { key:'zeiterfassung', name:'Zeiterfassung', built:true,
-      icon:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/>' },
-    { key:'lager', name:'Lagerverwaltung', built:false,
-      icon:'<path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/>' },
-    { key:'hauptbuch', name:'Hauptbuch', built:true,
-      icon:'<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>' },
-    { key:'lohn', name:'Lohnabrechnung', built:false,
-      icon:'<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><path d="M6 15h4"/>' },
-    { key:'crm', name:'CRM', built:false,
-      icon:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>' }
-  ];
+   Verwendete Verfahren:
+     Passwortableitung  PBKDF2-HMAC-SHA256, 310.000 Runden
+     Verschluesselung   AES-256-GCM
+     Signatur           ECDSA P-256 mit SHA-256
+     Schluesseltransport ECDH P-256 + HKDF-SHA256
+   ============================================================= */
+window.HZ = window.HZ || {};
+HZ.crypto = (function () {
+  'use strict';
 
-  // ===================== Login-State =====================
-  let pendingLicense = null;
-  let pendingFileHandle = null;
-  let fsApiSupported = ('showOpenFilePicker' in window);
+  var C = (window.crypto && window.crypto.subtle) || null;
+  var te = new TextEncoder();
+  var td = new TextDecoder();
 
-  function togglePasswordVisibility(){
-    const inp = document.getElementById('login-pass');
-    inp.type = inp.type==='password' ? 'text' : 'password';
+  /* WebCrypto gibt es nur im "secure context": https:// oder file://.
+     Ueber einfaches http:// auf einer fremden Domain fehlt subtle. */
+  function verfuegbar() { return !!C; }
+
+  /* ---------- base64url ---------- */
+  function bytesToB64u(input) {
+    var arr = input instanceof Uint8Array ? input : new Uint8Array(input);
+    var s = '';
+    for (var i = 0; i < arr.length; i++) s += String.fromCharCode(arr[i]);
+    return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
   }
 
-  function pickFileViaInput(){
-    return new Promise((resolve,reject)=>{
-      const input = document.getElementById('file-input');
-      input.value = '';
-      input.onchange = ()=> input.files[0] ? resolve(input.files[0]) : reject(new Error('no-file'));
+  function b64uToBytes(str) {
+    var s = String(str).replace(/-/g, '+').replace(/_/g, '/');
+    var rest = s.length % 4;
+    if (rest) s += new Array(5 - rest).join('=');
+    var bin = atob(s);
+    var out = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  }
+
+  function randomBytes(n) {
+    var a = new Uint8Array(n);
+    crypto.getRandomValues(a);
+    return a;
+  }
+
+  function uuid() {
+    if (crypto.randomUUID) return crypto.randomUUID();
+    var b = randomBytes(16);
+    b[6] = (b[6] & 0x0f) | 0x40;
+    b[8] = (b[8] & 0x3f) | 0x80;
+    var hex = Array.prototype.map.call(b, function (x) {
+      return ('0' + x.toString(16)).slice(-2);
+    }).join('');
+    return hex.slice(0, 8) + '-' + hex.slice(8, 12) + '-' + hex.slice(12, 16) +
+           '-' + hex.slice(16, 20) + '-' + hex.slice(20);
+  }
+
+  /* ---------- Kanonische JSON-Form ----------
+     Signiert wird nie das rohe JSON, sondern diese Darstellung mit
+     fest sortierten Schluesseln. Sonst wuerde eine andere Reihenfolge
+     derselben Daten eine andere Signatur ergeben. */
+  function canonical(value) {
+    if (value === undefined) return 'null';
+    if (value === null || typeof value !== 'object') return JSON.stringify(value);
+    if (Array.isArray(value)) {
+      return '[' + value.map(canonical).join(',') + ']';
+    }
+    var keys = Object.keys(value).filter(function (k) {
+      return value[k] !== undefined;
+    }).sort();
+    return '{' + keys.map(function (k) {
+      return JSON.stringify(k) + ':' + canonical(value[k]);
+    }).join(',') + '}';
+  }
+
+  /* ---------- Passwort -> Schluessel ---------- */
+  var PBKDF2_RUNDEN = 310000;
+
+  async function keyAusPasswort(passwort, saltBytes, runden) {
+    var basis = await C.importKey('raw', te.encode(passwort), 'PBKDF2', false, ['deriveKey']);
+    return C.deriveKey(
+      { name: 'PBKDF2', salt: saltBytes, iterations: runden || PBKDF2_RUNDEN, hash: 'SHA-256' },
+      basis,
+      { name: 'AES-GCM', length: 256 },
+      false,
+      ['encrypt', 'decrypt']
+    );
+  }
+
+  /* ---------- AES-256-GCM ----------
+     Jeder Aufruf erzeugt einen frischen 96-Bit-IV. Ein IV darf mit
+     demselben Schluessel niemals zweimal verwendet werden. */
+  async function aesEncryptBytes(key, bytes, aad) {
+    var iv = randomBytes(12);
+    var p = { name: 'AES-GCM', iv: iv };
+    if (aad) p.additionalData = te.encode(aad);
+    var ct = await C.encrypt(p, key, bytes);
+    return { iv: bytesToB64u(iv), ct: bytesToB64u(ct) };
+  }
+
+  async function aesDecryptBytes(key, box, aad) {
+    var p = { name: 'AES-GCM', iv: b64uToBytes(box.iv) };
+    if (aad) p.additionalData = te.encode(aad);
+    var pt = await C.decrypt(p, key, b64uToBytes(box.ct));
+    return new Uint8Array(pt);
+  }
+
+  async function aesEncryptText(key, text, aad) {
+    return aesEncryptBytes(key, te.encode(text), aad);
+  }
+
+  async function aesDecryptText(key, box, aad) {
+    return td.decode(await aesDecryptBytes(key, box, aad));
+  }
+
+  /* ---------- Datenschluessel (DEK) ----------
+     Der eigentliche Inhalt wird immer mit einem zufaelligen DEK
+     verschluesselt. Passwort und Haendlerschluessel verpacken nur
+     diesen DEK - deshalb kann das Passwort gewechselt werden, ohne
+     die Nutzdaten neu zu verschluesseln. */
+  async function dekErzeugen() {
+    return C.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
+  }
+
+  async function dekExportieren(key) {
+    return new Uint8Array(await C.exportKey('raw', key));
+  }
+
+  async function dekImportieren(rohBytes) {
+    return C.importKey('raw', rohBytes, { name: 'AES-GCM' }, true, ['encrypt', 'decrypt']);
+  }
+
+  /* ---------- Signatur: ECDSA P-256 ---------- */
+  async function signaturSchluesselpaar() {
+    return C.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
+  }
+
+  async function signieren(privateKey, nachricht) {
+    var sig = await C.sign({ name: 'ECDSA', hash: 'SHA-256' }, privateKey, te.encode(nachricht));
+    return bytesToB64u(sig);
+  }
+
+  async function pruefen(publicKey, signaturB64u, nachricht) {
+    try {
+      return await C.verify(
+        { name: 'ECDSA', hash: 'SHA-256' },
+        publicKey,
+        b64uToBytes(signaturB64u),
+        te.encode(nachricht)
+      );
+    } catch (e) {
+      return false;
+    }
+  }
+
+  async function signKeyImportieren(jwk) {
+    return C.importKey('jwk', jwk, { name: 'ECDSA', namedCurve: 'P-256' }, false, ['sign']);
+  }
+
+  async function verifyKeyImportieren(jwk) {
+    return C.importKey('jwk', jwk, { name: 'ECDSA', namedCurve: 'P-256' }, false, ['verify']);
+  }
+
+  /* ---------- Schluesseltransport: ECDH P-256 + HKDF ----------
+     Damit verpackt der Generator den DEK zusaetzlich fuer den
+     Haendler. So kann eine Lizenz spaeter verlaengert werden, ohne
+     dass der Haendler das Kundenpasswort kennt. */
+  async function ecdhSchluesselpaar() {
+    return C.generateKey({ name: 'ECDH', namedCurve: 'P-256' }, true, ['deriveKey', 'deriveBits']);
+  }
+
+  async function hkdfWrapKey(sharedBits, info) {
+    var basis = await C.importKey('raw', sharedBits, 'HKDF', false, ['deriveKey']);
+    return C.deriveKey(
+      { name: 'HKDF', hash: 'SHA-256', salt: new Uint8Array(0), info: te.encode(info) },
+      basis,
+      { name: 'AES-GCM', length: 256 },
+      false,
+      ['encrypt', 'decrypt']
+    );
+  }
+
+  function nurOeffentlich(jwk) {
+    return { kty: jwk.kty, crv: jwk.crv, x: jwk.x, y: jwk.y };
+  }
+
+  async function fuerEmpfaengerVerpacken(empfaengerPubJwk, dekRoh, info) {
+    var empf = await C.importKey('jwk', empfaengerPubJwk, { name: 'ECDH', namedCurve: 'P-256' }, false, []);
+    var eph = await C.generateKey({ name: 'ECDH', namedCurve: 'P-256' }, true, ['deriveBits']);
+    var shared = await C.deriveBits({ name: 'ECDH', public: empf }, eph.privateKey, 256);
+    var wrapKey = await hkdfWrapKey(shared, info);
+    var box = await aesEncryptBytes(wrapKey, dekRoh);
+    var epk = await C.exportKey('jwk', eph.publicKey);
+    return { epk: nurOeffentlich(epk), iv: box.iv, ct: box.ct };
+  }
+
+  async function alsEmpfaengerAuspacken(empfaengerPrivJwk, wrap, info) {
+    var priv = await C.importKey('jwk', empfaengerPrivJwk, { name: 'ECDH', namedCurve: 'P-256' }, false, ['deriveBits']);
+    var epk = await C.importKey('jwk', wrap.epk, { name: 'ECDH', namedCurve: 'P-256' }, false, []);
+    var shared = await C.deriveBits({ name: 'ECDH', public: epk }, priv, 256);
+    var wrapKey = await hkdfWrapKey(shared, info);
+    return aesDecryptBytes(wrapKey, wrap);
+  }
+
+  /* ---------- Passwoerter ---------- */
+  /* Ohne aehnlich aussehende Zeichen (I, l, 1, O, 0). 56 Zeichen
+     Alphabet, 14 Stellen -> rund 81 Bit Entropie. */
+  var PW_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+
+  function passwortErzeugen(laenge) {
+    var n = laenge || 14;
+    var out = '';
+    var arr = new Uint32Array(n);
+    /* Rejection sampling: ein einfaches Modulo wuerde die ersten
+       Zeichen des Alphabets minimal bevorzugen. */
+    var grenze = Math.floor(4294967296 / PW_ALPHABET.length) * PW_ALPHABET.length;
+    var i = 0;
+    while (i < n) {
+      crypto.getRandomValues(arr);
+      for (var j = 0; j < arr.length && i < n; j++) {
+        if (arr[j] < grenze) { out += PW_ALPHABET[arr[j] % PW_ALPHABET.length]; i++; }
+      }
+    }
+    return out;
+  }
+
+  /* Grobe Entropieschaetzung in Bit - nur fuer die Anzeige gedacht. */
+  function passwortStaerke(pw) {
+    if (!pw) return { bits: 0, stufe: 'leer', text: 'Kein Passwort' };
+    var raum = 0;
+    if (/[a-z]/.test(pw)) raum += 26;
+    if (/[A-Z]/.test(pw)) raum += 26;
+    if (/[0-9]/.test(pw)) raum += 10;
+    if (/[^a-zA-Z0-9]/.test(pw)) raum += 33;
+    var einzigartig = new Set(pw.split('')).size;
+    var bits = Math.round(pw.length * Math.log2(raum || 1) * Math.min(1, einzigartig / Math.max(1, pw.length) + 0.35));
+    var stufe, text;
+    if (bits < 40) { stufe = 'schwach'; text = 'Zu schwach'; }
+    else if (bits < 60) { stufe = 'mittel'; text = 'Brauchbar'; }
+    else if (bits < 80) { stufe = 'gut'; text = 'Gut'; }
+    else { stufe = 'stark'; text = 'Sehr stark'; }
+    return { bits: bits, stufe: stufe, text: text };
+  }
+
+  return {
+    verfuegbar: verfuegbar,
+    bytesToB64u: bytesToB64u,
+    b64uToBytes: b64uToBytes,
+    randomBytes: randomBytes,
+    uuid: uuid,
+    canonical: canonical,
+    PBKDF2_RUNDEN: PBKDF2_RUNDEN,
+    keyAusPasswort: keyAusPasswort,
+    aesEncryptBytes: aesEncryptBytes,
+    aesDecryptBytes: aesDecryptBytes,
+    aesEncryptText: aesEncryptText,
+    aesDecryptText: aesDecryptText,
+    dekErzeugen: dekErzeugen,
+    dekExportieren: dekExportieren,
+    dekImportieren: dekImportieren,
+    signaturSchluesselpaar: signaturSchluesselpaar,
+    signieren: signieren,
+    pruefen: pruefen,
+    signKeyImportieren: signKeyImportieren,
+    verifyKeyImportieren: verifyKeyImportieren,
+    ecdhSchluesselpaar: ecdhSchluesselpaar,
+    nurOeffentlich: nurOeffentlich,
+    fuerEmpfaengerVerpacken: fuerEmpfaengerVerpacken,
+    alsEmpfaengerAuspacken: alsEmpfaengerAuspacken,
+    passwortErzeugen: passwortErzeugen,
+    passwortStaerke: passwortStaerke
+  };
+})();
+
+
+/* ===== core/hz-license.js ===== */
+/* =============================================================
+   HZ · Lizenzformat HZL2
+   -------------------------------------------------------------
+   Aufbau einer Lizenzdatei:
+
+   {
+     "format": "HZL2",
+     "erstelltAm": "2026-08-23T12:00:00.000Z",
+     "kdf":     { name, hash, iterations, salt },
+     "wrap": {
+       "passwort": { iv, ct },              <- DEK, mit Kundenpasswort verpackt
+       "haendler": { epk, iv, ct }          <- DEK, fuer den Haendler verpackt
+     },
+     "payload": { iv, ct }                  <- AES-256-GCM ueber den Inhalt
+   }
+
+   Entschluesselter Inhalt (payload):
+
+   {
+     lizenzId, kunde, ausgestelltAm, aktualisiertAm,
+     gueltigBis, module, sig, daten
+   }
+
+   Zwei getrennte Schutzmechanismen:
+
+   1. Verschluesselung schuetzt den Inhalt auf dem Transportweg.
+      Ohne Kundenpasswort oder Haendlerschluessel ist die Datei
+      nicht lesbar.
+
+   2. Die Signatur schuetzt die Berechtigungen. Signiert wird nur
+      der Anspruchsteil (Kunde, Laufzeit, Module) - nicht "daten".
+      Deshalb bleibt die Signatur gueltig, wenn der Kunde arbeitet
+      und speichert, aber sie bricht, sobald jemand die Laufzeit
+      oder die Modulfreigabe veraendert.
+   ============================================================= */
+window.HZ = window.HZ || {};
+HZ.license = (function () {
+  'use strict';
+
+  var K = HZ.crypto;
+
+  var FORMAT = 'HZL2';
+  var AAD_PAYLOAD = 'HZ-Lizenz-Inhalt-v2';
+  var AAD_WRAP_PW = 'HZ-Lizenz-Passwortverpackung-v2';
+  var INFO_HAENDLER = 'HZ-Lizenz-Haendlerverpackung-v2';
+
+  /* Module in fester, normalisierter Form. Generator und ERP muessen
+     hier bitgleich rechnen, sonst schlaegt die Signaturpruefung fehl -
+     deshalb steht diese Funktion im gemeinsamen Kern. */
+  function moduleNormalisieren(m) {
+    var out = {};
+    Object.keys(m || {}).sort().forEach(function (k) { out[k] = !!m[k]; });
+    return out;
+  }
+
+  /* Genau dieser Ausschnitt wird signiert. */
+  function signaturAnsicht(inhalt) {
+    return {
+      v: 2,
+      lizenzId: inhalt.lizenzId,
+      kunde: inhalt.kunde,
+      gueltigBis: inhalt.gueltigBis,
+      module: moduleNormalisieren(inhalt.module),
+      ausgestelltAm: inhalt.ausgestelltAm
+    };
+  }
+
+  function signaturNachricht(inhalt) {
+    return K.canonical(signaturAnsicht(inhalt));
+  }
+
+  /* ---------- Format erkennen ---------- */
+  function istHZL2(obj) {
+    return !!(obj && obj.format === FORMAT && obj.payload && obj.wrap && obj.kdf);
+  }
+
+  /* Altes Klartextformat: {lizenzId, kunde, gueltigBis, auth:{salt,hash}, module, daten} */
+  function istAltformat(obj) {
+    return !!(obj && !obj.format && obj.auth && obj.auth.salt && obj.auth.hash);
+  }
+
+  /* ---------- Fehlertypen ----------
+     Damit die Oberflaeche "falsches Passwort" von "manipuliert"
+     unterscheiden kann, ohne Fehlertexte zu vergleichen. */
+  function LizenzFehler(code, nachricht) {
+    var e = new Error(nachricht);
+    e.name = 'LizenzFehler';
+    e.code = code;
+    return e;
+  }
+
+  /* ---------- Neue Lizenz versiegeln ---------- */
+  /*  inhalt: { lizenzId, kunde, gueltigBis, module, daten, ... }
+      opts:   { passwort, signKey, haendlerPubJwk } */
+  async function versiegeln(inhalt, opts) {
+    if (!opts.passwort) throw LizenzFehler('kein-passwort', 'Es wurde kein Passwort uebergeben.');
+    if (!opts.signKey) throw LizenzFehler('kein-signaturschluessel', 'Es wurde kein Signaturschluessel uebergeben.');
+
+    var voll = JSON.parse(JSON.stringify(inhalt));
+    voll.module = moduleNormalisieren(voll.module);
+    voll.sig = await K.signieren(opts.signKey, signaturNachricht(voll));
+
+    var dek = await K.dekErzeugen();
+    var datei = { format: FORMAT, erstelltAm: new Date().toISOString(), kdf: null, wrap: {}, payload: null };
+
+    if (opts.haendlerPubJwk) {
+      var dekRoh = await K.dekExportieren(dek);
+      datei.wrap.haendler = await K.fuerEmpfaengerVerpacken(opts.haendlerPubJwk, dekRoh, INFO_HAENDLER);
+    }
+
+    await passwortSetzen(datei, dek, opts.passwort);
+    await inhaltSchreiben(datei, dek, voll);
+    return { datei: datei, dek: dek, inhalt: voll };
+  }
+
+  /* ---------- Passwort setzen bzw. wechseln ----------
+     Verpackt denselben DEK unter einem neuen Passwort neu. Die
+     Haendlerverpackung und die Nutzdaten bleiben unberuehrt. */
+  async function passwortSetzen(datei, dek, passwort) {
+    var salt = K.randomBytes(16);
+    datei.kdf = {
+      name: 'PBKDF2',
+      hash: 'SHA-256',
+      iterations: K.PBKDF2_RUNDEN,
+      salt: K.bytesToB64u(salt)
+    };
+    var pwKey = await K.keyAusPasswort(passwort, salt, datei.kdf.iterations);
+    var dekRoh = await K.dekExportieren(dek);
+    datei.wrap.passwort = await K.aesEncryptBytes(pwKey, dekRoh, AAD_WRAP_PW);
+    return datei;
+  }
+
+  /* ---------- Nutzdaten schreiben ----------
+     Wird bei jedem Speichern im ERP aufgerufen. Signatur und
+     Verpackungen bleiben unveraendert, nur der Inhalt wird mit
+     frischem IV neu verschluesselt. */
+  async function inhaltSchreiben(datei, dek, inhalt) {
+    datei.payload = await K.aesEncryptText(dek, JSON.stringify(inhalt), AAD_PAYLOAD);
+    return datei;
+  }
+
+  /* ---------- Oeffnen mit Kundenpasswort ---------- */
+  async function oeffnenMitPasswort(datei, passwort, verifyKey) {
+    if (!istHZL2(datei)) throw LizenzFehler('format', 'Diese Datei ist keine HZ-Lizenzdatei im aktuellen Format.');
+
+    var salt = K.b64uToBytes(datei.kdf.salt);
+    var pwKey = await K.keyAusPasswort(passwort, salt, datei.kdf.iterations || K.PBKDF2_RUNDEN);
+
+    var dekRoh;
+    try {
+      dekRoh = await K.aesDecryptBytes(pwKey, datei.wrap.passwort, AAD_WRAP_PW);
+    } catch (e) {
+      /* AES-GCM schlaegt fehl, sobald der Schluessel nicht passt.
+         Das ist hier der Test auf das richtige Passwort. */
+      throw LizenzFehler('passwort', 'Falsches Passwort.');
+    }
+
+    var dek = await K.dekImportieren(dekRoh);
+    return inhaltLesen(datei, dek, verifyKey);
+  }
+
+  /* ---------- Oeffnen mit Haendlerschluessel ---------- */
+  async function oeffnenAlsHaendler(datei, haendlerPrivJwk, verifyKey) {
+    if (!istHZL2(datei)) throw LizenzFehler('format', 'Diese Datei ist keine HZ-Lizenzdatei im aktuellen Format.');
+    if (!datei.wrap || !datei.wrap.haendler) {
+      throw LizenzFehler('keine-haendlerverpackung',
+        'Diese Lizenzdatei enthaelt keine Haendlerverpackung und kann nur mit dem Kundenpasswort geoeffnet werden.');
+    }
+
+    var dekRoh;
+    try {
+      dekRoh = await K.alsEmpfaengerAuspacken(haendlerPrivJwk, datei.wrap.haendler, INFO_HAENDLER);
+    } catch (e) {
+      throw LizenzFehler('falscher-haendlerschluessel',
+        'Diese Lizenz wurde mit einem anderen Haendlerschluessel ausgestellt.');
+    }
+
+    var dek = await K.dekImportieren(dekRoh);
+    return inhaltLesen(datei, dek, verifyKey);
+  }
+
+  /* ---------- Inhalt entschluesseln und Signatur pruefen ---------- */
+  async function inhaltLesen(datei, dek, verifyKey) {
+    var text;
+    try {
+      text = await K.aesDecryptText(dek, datei.payload, AAD_PAYLOAD);
+    } catch (e) {
+      throw LizenzFehler('inhalt-beschaedigt', 'Der Inhalt der Lizenzdatei ist beschaedigt.');
+    }
+
+    var inhalt;
+    try {
+      inhalt = JSON.parse(text);
+    } catch (e) {
+      throw LizenzFehler('inhalt-beschaedigt', 'Der Inhalt der Lizenzdatei ist beschaedigt.');
+    }
+
+    var signaturOk = false;
+    if (verifyKey && inhalt.sig) {
+      signaturOk = await K.pruefen(verifyKey, inhalt.sig, signaturNachricht(inhalt));
+    }
+
+    return { inhalt: inhalt, dek: dek, signaturOk: signaturOk };
+  }
+
+  /* ---------- Berechtigungen neu ausstellen ----------
+     Verlaengerung oder Modulwechsel: der Anspruchsteil wird
+     geaendert und neu signiert, "daten" bleibt unangetastet. */
+  async function neuSignieren(inhalt, signKey) {
+    inhalt.module = moduleNormalisieren(inhalt.module);
+    inhalt.aktualisiertAm = new Date().toISOString();
+    inhalt.sig = await K.signieren(signKey, signaturNachricht(inhalt));
+    return inhalt;
+  }
+
+  /* ---------- Laufzeit ---------- */
+  function abgelaufen(inhalt) {
+    /* Kein Datum heisst hier abgelaufen, nicht unbegrenzt. Eine
+       Lizenz ohne Laufzeit darf es nicht geben; wer das Feld
+       entfernt, kommt damit nicht durch. */
+    if (!inhalt || !inhalt.gueltigBis) return true;
+    var heute = new Date(); heute.setHours(0, 0, 0, 0);
+    var ablauf = new Date(inhalt.gueltigBis + 'T00:00:00');
+    if (isNaN(ablauf.getTime())) return true;
+    return heute > ablauf;
+  }
+
+  function tageBisAblauf(inhalt) {
+    if (!inhalt || !inhalt.gueltigBis) return -1;
+    var heute = new Date(); heute.setHours(0, 0, 0, 0);
+    var ablauf = new Date(inhalt.gueltigBis + 'T00:00:00');
+    if (isNaN(ablauf.getTime())) return -1;
+    return Math.round((ablauf - heute) / 86400000);
+  }
+
+  return {
+    FORMAT: FORMAT,
+    istHZL2: istHZL2,
+    istAltformat: istAltformat,
+    moduleNormalisieren: moduleNormalisieren,
+    signaturNachricht: signaturNachricht,
+    versiegeln: versiegeln,
+    passwortSetzen: passwortSetzen,
+    inhaltSchreiben: inhaltSchreiben,
+    oeffnenMitPasswort: oeffnenMitPasswort,
+    oeffnenAlsHaendler: oeffnenAlsHaendler,
+    neuSignieren: neuSignieren,
+    abgelaufen: abgelaufen,
+    tageBisAblauf: tageBisAblauf
+  };
+})();
+
+
+/* ===== core/hz-store.js ===== */
+/* =============================================================
+   HZ · Dezentrale Speicherung
+   -------------------------------------------------------------
+   Es gibt keinen Server. Eine Datei liegt dort, wo der Anwender
+   sie hinlegt: auf der lokalen Platte, einem USB-Stick oder in
+   einem lokal eingebundenen Cloud-Ordner (OneDrive, Dropbox,
+   Google Drive, Nextcloud). Fuer die Anwendung ist das alles
+   dasselbe - ein Dateihandle.
+
+   Drei Wege, in absteigender Qualitaet:
+
+   1. File System Access API (Chrome, Edge, Opera)
+      Echtes Zurueckschreiben in dieselbe Datei. Das Handle wird
+      in IndexedDB gemerkt, damit die Datei beim naechsten Start
+      mit einem Klick wieder geoeffnet werden kann.
+
+   2. Datei-Auswahldialog zum Lesen + Download zum Schreiben
+      (Firefox, Safari). Funktioniert ueberall, der Anwender muss
+      die Datei aber selbst ersetzen.
+
+   3. Reiner Download als Notausgang.
+   ============================================================= */
+window.HZ = window.HZ || {};
+HZ.store = (function () {
+  'use strict';
+
+  var DB_NAME = 'hz-store';
+  var DB_STORE = 'handles';
+
+  function unterstuetzt() {
+    return typeof window.showOpenFilePicker === 'function';
+  }
+
+  /* ---------- IndexedDB: Dateihandles merken ---------- */
+  function db() {
+    return new Promise(function (resolve, reject) {
+      var req = indexedDB.open(DB_NAME, 1);
+      req.onupgradeneeded = function () {
+        if (!req.result.objectStoreNames.contains(DB_STORE)) {
+          req.result.createObjectStore(DB_STORE);
+        }
+      };
+      req.onsuccess = function () { resolve(req.result); };
+      req.onerror = function () { reject(req.error); };
+    });
+  }
+
+  async function handleMerken(schluessel, handle) {
+    try {
+      var d = await db();
+      await new Promise(function (resolve, reject) {
+        var tx = d.transaction(DB_STORE, 'readwrite');
+        tx.objectStore(DB_STORE).put(handle, schluessel);
+        tx.oncomplete = resolve;
+        tx.onerror = function () { reject(tx.error); };
+      });
+      d.close();
+      return true;
+    } catch (e) {
+      /* Privater Modus oder blockierte IndexedDB - kein Grund,
+         die Anwendung anzuhalten. */
+      return false;
+    }
+  }
+
+  async function handleAbrufen(schluessel) {
+    try {
+      var d = await db();
+      var wert = await new Promise(function (resolve, reject) {
+        var tx = d.transaction(DB_STORE, 'readonly');
+        var req = tx.objectStore(DB_STORE).get(schluessel);
+        req.onsuccess = function () { resolve(req.result || null); };
+        req.onerror = function () { reject(req.error); };
+      });
+      d.close();
+      return wert;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  async function handleVergessen(schluessel) {
+    try {
+      var d = await db();
+      await new Promise(function (resolve) {
+        var tx = d.transaction(DB_STORE, 'readwrite');
+        tx.objectStore(DB_STORE).delete(schluessel);
+        tx.oncomplete = resolve;
+        tx.onerror = resolve;
+      });
+      d.close();
+    } catch (e) { /* egal */ }
+  }
+
+  /* Ein gemerktes Handle darf nicht ungefragt gelesen werden -
+     der Browser verlangt beim naechsten Start eine Freigabe. */
+  async function rechtePruefen(handle, schreiben) {
+    if (!handle || !handle.queryPermission) return false;
+    var opts = { mode: schreiben ? 'readwrite' : 'read' };
+    if ((await handle.queryPermission(opts)) === 'granted') return true;
+    return (await handle.requestPermission(opts)) === 'granted';
+  }
+
+  /* ---------- Oeffnen ---------- */
+  var JSON_TYP = [{
+    description: 'HZ-Lizenzdatei',
+    accept: { 'application/json': ['.json', '.hzl'] }
+  }];
+
+  /* Ergebnis immer: { handle, name, text } - handle kann null sein. */
+  async function oeffnen(typen) {
+    if (unterstuetzt()) {
+      var handles = await window.showOpenFilePicker({
+        multiple: false,
+        types: typen || JSON_TYP,
+        excludeAcceptAllOption: false
+      });
+      var handle = handles[0];
+      var file = await handle.getFile();
+      return { handle: handle, name: file.name, text: await file.text() };
+    }
+    return oeffnenPerInput(typen);
+  }
+
+  function oeffnenPerInput(typen) {
+    return new Promise(function (resolve, reject) {
+      var input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json,.hzl,application/json';
+      input.style.display = 'none';
+      document.body.appendChild(input);
+
+      /* Bricht der Anwender den Systemdialog ab, feuert change nie.
+         focus auf dem Fenster ist das einzige verlaessliche Signal. */
+      var erledigt = false;
+      function aufraeumen() { if (input.parentNode) document.body.removeChild(input); }
+
+      input.addEventListener('change', function () {
+        erledigt = true;
+        var file = input.files && input.files[0];
+        aufraeumen();
+        if (!file) { reject(abbruch()); return; }
+        var reader = new FileReader();
+        reader.onload = function () {
+          resolve({ handle: null, name: file.name, text: String(reader.result) });
+        };
+        reader.onerror = function () { reject(new Error('Die Datei konnte nicht gelesen werden.')); };
+        reader.readAsText(file);
+      });
+
+      window.addEventListener('focus', function pruefen() {
+        window.removeEventListener('focus', pruefen);
+        setTimeout(function () {
+          if (!erledigt) { aufraeumen(); reject(abbruch()); }
+        }, 500);
+      });
+
       input.click();
     });
   }
 
-  async function pickLicenseFile(){
-    document.getElementById('login-error').style.display='none';
-    document.getElementById('login-success').style.display='none';
-    let file = null;
+  function abbruch() {
+    var e = new Error('Auswahl abgebrochen.');
+    e.name = 'AbortError';
+    return e;
+  }
 
-    // Schritt 1: Datei auswählen (mit automatischem Fallback, falls die
-    // erweiterte Datei-API in dieser Umgebung nicht nutzbar ist)
-    if(fsApiSupported){
-      try{
-        const [handle] = await window.showOpenFilePicker({
-          types:[{ description:'HZ Lizenzdatei', accept:{'application/json':['.json']} }],
-          multiple:false
-        });
-        pendingFileHandle = handle;
-        file = await handle.getFile();
-      }catch(fsErr){
-        if(fsErr && fsErr.name==='AbortError') return; // Nutzer hat abgebrochen
-        // API vorhanden, aber in dieser Umgebung blockiert -> auf Standard-Dialog umschalten
-        fsApiSupported = false;
-        pendingFileHandle = null;
-        try{
-          file = await pickFileViaInput();
-        }catch(inputErr){
-          return; // Nutzer hat auch hier abgebrochen
-        }
-      }
-    } else {
-      pendingFileHandle = null;
-      try{
-        file = await pickFileViaInput();
-      }catch(inputErr){
-        return; // Nutzer hat abgebrochen
-      }
-    }
+  function istAbbruch(e) {
+    return e && (e.name === 'AbortError' || e.code === 20);
+  }
 
-    if(!file){
-      showLoginError('Es wurde keine Datei ausgewählt.');
-      return;
-    }
-
-    // Schritt 2: Inhalt lesen und prüfen
-    try{
-      const text = await file.text();
-      const parsed = JSON.parse(text);
-      if(!parsed.auth || !parsed.auth.hash || !parsed.auth.salt){
-        showLoginError('Diese Datei ist keine gültige HZ-Lizenzdatei.');
-        return;
-      }
-      pendingLicense = parsed;
-      document.getElementById('file-chip').style.display='flex';
-      document.getElementById('file-chip-name').textContent = file.name;
-      document.getElementById('password-wrap').style.display='flex';
-      document.getElementById('login-btn').style.display='block';
-      document.getElementById('login-pass').focus();
-    }catch(readErr){
-      showLoginError('Die Datei konnte nicht gelesen werden. Ist es wirklich die Lizenzdatei (.json)?');
+  /* Gemerkte Datei erneut oeffnen, ohne Dateidialog. */
+  async function erneutOeffnen(schluessel) {
+    var handle = await handleAbrufen(schluessel);
+    if (!handle) return null;
+    if (!(await rechtePruefen(handle, true))) return null;
+    try {
+      var file = await handle.getFile();
+      return { handle: handle, name: file.name, text: await file.text() };
+    } catch (e) {
+      /* Datei wurde verschoben oder geloescht. */
+      await handleVergessen(schluessel);
+      return null;
     }
   }
 
-  function showLoginError(msg){
-    const el = document.getElementById('login-error');
-    el.textContent = msg;
-    el.style.display='block';
+  async function gemerkterName(schluessel) {
+    var handle = await handleAbrufen(schluessel);
+    return handle ? handle.name : null;
   }
 
-  // ---------- Online-/Geräte-Kontrolle (Google Sheet) ----------
-  // Diese URL nach dem Deployment des Apps Script (siehe Anleitung) eintragen.
-  const GAS_WEBAPP_URL = 'DEINE_APPS_SCRIPT_WEBAPP_URL';
-  let heartbeatTimer = null;
-
-  function getDeviceId(){
-    let id = localStorage.getItem('hz_device_id');
-    if(!id){
-      id = (crypto.randomUUID ? crypto.randomUUID() :
-        'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c){
-          const r = Math.random()*16|0, v = c==='x' ? r : (r&0x3|0x8);
-          return v.toString(16);
-        }));
-      localStorage.setItem('hz_device_id', id);
-    }
-    return id;
+  /* ---------- Speichern ---------- */
+  async function speicherZielWaehlen(vorschlag, typen) {
+    if (!unterstuetzt()) return null;
+    return window.showSaveFilePicker({
+      suggestedName: vorschlag,
+      types: typen || JSON_TYP,
+      excludeAcceptAllOption: false
+    });
   }
 
-  async function reportCheckin(license){
-    if(!license.lizenzId || GAS_WEBAPP_URL.includes('DEINE_APPS_SCRIPT')){
-      // Keine Lizenz-ID (alte Lizenzdatei) oder Online-Kontrolle noch nicht eingerichtet
-      // -> ohne Online-Prüfung weiterarbeiten
-      return { erlaubt:true, geprueft:false };
+  async function schreiben(handle, text) {
+    if (!(await rechtePruefen(handle, true))) {
+      throw new Error('Der Schreibzugriff auf die Datei wurde nicht erteilt.');
     }
-    try{
-      const res = await fetch(GAS_WEBAPP_URL, {
-        method:'POST',
-        headers:{'Content-Type':'text/plain;charset=utf-8'},
-        body: JSON.stringify({
-          lizenzId: license.lizenzId,
-          kunde: license.kunde,
-          deviceId: getDeviceId()
-        })
+    var w = await handle.createWritable();
+    await w.write(text);
+    await w.close();
+  }
+
+  function herunterladen(text, dateiname) {
+    var blob = new Blob([text], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = dateiname;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+
+  /* ---------- Dateinamen ----------
+     Umlaute und nicht lateinische Namen bleiben erhalten; entfernt
+     werden nur Zeichen, die Dateisysteme wirklich stoeren. Bleibt
+     nichts uebrig, greift der Ersatzname. */
+  function dateinameAus(text, ersatz, endung) {
+    var name = String(text || '')
+      .replace(/[\\/:*?"<>|]/g, '')            // von Dateisystemen verbotene Zeichen
+      .replace(/[\u0000-\u001f\u007f]/g, '')  // Steuerzeichen
+      .replace(/\s+/g, '_')
+      .replace(/^[._]+|[._]+$/g, '')
+      .slice(0, 80);
+    if (!name) name = ersatz || 'lizenz';
+    return name + (endung || '.json');
+  }
+
+  return {
+    unterstuetzt: unterstuetzt,
+    oeffnen: oeffnen,
+    erneutOeffnen: erneutOeffnen,
+    gemerkterName: gemerkterName,
+    handleMerken: handleMerken,
+    handleAbrufen: handleAbrufen,
+    handleVergessen: handleVergessen,
+    rechtePruefen: rechtePruefen,
+    speicherZielWaehlen: speicherZielWaehlen,
+    schreiben: schreiben,
+    herunterladen: herunterladen,
+    dateinameAus: dateinameAus,
+    istAbbruch: istAbbruch
+  };
+})();
+
+
+/* ===== core/hz-ui.js ===== */
+/* =============================================================
+   HZ · Gemeinsame Oberflaechen-Bausteine
+   -------------------------------------------------------------
+   Ersetzt alert(), confirm() und die frueheren Status-Zeilen durch
+   Elemente, die den Arbeitsfluss nicht unterbrechen.
+   ============================================================= */
+window.HZ = window.HZ || {};
+HZ.ui = (function () {
+  'use strict';
+
+  /* ---------- HTML-Escaping ----------
+     Jede Zeichenkette, die aus einer Lizenzdatei stammt - Kundenname,
+     Kontobezeichnung, Buchungstext - muss hier durch, bevor sie in
+     innerHTML landet. */
+  function esc(wert) {
+    return String(wert === null || wert === undefined ? '' : wert)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function $(id) { return document.getElementById(id); }
+
+  /* ---------- Toasts ---------- */
+  function toastBehaelter() {
+    var el = $('hz-toasts');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'hz-toasts';
+      el.className = 'hz-toasts';
+      el.setAttribute('role', 'status');
+      el.setAttribute('aria-live', 'polite');
+      document.body.appendChild(el);
+    }
+    return el;
+  }
+
+  function toast(text, art, dauer) {
+    var el = document.createElement('div');
+    el.className = 'hz-toast ' + (art || 'info');
+    el.textContent = text;
+    toastBehaelter().appendChild(el);
+    requestAnimationFrame(function () { el.classList.add('sichtbar'); });
+    var ms = dauer || (art === 'fehler' ? 7000 : 3200);
+    setTimeout(function () {
+      el.classList.remove('sichtbar');
+      setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 250);
+    }, ms);
+    return el;
+  }
+
+  /* ---------- Dialoge ----------
+     Versprechen-basiert, damit der Aufrufer await benutzen kann.
+     confirm() blockiert sonst den ganzen Browser-Tab. */
+  var offeneDialoge = [];
+
+  function dialog(opts) {
+    return new Promise(function (resolve) {
+      var overlay = document.createElement('div');
+      overlay.className = 'hz-dialog-overlay';
+
+      var knoepfe = (opts.knoepfe || [{ text: 'OK', wert: true, stil: 'primaer' }]);
+      overlay.innerHTML =
+        '<div class="hz-dialog" role="dialog" aria-modal="true" aria-labelledby="hz-dlg-titel">' +
+          '<div class="hz-dialog-kopf">' +
+            '<h3 id="hz-dlg-titel">' + esc(opts.titel || 'Hinweis') + '</h3>' +
+          '</div>' +
+          '<div class="hz-dialog-koerper">' +
+            (opts.html ? opts.html : '<p>' + esc(opts.text || '') + '</p>') +
+          '</div>' +
+          '<div class="hz-dialog-fuss">' +
+            knoepfe.map(function (b, i) {
+              return '<button type="button" class="hz-btn ' + (b.stil || 'sekundaer') +
+                     '" data-idx="' + i + '">' + esc(b.text) + '</button>';
+            }).join('') +
+          '</div>' +
+        '</div>';
+
+      document.body.appendChild(overlay);
+      offeneDialoge.push(overlay);
+
+      function schliessen(wert) {
+        var i = offeneDialoge.indexOf(overlay);
+        if (i >= 0) offeneDialoge.splice(i, 1);
+        overlay.classList.remove('offen');
+        setTimeout(function () { if (overlay.parentNode) document.body.removeChild(overlay); }, 180);
+        resolve(wert);
+      }
+
+      overlay.addEventListener('click', function (e) {
+        if (e.target === overlay && opts.schliessbar !== false) schliessen(null);
       });
-      const json = await res.json();
-      return { ...json, geprueft:true };
-    }catch(netErr){
-      // Kein Internet o.ä. -> nicht aussperren, aber als ungeprüft markieren
-      return { erlaubt:true, geprueft:false };
-    }
+      Array.prototype.forEach.call(overlay.querySelectorAll('[data-idx]'), function (btn) {
+        btn.addEventListener('click', function () {
+          schliessen(knoepfe[Number(btn.dataset.idx)].wert);
+        });
+      });
+
+      overlay._schliessen = schliessen;
+      requestAnimationFrame(function () {
+        overlay.classList.add('offen');
+        var fokus = overlay.querySelector('input, select, textarea') ||
+                    overlay.querySelector('.hz-btn.primaer') ||
+                    overlay.querySelector('.hz-btn');
+        if (fokus) fokus.focus();
+      });
+    });
   }
 
-  function startHeartbeat(){
-    stopHeartbeat();
-    heartbeatTimer = setInterval(()=>{ if(LICENSE) reportCheckin(LICENSE); }, 4*60*1000);
-  }
-  function stopHeartbeat(){
-    if(heartbeatTimer){ clearInterval(heartbeatTimer); heartbeatTimer = null; }
+  function hinweis(text, titel) {
+    return dialog({ titel: titel || 'Hinweis', text: text,
+      knoepfe: [{ text: 'Verstanden', wert: true, stil: 'primaer' }] });
   }
 
-  function isLicenseExpired(license){
-    if(!license.gueltigBis) return false; // ältere Lizenzen ohne Datum -> nicht sperren
-    const heute = new Date(); heute.setHours(0,0,0,0);
-    const ablauf = new Date(license.gueltigBis + 'T00:00:00');
-    return heute > ablauf;
-  }
-  function formatDateDe(isoDate){
-    const [y,m,d] = isoDate.split('-');
-    return `${d}.${m}.${y}`;
-  }
-
-  async function handleLogin(){
-    const pass = document.getElementById('login-pass').value;
-    if(!pass){ showLoginError('Bitte Passwort eingeben.'); return; }
-    const hash = await sha256Hex(pendingLicense.auth.salt + pass);
-    if(hash !== pendingLicense.auth.hash){
-      showLoginError('Falsches Passwort.');
-      return;
-    }
-
-    if(isLicenseExpired(pendingLicense)){
-      showLoginError('Ihr Abo ist am ' + formatDateDe(pendingLicense.gueltigBis) + ' abgelaufen. Bitte kontaktieren Sie uns per WhatsApp zur Verlängerung.');
-      return;
-    }
-
-    const loginBtn = document.getElementById('login-btn');
-    loginBtn.disabled = true;
-    loginBtn.textContent = 'Anmeldung wird geprüft…';
-    const checkin = await reportCheckin(pendingLicense);
-    loginBtn.disabled = false;
-    loginBtn.textContent = 'Anmelden';
-
-    if(checkin.geprueft && checkin.erlaubt === false){
-      showLoginError('Diese Lizenz wird bereits auf der maximalen Anzahl Geräte genutzt. Bitte kontaktieren Sie uns, falls Sie ein weiteres Gerät benötigen.');
-      return;
-    }
-
-    LICENSE = pendingLicense;
-    fileHandle = pendingFileHandle;
-    DATA = (LICENSE.daten && LICENSE.daten.zeiterfassung) ? LICENSE.daten.zeiterfassung : {};
-    if(!LICENSE.daten) LICENSE.daten = {};
-    LICENSE.daten.zeiterfassung = DATA;
-
-    document.getElementById('view-login').style.display='none';
-    document.getElementById('app-shell').style.display='block';
-    document.getElementById('fs-banner').style.display = fsApiSupported ? 'none' : 'block';
-    document.getElementById('user-initials').textContent = getInitials(LICENSE.kunde || 'Kunde');
-    document.getElementById('user-name-label').textContent = LICENSE.kunde || 'Kunde';
-    if(LICENSE.gueltigBis){
-      document.getElementById('license-validity').textContent = 'Lizenz gültig bis ' + formatDateDe(LICENSE.gueltigBis);
-      document.getElementById('license-validity').style.display='block';
-    }
-
-    renderDashboardTiles();
-    goToDashboard();
-    startHeartbeat();
+  function bestaetigen(text, titel, bestaetigenText, gefaehrlich) {
+    return dialog({
+      titel: titel || 'Bitte bestaetigen',
+      text: text,
+      knoepfe: [
+        { text: 'Abbrechen', wert: false, stil: 'sekundaer' },
+        { text: bestaetigenText || 'Ja, fortfahren', wert: true, stil: gefaehrlich ? 'gefahr' : 'primaer' }
+      ]
+    }).then(function (w) { return w === true; });
   }
 
-  function getInitials(name){
-    const parts = name.trim().split(/\s+/);
-    if(parts.length>1) return (parts[0][0]+parts[1][0]).toUpperCase();
-    return name.trim().slice(0,2).toUpperCase();
-  }
-
-  function logout(){
-    stopHeartbeat();
-    LICENSE = null; fileHandle = null; DATA = {};
-    pendingLicense = null; pendingFileHandle = null;
-    document.getElementById('user-menu').classList.remove('open');
-    document.getElementById('app-shell').style.display='none';
-    document.getElementById('view-login').style.display='flex';
-    document.getElementById('file-chip').style.display='none';
-    document.getElementById('password-wrap').style.display='none';
-    document.getElementById('login-btn').style.display='none';
-    document.getElementById('login-pass').value='';
-    document.getElementById('login-error').style.display='none';
-  }
-
-  function toggleUserMenu(){ document.getElementById('user-menu').classList.toggle('open'); }
-  document.addEventListener('click', function(e){
-    const menu = document.getElementById('user-menu');
-    if(!e.target.closest('.user-wrap')) menu.classList.remove('open');
+  /* Escape schliesst immer nur den obersten Dialog. */
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape' || offeneDialoge.length === 0) return;
+    var oben = offeneDialoge[offeneDialoge.length - 1];
+    if (oben._schliessen) { e.preventDefault(); oben._schliessen(null); }
   });
 
-  // ===================== Datei speichern =====================
-  async function persistLicense(){
-    LICENSE.daten.zeiterfassung = DATA;
-    if(HB) LICENSE.daten.hauptbuch = HB;
-    const json = JSON.stringify(LICENSE, null, 2);
-    const statusEl = document.getElementById('save-status');
-    try{
-      if(fileHandle){
-        const writable = await fileHandle.createWritable();
-        await writable.write(json);
-        await writable.close();
-        statusEl.textContent = 'Gespeichert um ' + nowTimeStr();
-      } else {
-        downloadJson(json, (LICENSE.kunde || 'lizenz').replace(/\s+/g,'_') + '.json');
-        statusEl.textContent = 'Datei aktualisiert heruntergeladen';
-      }
-    }catch(e){
-      statusEl.textContent = 'Speichern fehlgeschlagen';
-      alert('Speichern fehlgeschlagen. Bitte erneut versuchen.');
+  /* ---------- Farbschema ----------
+     hell / dunkel / system. Die Auswahl ist geraetebezogen und
+     landet in localStorage, nicht in der Lizenzdatei. */
+  var THEME_KEY = 'hz_theme';
+
+  function themeSetzen(wert) {
+    var w = (wert === 'hell' || wert === 'dunkel') ? wert : 'system';
+    try { localStorage.setItem(THEME_KEY, w); } catch (e) { /* privater Modus */ }
+    themeAnwenden();
+    return w;
+  }
+
+  function themeLesen() {
+    try { return localStorage.getItem(THEME_KEY) || 'system'; } catch (e) { return 'system'; }
+  }
+
+  function themeAnwenden() {
+    var w = themeLesen();
+    var dunkel = w === 'dunkel' ||
+      (w === 'system' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    document.documentElement.setAttribute('data-theme', dunkel ? 'dunkel' : 'hell');
+    document.documentElement.setAttribute('data-theme-wahl', w);
+  }
+
+  function themeUmschalten() {
+    var reihenfolge = ['system', 'hell', 'dunkel'];
+    var i = reihenfolge.indexOf(themeLesen());
+    return themeSetzen(reihenfolge[(i + 1) % reihenfolge.length]);
+  }
+
+  if (window.matchMedia) {
+    var mq = window.matchMedia('(prefers-color-scheme: dark)');
+    var beiWechsel = function () { if (themeLesen() === 'system') themeAnwenden(); };
+    if (mq.addEventListener) mq.addEventListener('change', beiWechsel);
+    else if (mq.addListener) mq.addListener(beiWechsel);
+  }
+  themeAnwenden();
+
+  /* ---------- Kleinkram ---------- */
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  /* Lokales Datum als ISO-Tag. toISOString() wuerde nach UTC
+     umrechnen und in deutschen Zeitzonen nachts einen Tag
+     zurueckspringen. */
+  function isoTag(d) {
+    var x = d || new Date();
+    return x.getFullYear() + '-' + pad(x.getMonth() + 1) + '-' + pad(x.getDate());
+  }
+
+  function isoTagPlus(tage, ab) {
+    var d = ab ? new Date(ab.getTime()) : new Date();
+    d.setDate(d.getDate() + tage);
+    return isoTag(d);
+  }
+
+  function datumDe(iso) {
+    if (!iso) return '';
+    var t = String(iso).split('-');
+    if (t.length !== 3) return String(iso);
+    return t[2] + '.' + t[1] + '.' + t[0];
+  }
+
+  function uhrzeit(d) {
+    var x = d || new Date();
+    return pad(x.getHours()) + ':' + pad(x.getMinutes());
+  }
+
+  async function inZwischenablage(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch (e) {
+      /* Ohne https oder ohne Berechtigung greift der alte Weg. */
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (e2) { ok = false; }
+      document.body.removeChild(ta);
+      return ok;
     }
   }
-  function manualSave(){
-    document.getElementById('user-menu').classList.remove('open');
-    persistLicense();
-  }
-  function downloadJson(text, filename){
-    const blob = new Blob([text], {type:'application/json'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = filename;
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }
-  function nowTimeStr(){
-    const d = new Date();
-    return pad(d.getHours())+':'+pad(d.getMinutes());
-  }
 
-  // ===================== Passwort ändern =====================
-  function openPasswordModal(){
-    document.getElementById('user-menu').classList.remove('open');
-    document.getElementById('pw-new1').value='';
-    document.getElementById('pw-new2').value='';
-    document.getElementById('pw-modal-error').style.display='none';
-    document.getElementById('pw-modal-overlay').classList.add('open');
-  }
-  function closePasswordModal(){ document.getElementById('pw-modal-overlay').classList.remove('open'); }
-  async function changePassword(){
-    const p1 = document.getElementById('pw-new1').value;
-    const p2 = document.getElementById('pw-new2').value;
-    const errEl = document.getElementById('pw-modal-error');
-    if(!p1 || p1.length<4){ errEl.textContent='Passwort muss mindestens 4 Zeichen haben.'; errEl.style.display='block'; return; }
-    if(p1!==p2){ errEl.textContent='Passwörter stimmen nicht überein.'; errEl.style.display='block'; return; }
-    const newSalt = randomSalt();
-    const newHash = await sha256Hex(newSalt + p1);
-    LICENSE.auth.salt = newSalt;
-    LICENSE.auth.hash = newHash;
-    await persistLicense();
-    closePasswordModal();
-    alert('Passwort wurde geändert.');
-  }
+  return {
+    esc: esc,
+    $: $,
+    toast: toast,
+    dialog: dialog,
+    hinweis: hinweis,
+    bestaetigen: bestaetigen,
+    themeSetzen: themeSetzen,
+    themeLesen: themeLesen,
+    themeAnwenden: themeAnwenden,
+    themeUmschalten: themeUmschalten,
+    pad: pad,
+    isoTag: isoTag,
+    isoTagPlus: isoTagPlus,
+    datumDe: datumDe,
+    uhrzeit: uhrzeit,
+    inZwischenablage: inZwischenablage
+  };
+})();
 
-  // ===================== Info-Modal =====================
-  function showInfoModal(title, text, showWa){
-    document.getElementById('info-modal-title').textContent = title;
-    document.getElementById('info-modal-text').textContent = text;
-    document.getElementById('info-modal-wa').style.display = showWa ? 'inline-flex' : 'none';
-    document.getElementById('info-modal-overlay').classList.add('open');
-  }
-  function closeInfoModal(){ document.getElementById('info-modal-overlay').classList.remove('open'); }
 
-  // ===================== Dashboard-Kacheln =====================
-  function renderDashboardTiles(){
-    const grid = document.getElementById('tile-grid');
-    grid.innerHTML = MODULE_CONFIG.map(mod=>{
-      const activated = LICENSE.module && LICENSE.module[mod.key];
-      const usable = mod.built && activated;
-      const clickAttr = usable ? `onclick="goToModule('${mod.key}')"` :
-        `onclick="showLockedTile('${mod.key}', ${mod.built}, ${!!activated})"`;
-      let metaHtml = '';
-      if(usable && mod.key==='zeiterfassung'){
-        metaHtml = `<div class="tile-meta hours" id="tile-month-hours">0,0 Std</div><div class="tile-meta" id="tile-month-label">diesen Monat</div>`;
-      } else if(usable && mod.key==='hauptbuch'){
-        metaHtml = `<div class="tile-meta">Konten, Buchungen, Bilanz &amp; GuV</div>`;
-      } else if(!mod.built){
-        metaHtml = `<div class="tile-meta">Kommt mit der nächsten Version</div>`;
-      } else {
-        metaHtml = `<div class="tile-meta">Nicht aktiviert</div>`;
-      }
-      const badge = !mod.built ? `<span class="badge-soon">Bald verfügbar</span>` :
-        (!activated ? `<span class="badge-soon badge-locked">Nicht aktiviert</span>` : '');
-      return `
-        <div class="tile${usable?'':' disabled'}" ${clickAttr}>
-          ${badge}
-          <div class="tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${mod.icon}</svg></div>
-          <div>
-            <div class="tile-name">${mod.name}</div>
-            ${metaHtml}
-          </div>
-        </div>`;
-    }).join('');
-    if(LICENSE.module && LICENSE.module.zeiterfassung) refreshDashboardTile();
+/* ===== vendor-key.js ===== */
+/* =============================================================
+   HZ · Oeffentlicher Haendlerschluessel
+   -------------------------------------------------------------
+   PLATZHALTER - noch kein Schluessel hinterlegt.
+
+   So wird er erzeugt (einmalig):
+
+     1. hz-lizenz-generator.html oeffnen
+     2. "Schluesselpaar einrichten" -> Hauptpasswort vergeben
+     3. Zwei Dateien werden angeboten:
+          hz-haendler-schluessel.json  -> privat, NIE ins Repository,
+                                          in einen lokalen bzw. lokal
+                                          eingebundenen Cloud-Ordner legen
+          vendor-key.js                -> diese Datei hier ersetzen
+     4. build.ps1 ausfuehren, damit der Schluessel in das
+        ausgelieferte ERP-System uebernommen wird.
+
+   Solange hier null steht, weigert sich das ERP-System, eine
+   Lizenz zu oeffnen - denn ohne Schluessel liesse sich die
+   Echtheit einer Lizenz nicht pruefen, und genau das ist der
+   Zweck der ganzen Konstruktion.
+   ============================================================= */
+window.HZ = window.HZ || {};
+HZ.haendlerSchluessel = null;
+
+
+/* ===== erp/erp-shell.js ===== */
+/* =============================================================
+   HZ · ERP-System — Schale
+   -------------------------------------------------------------
+   Anmeldung, Sitzung, Navigation, Speichern. Die Fachmodule
+   (Zeiterfassung, Hauptbuch) melden sich ueber HZ.app.modul()
+   an und wissen nichts von Krypto oder Dateien.
+
+   Ein neues Modul zu ergaenzen heisst: eine Datei anlegen, sich
+   registrieren, in build.ps1 eintragen. Sonst nichts.
+   ============================================================= */
+(function () {
+  'use strict';
+
+  var K = HZ.crypto, L = HZ.license, S = HZ.store, U = HZ.ui;
+  var $ = U.$;
+
+  var HANDLE_KEY = 'lizenzdatei';
+  var AUTOSPEICHERN_MS = 1200;
+
+  var sitzung = null;   // { datei, inhalt, dek, handle, dateiname, verifyKey }
+  var offen = null;     // aktuell geoeffnetes Modul
+  var schmutzig = false;
+  var speicherTimer = null;
+  var speichertGerade = false;
+
+  /* =========================================================
+     Modulregister
+     ========================================================= */
+  var register = [];
+  HZ.app = HZ.app || {};
+  HZ.app.modul = function (def) { register.push(def); };
+
+  function freigeschaltet(def) {
+    return !!(sitzung && sitzung.inhalt.module && sitzung.inhalt.module[def.key]);
   }
-  function goToModule(key){
-    if(key==='zeiterfassung') goToZeiterfassung();
-    else if(key==='hauptbuch') goToHauptbuch();
+  function nutzbar(def) { return def.gebaut && freigeschaltet(def); }
+
+  /* Zugriff fuer die Fachmodule. */
+  HZ.app.daten = function () {
+    if (!sitzung.inhalt.daten) sitzung.inhalt.daten = {};
+    return sitzung.inhalt.daten;
+  };
+  HZ.app.kunde = function () { return sitzung ? sitzung.inhalt.kunde : ''; };
+  HZ.app.geaendert = function () { markieren(); };
+  HZ.app.jetztSpeichern = function () { return speichern(true); };
+
+  /* =========================================================
+     Anmeldung
+     ========================================================= */
+  var gewaehlt = null;  // { datei, handle, name }
+
+  function anmeldeFehler(text) {
+    var el = $('anmelde-fehler');
+    el.textContent = text;
+    el.classList.remove('versteckt');
   }
-  function showLockedTile(key, built, activated){
-    if(!built){
-      showInfoModal('Bald verfügbar', 'Dieses Modul befindet sich in Entwicklung und kommt mit einer der nächsten Versionen.', false);
+  function anmeldeFehlerWeg() { $('anmelde-fehler').classList.add('versteckt'); }
+
+  async function zuletztAnbieten() {
+    var name = await S.gemerkterName(HANDLE_KEY);
+    var btn = $('btn-zuletzt');
+    if (name) {
+      btn.textContent = 'Weiter mit ' + name;
+      btn.classList.remove('hz-versteckt');
     } else {
-      showInfoModal('Modul nicht aktiviert', 'Dieses Modul ist für Ihre Lizenz nicht freigeschaltet. Kontaktieren Sie uns, um es zu aktivieren.', true);
+      btn.classList.add('hz-versteckt');
     }
   }
 
-  // ===================== Zeit-Helfer =====================
-  const WEEKDAY_NAMES = ['Mo','Di','Mi','Do','Fr','Sa','So'];
-  const MONTH_NAMES = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
-  let DATA = {};
-  let LICENSE = null;
-  let fileHandle = null;
-  let HB = null; // Hauptbuch-Daten (Konten + Buchungen)
-
-  function pad(n){ return n.toString().padStart(2,'0'); }
-  function dateKey(y,m,d){ return `${y}-${pad(m+1)}-${pad(d)}`; }
-  function fmtHours(minutes){
-    if(!minutes || minutes<=0) return '0,0 Std';
-    return (minutes/60).toFixed(1).replace('.',',') + ' Std';
-  }
-  function timeToMinutes(t){
-    if(!t) return null;
-    const [h,m] = t.split(':').map(Number);
-    return h*60+m;
-  }
-  function bookingNetMinutes(b){
-    const start = timeToMinutes(b.kommen), end = timeToMinutes(b.gehen);
-    if(start===null || end===null) return 0;
-    let diff = end - start;
-    if(diff < 0) diff += 24*60;
-    const net = diff - (Number(b.pause1)||0) - (Number(b.pause2)||0);
-    return net>0 ? net : 0;
-  }
-  function dayTotalMinutes(key){
-    return (DATA[key]||[]).reduce((s,b)=>s+bookingNetMinutes(b),0);
-  }
-  function monthTotalMinutes(y,m){
-    let sum=0;
-    Object.keys(DATA).forEach(key=>{
-      const [ky,km] = key.split('-').map(Number);
-      if(ky===y && km===m+1) sum += dayTotalMinutes(key);
-    });
-    return sum;
-  }
-
-  // ===================== Navigation =====================
-  let calY, calM;
-  function goToDashboard(){
-    document.getElementById('view-dashboard').style.display='block';
-    document.getElementById('view-zeiterfassung').style.display='none';
-    document.getElementById('view-hauptbuch').style.display='none';
-    document.getElementById('crumb').textContent='/ Dashboard';
-    if(LICENSE.module && LICENSE.module.zeiterfassung) refreshDashboardTile();
-  }
-  function goToZeiterfassung(){
-    document.getElementById('view-dashboard').style.display='none';
-    document.getElementById('view-zeiterfassung').style.display='block';
-    document.getElementById('view-hauptbuch').style.display='none';
-    document.getElementById('crumb').textContent='/ Dashboard / Zeiterfassung';
-    const now = new Date();
-    calY = now.getFullYear(); calM = now.getMonth();
-    renderCalendar();
-  }
-  function goToToday(){
-    const now = new Date();
-    calY = now.getFullYear(); calM = now.getMonth();
-    renderCalendar();
-  }
-  function shiftMonth(delta){
-    calM += delta;
-    if(calM<0){ calM=11; calY--; }
-    if(calM>11){ calM=0; calY++; }
-    renderCalendar();
-  }
-  function refreshDashboardTile(){
-    const now = new Date();
-    const el = document.getElementById('tile-month-hours');
-    if(!el) return;
-    el.textContent = fmtHours(monthTotalMinutes(now.getFullYear(), now.getMonth()));
-    document.getElementById('tile-month-label').textContent = MONTH_NAMES[now.getMonth()] + ' ' + now.getFullYear();
-  }
-
-  // ===================== Kalender =====================
-  function renderCalendar(){
-    document.getElementById('month-label').textContent = MONTH_NAMES[calM] + ' ' + calY;
-    document.getElementById('month-total').textContent = fmtHours(monthTotalMinutes(calY,calM));
-    const grid = document.getElementById('cal-grid');
-    grid.innerHTML = '';
-    const firstDay = new Date(calY, calM, 1);
-    let startWeekday = firstDay.getDay();
-    startWeekday = (startWeekday===0) ? 6 : startWeekday-1;
-    const daysInMonth = new Date(calY, calM+1, 0).getDate();
-    const today = new Date();
-    const isCurrentMonth = today.getFullYear()===calY && today.getMonth()===calM;
-    for(let i=0;i<startWeekday;i++){
-      const empty = document.createElement('div');
-      empty.className='cal-cell empty';
-      grid.appendChild(empty);
-    }
-    for(let d=1; d<=daysInMonth; d++){
-      const key = dateKey(calY,calM,d);
-      const jsDate = new Date(calY,calM,d);
-      const isWeekend = jsDate.getDay()===0 || jsDate.getDay()===6;
-      const isToday = isCurrentMonth && today.getDate()===d;
-      const cell = document.createElement('div');
-      cell.className = 'cal-cell' + (isWeekend?' weekend':'') + (isToday?' today':'');
-      cell.onclick = ()=>openModal(key);
-      const bookings = DATA[key] || [];
-      const mins = dayTotalMinutes(key);
-      let html = `<div class="cal-daynum">${d}</div>`;
-      if(bookings.length>0){
-        html += `<div class="cal-dot"></div>`;
-        html += `<div class="cal-hours${mins===0?' zero':''}">${fmtHours(mins)}</div>`;
-        html += `<div class="cal-bookings-count">${bookings.length} Buchung${bookings.length>1?'en':''}</div>`;
+  async function dateiWaehlen(vomHandle) {
+    anmeldeFehlerWeg();
+    try {
+      var ergebnis = vomHandle ? await S.erneutOeffnen(HANDLE_KEY) : await S.oeffnen();
+      if (!ergebnis) {
+        anmeldeFehler('Die zuletzt verwendete Datei ist nicht mehr erreichbar. Bitte neu auswaehlen.');
+        await S.handleVergessen(HANDLE_KEY);
+        await zuletztAnbieten();
+        return;
       }
-      cell.innerHTML = html;
-      grid.appendChild(cell);
+
+      var datei;
+      try {
+        datei = JSON.parse(ergebnis.text);
+      } catch (e) {
+        anmeldeFehler('Die Datei laesst sich nicht lesen. Ist es wirklich Ihre Lizenzdatei?');
+        return;
+      }
+
+      if (L.istAltformat(datei)) {
+        anmeldeFehler('Diese Lizenzdatei stammt aus einer aelteren Version und wird aus ' +
+          'Sicherheitsgruenden nicht mehr angenommen. Bitte fordern Sie eine neue Datei an - ' +
+          'Ihre erfassten Daten werden dabei vollstaendig uebernommen.');
+        return;
+      }
+      if (!L.istHZL2(datei)) {
+        anmeldeFehler('Das ist keine HZ-Lizenzdatei.');
+        return;
+      }
+
+      gewaehlt = { datei: datei, handle: ergebnis.handle, name: ergebnis.name };
+
+      $('anmelde-chip').innerHTML =
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
+        '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>' +
+        '<span>' + U.esc(ergebnis.name) + '</span>';
+      $('anmelde-chip').classList.remove('hz-versteckt');
+      $('anmelde-passfeld').classList.remove('hz-versteckt');
+      $('btn-anmelden').classList.remove('hz-versteckt');
+      $('anmelde-pass').focus();
+    } catch (e) {
+      if (S.istAbbruch(e)) return;
+      anmeldeFehler('Die Datei konnte nicht geoeffnet werden: ' + e.message);
     }
   }
 
-  // ===================== Buchungs-Modal =====================
-  let modalKey = null;
-  let modalBookings = [];
-  function openModal(key){
-    modalKey = key;
-    modalBookings = JSON.parse(JSON.stringify(DATA[key] || []));
-    if(modalBookings.length===0) modalBookings.push({kommen:'', gehen:'', pause1:'', pause2:''});
-    const [y,m,d] = key.split('-').map(Number);
-    const jsDate = new Date(y,m-1,d);
-    const wd = WEEKDAY_NAMES[(jsDate.getDay()+6)%7];
-    document.getElementById('modal-date-label').textContent = `${wd}., ${pad(d)}.${pad(m)}.${y}`;
-    renderBookings();
-    document.getElementById('modal-overlay').classList.add('open');
-  }
-  function closeModal(){
-    document.getElementById('modal-overlay').classList.remove('open');
-    modalKey = null;
-  }
-  function addBookingRow(){
-    modalBookings.push({kommen:'', gehen:'', pause1:'', pause2:''});
-    renderBookings();
-  }
-  function removeBookingRow(idx){
-    modalBookings.splice(idx,1);
-    renderBookings();
-  }
-  function updateBookingField(idx, field, value){
-    modalBookings[idx][field] = value;
-    updateModalTotals();
-  }
-  function renderBookings(){
-    const container = document.getElementById('bookings-container');
-    if(modalBookings.length===0){
-      container.innerHTML = `<div class="empty-state">Keine Buchungen. Fügen Sie eine Buchung hinzu.</div>`;
-    } else {
-      container.innerHTML = modalBookings.map((b,idx)=>`
-        <div class="booking-card">
-          <div class="booking-card-head">
-            <span class="lbl">Buchung ${idx+1}</span>
-            ${modalBookings.length>1 ? `<button class="btn danger-ghost" onclick="removeBookingRow(${idx})">Entfernen</button>` : ''}
-          </div>
-          <div class="field-row">
-            <div class="field"><label>Kommen</label><input type="time" value="${b.kommen||''}" onchange="updateBookingField(${idx},'kommen',this.value)"></div>
-            <div class="field"><label>Gehen</label><input type="time" value="${b.gehen||''}" onchange="updateBookingField(${idx},'gehen',this.value)"></div>
-          </div>
-          <div class="field-row">
-            <div class="field"><label>Pause 1 (Min.)</label><input type="number" min="0" step="5" placeholder="0" value="${b.pause1||''}" onchange="updateBookingField(${idx},'pause1',this.value)"></div>
-            <div class="field"><label>Pause 2 (Min.)</label><input type="number" min="0" step="5" placeholder="0" value="${b.pause2||''}" onchange="updateBookingField(${idx},'pause2',this.value)"></div>
-          </div>
-          <div class="booking-net">Nettozeit dieser Buchung: <b>${fmtHours(bookingNetMinutes(b))}</b></div>
-        </div>`).join('');
-    }
-    updateModalTotals();
-  }
-  function updateModalTotals(){
-    const total = modalBookings.reduce((sum,b)=>sum+bookingNetMinutes(b),0);
-    document.getElementById('modal-day-total').textContent = fmtHours(total);
-  }
-  async function saveDay(){
-    const valid = modalBookings.filter(b=>b.kommen && b.gehen);
-    if(valid.length>0) DATA[modalKey] = valid; else delete DATA[modalKey];
-    closeModal();
-    renderCalendar();
-    refreshDashboardTile();
-    await persistLicense();
-  }
-  document.getElementById('modal-overlay').addEventListener('click', function(e){ if(e.target===this) closeModal(); });
-  document.getElementById('pw-modal-overlay').addEventListener('click', function(e){ if(e.target===this) closePasswordModal(); });
-  document.getElementById('info-modal-overlay').addEventListener('click', function(e){ if(e.target===this) closeInfoModal(); });
+  async function anmelden() {
+    anmeldeFehlerWeg();
+    if (!gewaehlt) { anmeldeFehler('Bitte zuerst eine Lizenzdatei auswaehlen.'); return; }
 
-  // ===================================================================
-  // ===================== HAUPTBUCH-MODUL ============================
-  // ===================================================================
+    var pass = $('anmelde-pass').value;
+    if (!pass) { anmeldeFehler('Bitte Passwort eingeben.'); return; }
 
-  // Vereinfachter Standard-Kontenrahmen (an SKR03 angelehnt, keine
-  // steuerlich geprüfte Vorlage – bei Bedarf mit Steuerberater abstimmen).
-  function defaultKontenrahmen(){
-    return [
-      // Aktiva
-      { nummer:'0100', name:'Grundstücke und Gebäude', typ:'aktiva' },
-      { nummer:'0200', name:'Technische Anlagen und Maschinen', typ:'aktiva' },
-      { nummer:'0300', name:'Betriebs- und Geschäftsausstattung', typ:'aktiva' },
-      { nummer:'0400', name:'Fuhrpark', typ:'aktiva' },
-      { nummer:'1000', name:'Kasse', typ:'aktiva' },
-      { nummer:'1200', name:'Bank', typ:'aktiva' },
-      { nummer:'1400', name:'Forderungen aus Lieferungen und Leistungen', typ:'aktiva' },
-      { nummer:'1500', name:'Vorsteuer', typ:'aktiva' },
-      { nummer:'1600', name:'Warenbestand', typ:'aktiva' },
-      // Passiva
-      { nummer:'2000', name:'Eigenkapital', typ:'passiva' },
-      { nummer:'3000', name:'Bankdarlehen', typ:'passiva' },
-      { nummer:'3300', name:'Verbindlichkeiten aus Lieferungen und Leistungen', typ:'passiva' },
-      { nummer:'3500', name:'Umsatzsteuer', typ:'passiva' },
-      { nummer:'3600', name:'Rückstellungen', typ:'passiva' },
-      // Erträge
-      { nummer:'4000', name:'Umsatzerlöse 19% USt', typ:'ertrag' },
-      { nummer:'4001', name:'Umsatzerlöse 7% USt', typ:'ertrag' },
-      { nummer:'4009', name:'Sonstige betriebliche Erträge', typ:'ertrag' },
-      // Aufwendungen
-      { nummer:'5000', name:'Wareneinkauf', typ:'aufwand' },
-      { nummer:'6000', name:'Löhne und Gehälter', typ:'aufwand' },
-      { nummer:'6100', name:'Sozialabgaben', typ:'aufwand' },
-      { nummer:'6200', name:'Miete', typ:'aufwand' },
-      { nummer:'6300', name:'Nebenkosten (Strom, Wasser, Heizung)', typ:'aufwand' },
-      { nummer:'6400', name:'Werbekosten', typ:'aufwand' },
-      { nummer:'6500', name:'Bürobedarf', typ:'aufwand' },
-      { nummer:'6600', name:'Telefon und Internet', typ:'aufwand' },
-      { nummer:'6700', name:'Versicherungen', typ:'aufwand' },
-      { nummer:'6800', name:'Kfz-Kosten', typ:'aufwand' },
-      { nummer:'6900', name:'Abschreibungen', typ:'aufwand' },
-      { nummer:'7000', name:'Zinsaufwendungen', typ:'aufwand' },
-      { nummer:'7900', name:'Sonstige betriebliche Aufwendungen', typ:'aufwand' }
-    ];
-  }
-  const HB_TYP_LABEL = { aktiva:'Aktiva', passiva:'Passiva', ertrag:'Ertrag', aufwand:'Aufwand' };
-  const HB_TYP_ORDER = ['aktiva','passiva','ertrag','aufwand'];
-
-  function ensureHauptbuch(){
-    if(!LICENSE.daten.hauptbuch){
-      LICENSE.daten.hauptbuch = { konten: defaultKontenrahmen(), buchungen: [] };
-    }
-    if(!LICENSE.daten.hauptbuch.konten) LICENSE.daten.hauptbuch.konten = defaultKontenrahmen();
-    if(!LICENSE.daten.hauptbuch.buchungen) LICENSE.daten.hauptbuch.buchungen = [];
-    HB = LICENSE.daten.hauptbuch;
-  }
-
-  function goToHauptbuch(){
-    ensureHauptbuch();
-    document.getElementById('view-dashboard').style.display='none';
-    document.getElementById('view-zeiterfassung').style.display='none';
-    document.getElementById('view-hauptbuch').style.display='block';
-    document.getElementById('crumb').textContent='/ Dashboard / Hauptbuch';
-    switchHbTab('konten');
-  }
-
-  function findKonto(nummer){
-    return HB.konten.find(k=>k.nummer===nummer);
-  }
-  function fmtBetrag(n){
-    return (Math.round((n+Number.EPSILON)*100)/100).toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' €';
-  }
-  function kontoSaldo(nummer){
-    const konto = findKonto(nummer);
-    if(!konto) return 0;
-    let soll=0, haben=0;
-    HB.buchungen.forEach(b=>{
-      if(b.sollKonto===nummer) soll+=b.betrag;
-      if(b.habenKonto===nummer) haben+=b.betrag;
-    });
-    return (konto.typ==='aktiva' || konto.typ==='aufwand') ? (soll-haben) : (haben-soll);
-  }
-
-  function switchHbTab(tab){
-    document.querySelectorAll('.hb-tab').forEach(btn=>{
-      btn.classList.toggle('active', btn.dataset.tab===tab);
-    });
-    ['konten','buchen','kontenblatt','bilanz','guv'].forEach(t=>{
-      document.getElementById('hb-panel-'+t).style.display = (t===tab) ? 'block' : 'none';
-    });
-    if(tab==='konten') renderKontenplanPanel();
-    else if(tab==='buchen') renderBuchenPanel();
-    else if(tab==='kontenblatt') renderKontenblattPanel();
-    else if(tab==='bilanz') renderBilanzPanel();
-    else if(tab==='guv') renderGuVPanel();
-  }
-
-  // ---------- Kontenplan ----------
-  function renderKontenplanPanel(){
-    const panel = document.getElementById('hb-panel-konten');
-    let rows = '';
-    HB_TYP_ORDER.forEach(typ=>{
-      const konten = HB.konten.filter(k=>k.typ===typ);
-      if(konten.length===0) return;
-      rows += `<tr class="hb-group-row"><td colspan="3">${HB_TYP_LABEL[typ]}</td></tr>`;
-      konten.forEach(k=>{
-        const saldo = kontoSaldo(k.nummer);
-        rows += `<tr>
-          <td>${k.nummer}</td>
-          <td>${k.name}</td>
-          <td class="num">${fmtBetrag(saldo)}</td>
-        </tr>`;
-      });
-    });
-    panel.innerHTML = `
-      <h4>Kontenplan</h4>
-      <table class="hb-table">
-        <thead><tr><th>Nummer</th><th>Bezeichnung</th><th style="text-align:right;">Saldo</th></tr></thead>
-        <tbody>${rows}</tbody>
-      </table>
-      <div class="hb-mini-form">
-        <div class="hb-field" style="width:100px;">
-          <label>Nummer</label>
-          <input type="text" id="nk-nummer" placeholder="z. B. 4500">
-        </div>
-        <div class="hb-field" style="flex:1;min-width:180px;">
-          <label>Bezeichnung</label>
-          <input type="text" id="nk-name" placeholder="Kontobezeichnung">
-        </div>
-        <div class="hb-field" style="width:150px;">
-          <label>Typ</label>
-          <select id="nk-typ">
-            <option value="aktiva">Aktiva</option>
-            <option value="passiva">Passiva</option>
-            <option value="ertrag">Ertrag</option>
-            <option value="aufwand">Aufwand</option>
-          </select>
-        </div>
-        <button class="btn" onclick="addKonto()">Konto anlegen</button>
-      </div>
-    `;
-  }
-
-  async function addKonto(){
-    const nummer = document.getElementById('nk-nummer').value.trim();
-    const name = document.getElementById('nk-name').value.trim();
-    const typ = document.getElementById('nk-typ').value;
-    if(!nummer || !name){ alert('Bitte Kontonummer und Bezeichnung eingeben.'); return; }
-    if(findKonto(nummer)){ alert('Diese Kontonummer existiert bereits.'); return; }
-    HB.konten.push({ nummer, name, typ });
-    HB.konten.sort((a,b)=> a.nummer.localeCompare(b.nummer, 'de', {numeric:true}));
-    await persistLicense();
-    renderKontenplanPanel();
-    refreshKontenblattSelect();
-    refreshBuchenSelects();
-  }
-
-  // ---------- Buchen ----------
-  function kontoOptionsHtml(selected){
-    return HB.konten.map(k=>`<option value="${k.nummer}" ${k.nummer===selected?'selected':''}>${k.nummer} – ${k.name}</option>`).join('');
-  }
-
-  function renderBuchenPanel(){
-    const panel = document.getElementById('hb-panel-buchen');
-    const today = new Date().toISOString().slice(0,10);
-    panel.innerHTML = `
-      <h4>Neuen Buchungssatz erfassen</h4>
-      <div class="hb-form-row">
-        <div class="hb-field"><label>Datum</label><input type="date" id="bs-datum" value="${today}"></div>
-        <div class="hb-field"><label>Betrag (€)</label><input type="number" id="bs-betrag" min="0" step="0.01" placeholder="0,00"></div>
-      </div>
-      <div class="hb-form-row">
-        <div class="hb-field"><label>Soll-Konto</label><select id="bs-soll">${kontoOptionsHtml()}</select></div>
-        <div class="hb-field"><label>Haben-Konto</label><select id="bs-haben">${kontoOptionsHtml()}</select></div>
-      </div>
-      <div class="hb-field" style="margin-bottom:14px;">
-        <label>Buchungstext</label>
-        <input type="text" id="bs-text" placeholder="z. B. Büromaterial Rechnung Nr. 123">
-      </div>
-      <button class="btn" onclick="saveBooking()">Buchen</button>
-
-      <h4 class="spaced">Letzte Buchungen</h4>
-      <div id="bs-recent"></div>
-    `;
-    renderRecentBookings();
-  }
-
-  function renderRecentBookings(){
-    const el = document.getElementById('bs-recent');
-    if(!el) return;
-    const sorted = [...HB.buchungen].sort((a,b)=> b.datum.localeCompare(a.datum) || b.id - a.id).slice(0,15);
-    if(sorted.length===0){
-      el.innerHTML = `<div class="hb-empty">Noch keine Buchungen erfasst.</div>`;
+    if (!HZ.haendlerSchluessel || !HZ.haendlerSchluessel.signatur) {
+      anmeldeFehler('In diesem Programm ist kein Haendlerschluessel hinterlegt. ' +
+        'Es kann deshalb nicht pruefen, ob eine Lizenz echt ist. Bitte wenden Sie sich an Ihren Anbieter.');
       return;
     }
-    el.innerHTML = `
-      <table class="hb-table">
-        <thead><tr><th>Datum</th><th>Soll</th><th>Haben</th><th style="text-align:right;">Betrag</th><th>Text</th><th></th></tr></thead>
-        <tbody>
-          ${sorted.map(b=>`
-            <tr>
-              <td>${formatDateDe(b.datum)}</td>
-              <td>${b.sollKonto}</td>
-              <td>${b.habenKonto}</td>
-              <td class="num">${fmtBetrag(b.betrag)}</td>
-              <td>${b.text||''}</td>
-              <td class="center"><button class="btn danger-ghost" onclick="deleteBooking(${b.id})">Löschen</button></td>
-            </tr>`).join('')}
-        </tbody>
-      </table>
-    `;
+
+    var btn = $('btn-anmelden');
+    btn.disabled = true;
+    btn.textContent = 'Wird geprueft…';
+
+    try {
+      var verifyKey = await K.verifyKeyImportieren(HZ.haendlerSchluessel.signatur);
+      var auf;
+      try {
+        auf = await L.oeffnenMitPasswort(gewaehlt.datei, pass, verifyKey);
+      } catch (e) {
+        anmeldeFehler(e.code === 'passwort' ? 'Falsches Passwort.' : e.message);
+        return;
+      }
+
+      /* Ohne gueltige Signatur geht es nicht weiter. Genau hier
+         scheitert eine von Hand veraenderte Lizenzdatei. */
+      if (!auf.signaturOk) {
+        anmeldeFehler('Diese Lizenzdatei ist nicht gueltig signiert. Sie wurde entweder ' +
+          'veraendert oder stammt nicht von Ihrem Anbieter. Bitte fordern Sie eine neue Datei an.');
+        return;
+      }
+
+      if (L.abgelaufen(auf.inhalt)) {
+        var bis = auf.inhalt.gueltigBis ? ' am ' + U.datumDe(auf.inhalt.gueltigBis) : '';
+        anmeldeFehler('Ihr Abo ist' + bis + ' abgelaufen. Bitte kontaktieren Sie uns zur Verlaengerung.');
+        return;
+      }
+
+      sitzung = {
+        datei: gewaehlt.datei,
+        inhalt: auf.inhalt,
+        dek: auf.dek,
+        handle: gewaehlt.handle,
+        dateiname: gewaehlt.name,
+        verifyKey: verifyKey
+      };
+      if (gewaehlt.handle) await S.handleMerken(HANDLE_KEY, gewaehlt.handle);
+
+      $('anmelde-pass').value = '';
+      starten();
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Anmelden';
+    }
   }
 
-  async function saveBooking(){
-    const datum = document.getElementById('bs-datum').value;
-    const betrag = parseFloat(document.getElementById('bs-betrag').value);
-    const soll = document.getElementById('bs-soll').value;
-    const haben = document.getElementById('bs-haben').value;
-    const text = document.getElementById('bs-text').value.trim();
+  /* =========================================================
+     Anwendung starten
+     ========================================================= */
+  function starten() {
+    $('ansicht-anmeldung').classList.add('hz-versteckt');
+    $('ansicht-app').classList.remove('hz-versteckt');
+    $('schreib-banner').classList.toggle('hz-versteckt', !!sitzung.handle);
 
-    if(!datum){ alert('Bitte ein Datum wählen.'); return; }
-    if(!betrag || betrag<=0){ alert('Bitte einen gültigen Betrag eingeben.'); return; }
-    if(soll===haben){ alert('Soll-Konto und Haben-Konto dürfen nicht identisch sein.'); return; }
+    var kunde = sitzung.inhalt.kunde || 'Kunde';
+    $('nutzer-kuerzel').textContent = kuerzel(kunde);
+    $('nutzer-name').textContent = kunde;
+    $('willkommen').textContent = 'Willkommen zurueck, ' + kunde;
+
+    laufzeitAnzeigen();
+    navZeichnen();
+    kachelnZeichnen();
+    zurUebersicht();
+    speicherstand('gespeichert');
+  }
+
+  function kuerzel(name) {
+    var teile = String(name).trim().split(/\s+/).filter(Boolean);
+    if (teile.length > 1) return (teile[0][0] + teile[1][0]).toUpperCase();
+    return String(name).trim().slice(0, 2).toUpperCase();
+  }
+
+  function laufzeitAnzeigen() {
+    var tage = L.tageBisAblauf(sitzung.inhalt);
+    var bis = U.datumDe(sitzung.inhalt.gueltigBis);
+    var text = 'Lizenz gueltig bis ' + bis;
+    var art = tage <= 14 ? 'gefahr' : (tage <= 30 ? 'warn' : 'info');
+
+    $('nutzer-lizenz').textContent = text + (tage <= 30 ? ' · noch ' + tage + ' Tage' : '');
+    $('sl-lizenz').innerHTML =
+      '<span class="hz-marke ' + art + '">' + (tage <= 30 ? 'noch ' + tage + ' Tage' : 'aktiv') + '</span>' +
+      '<div class="sl-lizenz-text">' + U.esc(text) + '</div>';
+
+    if (tage <= 30) {
+      U.toast('Ihre Lizenz laeuft in ' + tage + ' Tagen ab. Bitte rechtzeitig verlaengern.',
+        tage <= 14 ? 'fehler' : 'warn', 9000);
+    }
+  }
+
+  /* =========================================================
+     Navigation
+     ========================================================= */
+  function navZeichnen() {
+    var html = '<button type="button" class="sl-eintrag aktiv" data-ziel="uebersicht">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+      '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>' +
+      '<rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>' +
+      '<span>Uebersicht</span></button>';
+
+    html += register.map(function (def) {
+      var frei = nutzbar(def);
+      return '<button type="button" class="sl-eintrag' + (frei ? '' : ' gesperrt') + '" data-ziel="' +
+        U.esc(def.key) + '"' + (frei ? '' : ' aria-disabled="true"') + '>' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+        def.icon + '</svg><span>' + U.esc(def.name) + '</span>' +
+        (frei ? '' : '<svg class="schloss" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
+          '<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>') +
+        '</button>';
+    }).join('');
+
+    $('sl-nav').innerHTML = html;
+    Array.prototype.forEach.call($('sl-nav').children, function (b) {
+      b.addEventListener('click', function () { navKlick(b.dataset.ziel); });
+    });
+  }
+
+  function navKlick(ziel) {
+    navSchliessen();
+    if (ziel === 'uebersicht') { zurUebersicht(); return; }
+    var def = register.filter(function (d) { return d.key === ziel; })[0];
+    if (!def) return;
+    if (!nutzbar(def)) { gesperrtErklaeren(def); return; }
+    modulOeffnen(def);
+  }
+
+  function navMarkieren(ziel) {
+    Array.prototype.forEach.call($('sl-nav').children, function (b) {
+      b.classList.toggle('aktiv', b.dataset.ziel === ziel);
+    });
+  }
+
+  function zurUebersicht() {
+    offen = null;
+    $('ansicht-uebersicht').classList.remove('hz-versteckt');
+    $('ansicht-modul').classList.add('hz-versteckt');
+    $('ansicht-modul').innerHTML = '';
+    $('pfad').textContent = 'Uebersicht';
+    navMarkieren('uebersicht');
+    kachelnZeichnen();
+  }
+
+  function modulOeffnen(def) {
+    offen = def;
+    $('ansicht-uebersicht').classList.add('hz-versteckt');
+    $('ansicht-modul').classList.remove('hz-versteckt');
+    $('pfad').textContent = def.name;
+    navMarkieren(def.key);
+    $('ansicht-modul').innerHTML = '';
+    def.oeffnen($('ansicht-modul'));
+    $('inhalt').scrollTop = 0;
+  }
+
+  function gesperrtErklaeren(def) {
+    if (!def.gebaut) {
+      U.hinweis('Das Modul "' + def.name + '" befindet sich noch in Entwicklung und kommt ' +
+        'mit einer der naechsten Versionen.', 'Bald verfuegbar');
+    } else {
+      U.dialog({
+        titel: 'Modul nicht freigeschaltet',
+        html: '<p>Das Modul <b>' + U.esc(def.name) + '</b> ist fuer Ihre Lizenz nicht freigeschaltet.</p>' +
+          '<p>Wir koennen es jederzeit nachtraeglich aktivieren - Ihre bereits erfassten ' +
+          'Daten bleiben dabei vollstaendig erhalten.</p>',
+        knoepfe: [
+          { text: 'Schliessen', wert: false, stil: 'sekundaer' },
+          { text: 'Per WhatsApp anfragen', wert: true, stil: 'primaer' }
+        ]
+      }).then(function (w) {
+        if (w) window.open('https://wa.me/49XXXXXXXXXX', '_blank', 'noopener');
+      });
+    }
+  }
+
+  /* =========================================================
+     Kacheln
+     ========================================================= */
+  function kachelnZeichnen() {
+    $('kachel-gitter').innerHTML = register.map(function (def) {
+      var frei = nutzbar(def);
+      var text = frei
+        ? (def.kachelText ? def.kachelText() : '')
+        : (!def.gebaut ? 'Kommt mit der naechsten Version' : 'Nicht freigeschaltet');
+      var marke = !def.gebaut
+        ? '<span class="hz-marke">Bald verfuegbar</span>'
+        : (!frei ? '<span class="hz-marke warn">Nicht freigeschaltet</span>' : '');
+
+      return '<button type="button" class="kachel' + (frei ? '' : ' gesperrt') + '" data-ziel="' + U.esc(def.key) + '">' +
+        marke +
+        '<span class="kachel-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+        'stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + def.icon + '</svg></span>' +
+        '<span class="kachel-name">' + U.esc(def.name) + '</span>' +
+        '<span class="kachel-text">' + text + '</span>' +
+        '</button>';
+    }).join('');
+
+    Array.prototype.forEach.call($('kachel-gitter').children, function (b) {
+      b.addEventListener('click', function () { navKlick(b.dataset.ziel); });
+    });
+  }
+
+  /* =========================================================
+     Speichern
+     ========================================================= */
+  function speicherstand(zustand, zusatz) {
+    var el = $('speicherstand');
+    el.dataset.zustand = zustand;
+    var text = el.querySelector('.text');
+    if (zustand === 'gespeichert') text.textContent = zusatz ? 'Gespeichert ' + zusatz : 'Gespeichert';
+    else if (zustand === 'offen') text.textContent = 'Nicht gespeichert';
+    else if (zustand === 'laeuft') text.textContent = 'Speichert…';
+    else if (zustand === 'fehler') text.textContent = 'Nicht gespeichert';
+  }
+
+  function markieren() {
+    schmutzig = true;
+    speicherstand('offen');
+    if (speicherTimer) clearTimeout(speicherTimer);
+    speicherTimer = setTimeout(function () { speichern(false); }, AUTOSPEICHERN_MS);
+  }
+
+  async function speichern(manuell) {
+    if (!sitzung) return false;
+    if (speichertGerade) return false;
+    if (!schmutzig && !manuell) return true;
+
+    if (speicherTimer) { clearTimeout(speicherTimer); speicherTimer = null; }
+    speichertGerade = true;
+    speicherstand('laeuft');
+
+    try {
+      await L.inhaltSchreiben(sitzung.datei, sitzung.dek, sitzung.inhalt);
+      var text = JSON.stringify(sitzung.datei, null, 2);
+
+      if (sitzung.handle) {
+        await S.schreiben(sitzung.handle, text);
+        schmutzig = false;
+        speicherstand('gespeichert', U.uhrzeit());
+        if (manuell) U.toast('In ' + sitzung.dateiname + ' gespeichert.', 'erfolg');
+        return true;
+      }
+
+      /* Ohne Schreibzugriff: nur auf ausdrueckliche Anweisung
+         herunterladen, sonst wuerde bei jeder Eingabe eine Datei
+         im Download-Ordner landen. */
+      if (manuell) {
+        S.herunterladen(text, S.dateinameAus(sitzung.inhalt.kunde, 'lizenz'));
+        schmutzig = false;
+        speicherstand('gespeichert', U.uhrzeit());
+        U.toast('Aktualisierte Datei heruntergeladen. Bitte ersetzen Sie damit Ihre bisherige.', 'erfolg', 6000);
+        return true;
+      }
+      speicherstand('offen');
+      return false;
+    } catch (e) {
+      speicherstand('fehler');
+      U.toast('Speichern fehlgeschlagen: ' + e.message, 'fehler');
+      return false;
+    } finally {
+      speichertGerade = false;
+    }
+  }
+
+  async function sicherungHerunterladen() {
+    menueZu();
+    await L.inhaltSchreiben(sitzung.datei, sitzung.dek, sitzung.inhalt);
+    var name = S.dateinameAus(sitzung.inhalt.kunde, 'lizenz', '') + '_' + U.isoTag() + '.json';
+    S.herunterladen(JSON.stringify(sitzung.datei, null, 2), name);
+    U.toast('Sicherungskopie ' + name + ' erstellt.', 'erfolg');
+  }
+
+  /* =========================================================
+     Passwort aendern
+     ========================================================= */
+  async function passwortAendern() {
+    menueZu();
+    var p = U.dialog({
+      titel: 'Passwort aendern',
+      html:
+        '<p>Das neue Passwort gilt sofort fuer Ihre Lizenzdatei. Ihre erfassten Daten ' +
+        'bleiben unveraendert.</p>' +
+        '<div class="hz-feld"><label for="pw1">Neues Passwort</label>' +
+        '<input type="password" id="pw1" autocomplete="new-password"></div>' +
+        '<div class="hz-staerke" id="pw-staerke" data-stufe="leer">' +
+        '<div class="hz-staerke-balken"><i></i></div><span class="text">Kein Passwort</span></div>' +
+        '<div class="hz-feld" style="margin-top:14px;"><label for="pw2">Neues Passwort wiederholen</label>' +
+        '<input type="password" id="pw2" autocomplete="new-password"></div>',
+      knoepfe: [
+        { text: 'Abbrechen', wert: null, stil: 'sekundaer' },
+        { text: 'Aendern und speichern', wert: 'ok', stil: 'primaer' }
+      ]
+    });
+
+    setTimeout(function () {
+      var e1 = $('pw1');
+      if (!e1) return;
+      e1.addEventListener('input', function () {
+        var st = K.passwortStaerke(e1.value);
+        var el = $('pw-staerke');
+        if (!el) return;
+        el.dataset.stufe = st.stufe;
+        el.querySelector('.text').textContent = e1.value ? st.text + ' · ' + st.bits + ' Bit' : 'Kein Passwort';
+      });
+    }, 0);
+
+    var p1 = '', p2 = '';
+    p.then(function () {
+      var a = $('pw1'), b = $('pw2');
+      p1 = a ? a.value : '';
+      p2 = b ? b.value : '';
+    });
+
+    if ((await p) !== 'ok') return;
+
+    if (!p1 || p1.length < 10) { U.toast('Das Passwort braucht mindestens 10 Zeichen.', 'fehler'); return; }
+    if (p1 !== p2) { U.toast('Die Passwoerter stimmen nicht ueberein.', 'fehler'); return; }
+
+    try {
+      await L.passwortSetzen(sitzung.datei, sitzung.dek, p1);
+      schmutzig = true;
+      var ok = await speichern(true);
+      U.toast(ok ? 'Passwort geaendert und gespeichert.'
+                 : 'Passwort geaendert - bitte die Datei noch speichern.', ok ? 'erfolg' : 'warn');
+    } catch (e) {
+      U.toast('Passwortwechsel fehlgeschlagen: ' + e.message, 'fehler');
+    }
+  }
+
+  /* =========================================================
+     Abmelden
+     ========================================================= */
+  async function abmelden() {
+    menueZu();
+    if (schmutzig) {
+      var w = await U.dialog({
+        titel: 'Nicht gespeicherte Aenderungen',
+        text: 'Es gibt Aenderungen, die noch nicht in der Datei stehen.',
+        knoepfe: [
+          { text: 'Abbrechen', wert: 'abbruch', stil: 'sekundaer' },
+          { text: 'Verwerfen', wert: 'verwerfen', stil: 'gefahr' },
+          { text: 'Speichern und abmelden', wert: 'speichern', stil: 'primaer' }
+        ]
+      });
+      if (w === 'abbruch' || w === null) return;
+      if (w === 'speichern' && !(await speichern(true))) return;
+    }
+
+    sitzung = null; offen = null; schmutzig = false; gewaehlt = null;
+    if (speicherTimer) { clearTimeout(speicherTimer); speicherTimer = null; }
+
+    $('ansicht-app').classList.add('hz-versteckt');
+    $('ansicht-anmeldung').classList.remove('hz-versteckt');
+    $('anmelde-chip').classList.add('hz-versteckt');
+    $('anmelde-passfeld').classList.add('hz-versteckt');
+    $('btn-anmelden').classList.add('hz-versteckt');
+    $('anmelde-pass').value = '';
+    anmeldeFehlerWeg();
+    zuletztAnbieten();
+  }
+
+  /* =========================================================
+     Menue und Navigation (klein)
+     ========================================================= */
+  function menueAuf() {
+    $('nutzer-menue').classList.add('offen');
+    $('btn-nutzer').setAttribute('aria-expanded', 'true');
+  }
+  function menueZu() {
+    $('nutzer-menue').classList.remove('offen');
+    $('btn-nutzer').setAttribute('aria-expanded', 'false');
+  }
+  function navAuf() {
+    $('seitenleiste').classList.add('offen');
+    $('seitenleiste-schleier').classList.add('offen');
+  }
+  function navSchliessen() {
+    $('seitenleiste').classList.remove('offen');
+    $('seitenleiste-schleier').classList.remove('offen');
+  }
+
+  /* =========================================================
+     Start
+     ========================================================= */
+  function start() {
+    if (!K.verfuegbar()) {
+      document.body.innerHTML =
+        '<div class="hz-karte" style="max-width:520px;margin:60px auto;">' +
+        '<h3>Verschluesselung nicht verfuegbar</h3>' +
+        '<p>Dieser Seite fehlt <span class="hz-mono">crypto.subtle</span>. Bitte oeffnen Sie ' +
+        'die Datei direkt im Browser oder ueber eine https-Adresse.</p></div>';
+      return;
+    }
+
+    zuletztAnbieten();
+
+    $('btn-datei-waehlen').addEventListener('click', function () { dateiWaehlen(false); });
+    $('btn-zuletzt').addEventListener('click', function () { dateiWaehlen(true); });
+    $('btn-anmelden').addEventListener('click', anmelden);
+    $('anmelde-pass').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); anmelden(); }
+    });
+    $('btn-pass-zeigen').addEventListener('click', function () {
+      var f = $('anmelde-pass');
+      var zeigen = f.type === 'password';
+      f.type = zeigen ? 'text' : 'password';
+      this.textContent = zeigen ? 'verbergen' : 'anzeigen';
+    });
+    $('btn-theme-anmeldung').addEventListener('click', function () { U.themeUmschalten(); });
+    $('btn-theme').addEventListener('click', function () { U.themeUmschalten(); });
+
+    $('btn-nutzer').addEventListener('click', function (e) {
+      e.stopPropagation();
+      $('nutzer-menue').classList.contains('offen') ? menueZu() : menueAuf();
+    });
+    document.addEventListener('click', function (e) {
+      if (!e.target.closest('.nutzer-wrap')) menueZu();
+    });
+
+    $('btn-speichern').addEventListener('click', function () { menueZu(); speichern(true); });
+    $('btn-passwort').addEventListener('click', passwortAendern);
+    $('btn-kopie').addEventListener('click', sicherungHerunterladen);
+    $('btn-abmelden').addEventListener('click', abmelden);
+
+    $('btn-nav-auf').addEventListener('click', navAuf);
+    $('btn-nav-zu').addEventListener('click', navSchliessen);
+    $('seitenleiste-schleier').addEventListener('click', navSchliessen);
+
+    /* Strg+S ist die Geste, die jeder kennt. */
+    document.addEventListener('keydown', function (e) {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        if (!sitzung) return;
+        e.preventDefault();
+        speichern(true);
+      }
+    });
+
+    /* Letzte Rettung: der Browser fragt nach, wenn ungespeicherte
+       Aenderungen offen sind. */
+    window.addEventListener('beforeunload', function (e) {
+      if (!schmutzig) return;
+      e.preventDefault();
+      e.returnValue = '';
+    });
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+  else start();
+})();
+
+
+/* ===== erp/erp-zeit.js ===== */
+/* =============================================================
+   HZ · Modul Zeiterfassung
+   -------------------------------------------------------------
+   Kennt weder Dateien noch Verschluesselung. Es liest und
+   schreibt HZ.app.daten().zeiterfassung und meldet Aenderungen
+   mit HZ.app.geaendert() an - den Rest erledigt die Schale.
+   ============================================================= */
+(function () {
+  'use strict';
+
+  var U = HZ.ui;
+  var $ = U.$;
+
+  var WOCHENTAGE = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+  var MONATE = ['Januar', 'Februar', 'Maerz', 'April', 'Mai', 'Juni',
+                'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+
+  var kalJahr, kalMonat;
+  var modalKey = null;
+  var modalBuchungen = [];
+
+  function daten() {
+    var d = HZ.app.daten();
+    if (!d.zeiterfassung) d.zeiterfassung = {};
+    return d.zeiterfassung;
+  }
+
+  /* ---------- Rechnen ---------- */
+  function tagKey(j, m, t) { return j + '-' + U.pad(m + 1) + '-' + U.pad(t); }
+
+  function stunden(minuten) {
+    if (!minuten || minuten <= 0) return '0,0 Std';
+    return (minuten / 60).toFixed(1).replace('.', ',') + ' Std';
+  }
+
+  function zeitZuMinuten(t) {
+    if (!t) return null;
+    var teile = String(t).split(':');
+    if (teile.length !== 2) return null;
+    var h = Number(teile[0]), m = Number(teile[1]);
+    if (isNaN(h) || isNaN(m)) return null;
+    return h * 60 + m;
+  }
+
+  function nettoMinuten(b) {
+    var start = zeitZuMinuten(b.kommen), ende = zeitZuMinuten(b.gehen);
+    if (start === null || ende === null) return 0;
+    var diff = ende - start;
+    if (diff < 0) diff += 24 * 60;   // ueber Mitternacht
+    var netto = diff - (Number(b.pause1) || 0) - (Number(b.pause2) || 0);
+    return netto > 0 ? netto : 0;
+  }
+
+  function tagesSumme(key) {
+    return (daten()[key] || []).reduce(function (s, b) { return s + nettoMinuten(b); }, 0);
+  }
+
+  function monatsSumme(j, m) {
+    var d = daten(), summe = 0;
+    Object.keys(d).forEach(function (key) {
+      var teile = key.split('-');
+      if (Number(teile[0]) === j && Number(teile[1]) === m + 1) summe += tagesSumme(key);
+    });
+    return summe;
+  }
+
+  /* ---------- Ansicht ---------- */
+  function oeffnen(behaelter) {
+    var jetzt = new Date();
+    kalJahr = jetzt.getFullYear();
+    kalMonat = jetzt.getMonth();
+
+    behaelter.innerHTML =
+      '<h1 class="hz-titel">Zeiterfassung</h1>' +
+      '<p class="hz-untertitel">Klicken Sie auf einen Tag, um Kommen und Gehen zu erfassen.</p>' +
+      '<div class="monatsleiste">' +
+        '<button type="button" class="hz-btn leise rund" id="zt-zurueck" aria-label="Vorheriger Monat">&#8249;</button>' +
+        '<div class="monatsname" id="zt-monat"></div>' +
+        '<button type="button" class="hz-btn leise rund" id="zt-vor" aria-label="Naechster Monat">&#8250;</button>' +
+        '<button type="button" class="hz-btn sekundaer klein" id="zt-heute">Heute</button>' +
+        '<div class="hz-dehnen"></div>' +
+        '<div class="monatssumme">Monatssumme <b id="zt-summe">0,0 Std</b></div>' +
+      '</div>' +
+      '<div class="kalender">' +
+        '<div class="kal-wochentage">' +
+          WOCHENTAGE.map(function (w) { return '<div>' + w + '</div>'; }).join('') +
+        '</div>' +
+        '<div class="kal-gitter" id="zt-gitter"></div>' +
+      '</div>';
+
+    $('zt-zurueck').addEventListener('click', function () { monatWechseln(-1); });
+    $('zt-vor').addEventListener('click', function () { monatWechseln(1); });
+    $('zt-heute').addEventListener('click', function () {
+      var n = new Date();
+      kalJahr = n.getFullYear(); kalMonat = n.getMonth();
+      kalenderZeichnen();
+    });
+
+    kalenderZeichnen();
+  }
+
+  function monatWechseln(schritt) {
+    kalMonat += schritt;
+    if (kalMonat < 0) { kalMonat = 11; kalJahr--; }
+    if (kalMonat > 11) { kalMonat = 0; kalJahr++; }
+    kalenderZeichnen();
+  }
+
+  function kalenderZeichnen() {
+    $('zt-monat').textContent = MONATE[kalMonat] + ' ' + kalJahr;
+    $('zt-summe').textContent = stunden(monatsSumme(kalJahr, kalMonat));
+
+    var gitter = $('zt-gitter');
+    gitter.innerHTML = '';
+
+    var ersterTag = new Date(kalJahr, kalMonat, 1).getDay();
+    var startSpalte = (ersterTag === 0) ? 6 : ersterTag - 1;   // Woche beginnt Montag
+    var tageImMonat = new Date(kalJahr, kalMonat + 1, 0).getDate();
+
+    var heute = new Date();
+    var istAktuellerMonat = heute.getFullYear() === kalJahr && heute.getMonth() === kalMonat;
+
+    for (var i = 0; i < startSpalte; i++) {
+      var leer = document.createElement('div');
+      leer.className = 'kal-zelle leer';
+      gitter.appendChild(leer);
+    }
+
+    var d = daten();
+    for (var t = 1; t <= tageImMonat; t++) {
+      (function (tag) {
+        var key = tagKey(kalJahr, kalMonat, tag);
+        var datum = new Date(kalJahr, kalMonat, tag);
+        var wochenende = datum.getDay() === 0 || datum.getDay() === 6;
+        var istHeute = istAktuellerMonat && heute.getDate() === tag;
+
+        var zelle = document.createElement('button');
+        zelle.type = 'button';
+        zelle.className = 'kal-zelle' + (wochenende ? ' wochenende' : '') + (istHeute ? ' heute' : '');
+        zelle.addEventListener('click', function () { modalOeffnen(key); });
+
+        var buchungen = d[key] || [];
+        var minuten = tagesSumme(key);
+        var html = '<span class="kal-tag">' + tag + '</span>';
+        if (buchungen.length > 0) {
+          html += '<span class="kal-stunden">' + stunden(minuten) + '</span>' +
+                  '<span class="kal-anzahl">' + buchungen.length +
+                  ' Buchung' + (buchungen.length > 1 ? 'en' : '') + '</span>';
+        }
+        zelle.innerHTML = html;
+        zelle.setAttribute('aria-label',
+          U.pad(tag) + '.' + U.pad(kalMonat + 1) + '.' + kalJahr +
+          (buchungen.length ? ', ' + stunden(minuten) : ', keine Buchung'));
+        gitter.appendChild(zelle);
+      })(t);
+    }
+  }
+
+  /* ---------- Tagesdialog ---------- */
+  function modalOeffnen(key) {
+    modalKey = key;
+    modalBuchungen = JSON.parse(JSON.stringify(daten()[key] || []));
+    if (modalBuchungen.length === 0) modalBuchungen.push(leereBuchung());
+
+    var teile = key.split('-').map(Number);
+    var datum = new Date(teile[0], teile[1] - 1, teile[2]);
+    var wt = WOCHENTAGE[(datum.getDay() + 6) % 7];
+
+    U.dialog({
+      titel: 'Zeitbuchung',
+      html:
+        '<div class="tages-kopf">' +
+          '<span>' + wt + '., ' + U.pad(teile[2]) + '.' + U.pad(teile[1]) + '.' + teile[0] + '</span>' +
+          '<b id="zt-tagsumme">0,0 Std</b>' +
+        '</div>' +
+        '<div id="zt-buchungen"></div>' +
+        '<button type="button" class="hz-btn sekundaer breit" id="zt-plus" style="margin-top:10px;">' +
+        '+ Weitere Buchung</button>',
+      knoepfe: [
+        { text: 'Abbrechen', wert: null, stil: 'sekundaer' },
+        { text: 'Speichern', wert: 'ok', stil: 'primaer' }
+      ]
+    }).then(function (w) {
+      if (w !== 'ok') return;
+      var gueltig = modalBuchungen.filter(function (b) { return b.kommen && b.gehen; });
+      var d = daten();
+      if (gueltig.length > 0) d[modalKey] = gueltig; else delete d[modalKey];
+      HZ.app.geaendert();
+      kalenderZeichnen();
+      U.toast(gueltig.length ? 'Buchungen uebernommen.' : 'Tag geleert.', 'erfolg');
+    });
+
+    setTimeout(function () {
+      buchungenZeichnen();
+      var plus = $('zt-plus');
+      if (plus) plus.addEventListener('click', function () {
+        modalBuchungen.push(leereBuchung());
+        buchungenZeichnen();
+      });
+    }, 0);
+  }
+
+  function leereBuchung() { return { kommen: '', gehen: '', pause1: '', pause2: '' }; }
+
+  function buchungenZeichnen() {
+    var el = $('zt-buchungen');
+    if (!el) return;
+
+    el.innerHTML = modalBuchungen.map(function (b, i) {
+      return '<div class="buchung">' +
+        '<div class="buchung-kopf">' +
+          '<span class="buchung-nr">Buchung ' + (i + 1) + '</span>' +
+          (modalBuchungen.length > 1
+            ? '<button type="button" class="hz-btn gefahr klein" data-weg="' + i + '">Entfernen</button>'
+            : '') +
+        '</div>' +
+        '<div class="hz-feld-reihe">' +
+          '<div class="hz-feld"><label>Kommen</label>' +
+          '<input type="time" data-idx="' + i + '" data-feld="kommen" value="' + U.esc(b.kommen || '') + '"></div>' +
+          '<div class="hz-feld"><label>Gehen</label>' +
+          '<input type="time" data-idx="' + i + '" data-feld="gehen" value="' + U.esc(b.gehen || '') + '"></div>' +
+        '</div>' +
+        '<div class="hz-feld-reihe">' +
+          '<div class="hz-feld"><label>Pause 1 (Min.)</label>' +
+          '<input type="number" min="0" step="5" placeholder="0" data-idx="' + i + '" data-feld="pause1" value="' + U.esc(b.pause1 || '') + '"></div>' +
+          '<div class="hz-feld"><label>Pause 2 (Min.)</label>' +
+          '<input type="number" min="0" step="5" placeholder="0" data-idx="' + i + '" data-feld="pause2" value="' + U.esc(b.pause2 || '') + '"></div>' +
+        '</div>' +
+        '<div class="buchung-netto">Nettozeit <b>' + stunden(nettoMinuten(b)) + '</b></div>' +
+      '</div>';
+    }).join('');
+
+    Array.prototype.forEach.call(el.querySelectorAll('input[data-idx]'), function (inp) {
+      inp.addEventListener('input', function () {
+        modalBuchungen[Number(inp.dataset.idx)][inp.dataset.feld] = inp.value;
+        summenAktualisieren();
+      });
+    });
+    Array.prototype.forEach.call(el.querySelectorAll('[data-weg]'), function (btn) {
+      btn.addEventListener('click', function () {
+        modalBuchungen.splice(Number(btn.dataset.weg), 1);
+        buchungenZeichnen();
+      });
+    });
+
+    summenAktualisieren();
+  }
+
+  function summenAktualisieren() {
+    var gesamt = modalBuchungen.reduce(function (s, b) { return s + nettoMinuten(b); }, 0);
+    var el = $('zt-tagsumme');
+    if (el) el.textContent = stunden(gesamt);
+
+    Array.prototype.forEach.call(document.querySelectorAll('#zt-buchungen .buchung'), function (k, i) {
+      var b = k.querySelector('.buchung-netto b');
+      if (b && modalBuchungen[i]) b.textContent = stunden(nettoMinuten(modalBuchungen[i]));
+    });
+  }
+
+  /* ---------- Anmeldung bei der Schale ---------- */
+  HZ.app.modul({
+    key: 'zeiterfassung',
+    name: 'Zeiterfassung',
+    gebaut: true,
+    icon: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/>',
+    kachelText: function () {
+      var jetzt = new Date();
+      return stunden(monatsSumme(jetzt.getFullYear(), jetzt.getMonth())) +
+             ' im ' + MONATE[jetzt.getMonth()];
+    },
+    oeffnen: oeffnen
+  });
+})();
+
+
+/* ===== erp/erp-hauptbuch.js ===== */
+/* =============================================================
+   HZ · Modul Hauptbuch
+   -------------------------------------------------------------
+   Kontenplan, Buchungen, Kontenblatt, Bilanz, GuV.
+
+   Die Rechenlogik ist unveraendert aus der ersten Version
+   uebernommen. Neu sind: HTML-Escaping fuer alle Werte aus der
+   Lizenzdatei (Kontobezeichnungen und Buchungstexte gehen
+   ungeprueft ins Markup) sowie Dialoge statt alert/confirm.
+   ============================================================= */
+(function () {
+  'use strict';
+
+  var U = HZ.ui;
+  var $ = U.$;
+
+  var TYP_NAME = { aktiva: 'Aktiva', passiva: 'Passiva', ertrag: 'Ertrag', aufwand: 'Aufwand' };
+  var TYP_FOLGE = ['aktiva', 'passiva', 'ertrag', 'aufwand'];
+
+  var HB = null;
+  var reiter = 'konten';
+
+  /* Vereinfachter Kontenrahmen, an SKR03 angelehnt. Keine
+     steuerlich gepruefte Vorlage - im Zweifel mit dem
+     Steuerberater abstimmen. */
+  function standardKonten() {
+    return [
+      { nummer: '0100', name: 'Grundstuecke und Gebaeude', typ: 'aktiva' },
+      { nummer: '0200', name: 'Technische Anlagen und Maschinen', typ: 'aktiva' },
+      { nummer: '0300', name: 'Betriebs- und Geschaeftsausstattung', typ: 'aktiva' },
+      { nummer: '0400', name: 'Fuhrpark', typ: 'aktiva' },
+      { nummer: '1000', name: 'Kasse', typ: 'aktiva' },
+      { nummer: '1200', name: 'Bank', typ: 'aktiva' },
+      { nummer: '1400', name: 'Forderungen aus Lieferungen und Leistungen', typ: 'aktiva' },
+      { nummer: '1500', name: 'Vorsteuer', typ: 'aktiva' },
+      { nummer: '1600', name: 'Warenbestand', typ: 'aktiva' },
+      { nummer: '2000', name: 'Eigenkapital', typ: 'passiva' },
+      { nummer: '3000', name: 'Bankdarlehen', typ: 'passiva' },
+      { nummer: '3300', name: 'Verbindlichkeiten aus Lieferungen und Leistungen', typ: 'passiva' },
+      { nummer: '3500', name: 'Umsatzsteuer', typ: 'passiva' },
+      { nummer: '3600', name: 'Rueckstellungen', typ: 'passiva' },
+      { nummer: '4000', name: 'Umsatzerloese 19% USt', typ: 'ertrag' },
+      { nummer: '4001', name: 'Umsatzerloese 7% USt', typ: 'ertrag' },
+      { nummer: '4009', name: 'Sonstige betriebliche Ertraege', typ: 'ertrag' },
+      { nummer: '5000', name: 'Wareneinkauf', typ: 'aufwand' },
+      { nummer: '6000', name: 'Loehne und Gehaelter', typ: 'aufwand' },
+      { nummer: '6100', name: 'Sozialabgaben', typ: 'aufwand' },
+      { nummer: '6200', name: 'Miete', typ: 'aufwand' },
+      { nummer: '6300', name: 'Nebenkosten (Strom, Wasser, Heizung)', typ: 'aufwand' },
+      { nummer: '6400', name: 'Werbekosten', typ: 'aufwand' },
+      { nummer: '6500', name: 'Buerobedarf', typ: 'aufwand' },
+      { nummer: '6600', name: 'Telefon und Internet', typ: 'aufwand' },
+      { nummer: '6700', name: 'Versicherungen', typ: 'aufwand' },
+      { nummer: '6800', name: 'Kfz-Kosten', typ: 'aufwand' },
+      { nummer: '6900', name: 'Abschreibungen', typ: 'aufwand' },
+      { nummer: '7000', name: 'Zinsaufwendungen', typ: 'aufwand' },
+      { nummer: '7900', name: 'Sonstige betriebliche Aufwendungen', typ: 'aufwand' }
+    ];
+  }
+
+  function sicherstellen() {
+    var d = HZ.app.daten();
+    if (!d.hauptbuch) d.hauptbuch = { konten: standardKonten(), buchungen: [] };
+    if (!d.hauptbuch.konten || !d.hauptbuch.konten.length) d.hauptbuch.konten = standardKonten();
+    if (!d.hauptbuch.buchungen) d.hauptbuch.buchungen = [];
+    HB = d.hauptbuch;
+  }
+
+  /* ---------- Rechnen ---------- */
+  function findeKonto(nummer) {
+    return HB.konten.filter(function (k) { return k.nummer === nummer; })[0];
+  }
+
+  function betrag(n) {
+    var w = Math.round((n + Number.EPSILON) * 100) / 100;
+    return w.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+  }
+
+  function saldo(nummer) {
+    var konto = findeKonto(nummer);
+    if (!konto) return 0;
+    var soll = 0, haben = 0;
+    HB.buchungen.forEach(function (b) {
+      if (b.sollKonto === nummer) soll += b.betrag;
+      if (b.habenKonto === nummer) haben += b.betrag;
+    });
+    return (konto.typ === 'aktiva' || konto.typ === 'aufwand') ? (soll - haben) : (haben - soll);
+  }
+
+  function guv() {
+    var ertraege = 0, aufwendungen = 0;
+    HB.konten.forEach(function (k) {
+      if (k.typ === 'ertrag') ertraege += saldo(k.nummer);
+      if (k.typ === 'aufwand') aufwendungen += saldo(k.nummer);
+    });
+    return { ertraege: ertraege, aufwendungen: aufwendungen, ergebnis: ertraege - aufwendungen };
+  }
+
+  function kontoOptionen(gewaehlt) {
+    return HB.konten.map(function (k) {
+      return '<option value="' + U.esc(k.nummer) + '"' + (k.nummer === gewaehlt ? ' selected' : '') + '>' +
+        U.esc(k.nummer + ' – ' + k.name) + '</option>';
+    }).join('');
+  }
+
+  /* ---------- Ansicht ---------- */
+  function oeffnen(behaelter) {
+    sicherstellen();
+    behaelter.innerHTML =
+      '<h1 class="hz-titel">Hauptbuch</h1>' +
+      '<p class="hz-untertitel">Kontenplan, Buchungen, Kontenblaetter, Bilanz und GuV.</p>' +
+      '<nav class="hz-reiter" id="hb-reiter" role="tablist">' +
+        '<button type="button" data-r="konten" role="tab">Kontenplan</button>' +
+        '<button type="button" data-r="buchen" role="tab">Buchen</button>' +
+        '<button type="button" data-r="blatt" role="tab">Kontenblatt</button>' +
+        '<button type="button" data-r="bilanz" role="tab">Bilanz</button>' +
+        '<button type="button" data-r="guv" role="tab">GuV</button>' +
+      '</nav>' +
+      '<div id="hb-inhalt"></div>';
+
+    Array.prototype.forEach.call($('hb-reiter').children, function (b) {
+      b.addEventListener('click', function () { reiterWechseln(b.dataset.r); });
+    });
+    reiterWechseln(reiter);
+  }
+
+  function reiterWechseln(r) {
+    reiter = r;
+    Array.prototype.forEach.call($('hb-reiter').children, function (b) {
+      b.classList.toggle('aktiv', b.dataset.r === r);
+    });
+    if (r === 'konten') kontenplan();
+    else if (r === 'buchen') buchen();
+    else if (r === 'blatt') kontenblatt();
+    else if (r === 'bilanz') bilanz();
+    else if (r === 'guv') guvAnsicht();
+  }
+
+  /* ---------- Kontenplan ---------- */
+  function kontenplan() {
+    var zeilen = '';
+    TYP_FOLGE.forEach(function (typ) {
+      var konten = HB.konten.filter(function (k) { return k.typ === typ; });
+      if (!konten.length) return;
+      zeilen += '<tr class="gruppe"><td colspan="4">' + TYP_NAME[typ] + '</td></tr>';
+      konten.forEach(function (k) {
+        var benutzt = HB.buchungen.some(function (b) {
+          return b.sollKonto === k.nummer || b.habenKonto === k.nummer;
+        });
+        zeilen += '<tr>' +
+          '<td class="hz-mono">' + U.esc(k.nummer) + '</td>' +
+          '<td>' + U.esc(k.name) + '</td>' +
+          '<td class="zahl">' + betrag(saldo(k.nummer)) + '</td>' +
+          '<td class="mitte">' + (benutzt ? '' :
+            '<button type="button" class="hz-btn gefahr klein" data-konto-weg="' + U.esc(k.nummer) + '">Loeschen</button>') +
+          '</td></tr>';
+      });
+    });
+
+    $('hb-inhalt').innerHTML =
+      '<div class="hz-karte">' +
+        '<h3>Kontenplan</h3>' +
+        '<div class="hz-tabelle-rahmen"><table class="hz-tabelle">' +
+          '<thead><tr><th>Nummer</th><th>Bezeichnung</th><th style="text-align:right;">Saldo</th><th></th></tr></thead>' +
+          '<tbody>' + zeilen + '</tbody>' +
+        '</table></div>' +
+      '</div>' +
+      '<div class="hz-karte">' +
+        '<h3>Neues Konto anlegen</h3>' +
+        '<div class="hz-feld-reihe">' +
+          '<div class="hz-feld" style="max-width:130px;"><label>Nummer</label>' +
+          '<input type="text" id="hb-nk-nummer" placeholder="z. B. 4500" inputmode="numeric"></div>' +
+          '<div class="hz-feld" style="flex:2;"><label>Bezeichnung</label>' +
+          '<input type="text" id="hb-nk-name" placeholder="Kontobezeichnung"></div>' +
+          '<div class="hz-feld" style="max-width:170px;"><label>Typ</label>' +
+          '<select id="hb-nk-typ">' +
+            TYP_FOLGE.map(function (t) { return '<option value="' + t + '">' + TYP_NAME[t] + '</option>'; }).join('') +
+          '</select></div>' +
+        '</div>' +
+        '<button type="button" class="hz-btn" id="hb-nk-anlegen">Konto anlegen</button>' +
+      '</div>';
+
+    $('hb-nk-anlegen').addEventListener('click', kontoAnlegen);
+    Array.prototype.forEach.call(document.querySelectorAll('[data-konto-weg]'), function (b) {
+      b.addEventListener('click', function () { kontoLoeschen(b.dataset.kontoWeg); });
+    });
+  }
+
+  function kontoAnlegen() {
+    var nummer = $('hb-nk-nummer').value.trim();
+    var name = $('hb-nk-name').value.trim();
+    var typ = $('hb-nk-typ').value;
+
+    if (!nummer || !name) { U.toast('Bitte Kontonummer und Bezeichnung eingeben.', 'fehler'); return; }
+    if (findeKonto(nummer)) { U.toast('Diese Kontonummer gibt es bereits.', 'fehler'); return; }
+
+    HB.konten.push({ nummer: nummer, name: name, typ: typ });
+    HB.konten.sort(function (a, b) {
+      return a.nummer.localeCompare(b.nummer, 'de', { numeric: true });
+    });
+    HZ.app.geaendert();
+    kontenplan();
+    U.toast('Konto ' + nummer + ' angelegt.', 'erfolg');
+  }
+
+  async function kontoLoeschen(nummer) {
+    var konto = findeKonto(nummer);
+    if (!konto) return;
+    var ok = await U.bestaetigen(
+      'Konto ' + nummer + ' – ' + konto.name + ' wirklich loeschen?',
+      'Konto loeschen', 'Ja, loeschen', true);
+    if (!ok) return;
+    HB.konten = HB.konten.filter(function (k) { return k.nummer !== nummer; });
+    HZ.app.geaendert();
+    kontenplan();
+    U.toast('Konto geloescht.', 'erfolg');
+  }
+
+  /* ---------- Buchen ---------- */
+  function buchen() {
+    $('hb-inhalt').innerHTML =
+      '<div class="hz-karte">' +
+        '<h3>Neuen Buchungssatz erfassen</h3>' +
+        '<div class="hz-feld-reihe">' +
+          '<div class="hz-feld"><label>Datum</label><input type="date" id="hb-b-datum" value="' + U.isoTag() + '"></div>' +
+          '<div class="hz-feld"><label>Betrag (€)</label>' +
+          '<input type="number" id="hb-b-betrag" min="0" step="0.01" placeholder="0,00" inputmode="decimal"></div>' +
+        '</div>' +
+        '<div class="hz-feld-reihe">' +
+          '<div class="hz-feld"><label>Soll-Konto</label><select id="hb-b-soll">' + kontoOptionen() + '</select></div>' +
+          '<div class="hz-feld"><label>Haben-Konto</label><select id="hb-b-haben">' + kontoOptionen() + '</select></div>' +
+        '</div>' +
+        '<div class="hz-feld"><label>Buchungstext</label>' +
+        '<input type="text" id="hb-b-text" placeholder="z. B. Bueromaterial Rechnung Nr. 123"></div>' +
+        '<button type="button" class="hz-btn" id="hb-b-buchen">Buchen</button>' +
+      '</div>' +
+      '<div class="hz-karte">' +
+        '<h3>Letzte Buchungen</h3>' +
+        '<div id="hb-b-liste"></div>' +
+      '</div>';
+
+    $('hb-b-buchen').addEventListener('click', buchungSpeichern);
+    buchungslisteZeichnen();
+  }
+
+  function buchungslisteZeichnen() {
+    var el = $('hb-b-liste');
+    if (!el) return;
+
+    var sortiert = HB.buchungen.slice().sort(function (a, b) {
+      return b.datum.localeCompare(a.datum) || b.id - a.id;
+    }).slice(0, 20);
+
+    if (!sortiert.length) {
+      el.innerHTML = '<div class="hz-leerzustand">' +
+        '<div class="titel">Noch keine Buchungen</div>' +
+        '<div class="text">Erfassen Sie oben Ihren ersten Buchungssatz.</div></div>';
+      return;
+    }
+
+    el.innerHTML = '<div class="hz-tabelle-rahmen"><table class="hz-tabelle">' +
+      '<thead><tr><th>Datum</th><th>Soll</th><th>Haben</th>' +
+      '<th style="text-align:right;">Betrag</th><th>Text</th><th></th></tr></thead><tbody>' +
+      sortiert.map(function (b) {
+        return '<tr>' +
+          '<td>' + U.datumDe(b.datum) + '</td>' +
+          '<td class="hz-mono">' + U.esc(b.sollKonto) + '</td>' +
+          '<td class="hz-mono">' + U.esc(b.habenKonto) + '</td>' +
+          '<td class="zahl">' + betrag(b.betrag) + '</td>' +
+          '<td>' + U.esc(b.text || '') + '</td>' +
+          '<td class="mitte"><button type="button" class="hz-btn gefahr klein" data-buchung-weg="' +
+            U.esc(b.id) + '">Loeschen</button></td>' +
+        '</tr>';
+      }).join('') +
+      '</tbody></table></div>';
+
+    Array.prototype.forEach.call(el.querySelectorAll('[data-buchung-weg]'), function (btn) {
+      btn.addEventListener('click', function () { buchungLoeschen(Number(btn.dataset.buchungWeg)); });
+    });
+  }
+
+  function buchungSpeichern() {
+    var datum = $('hb-b-datum').value;
+    var wert = parseFloat($('hb-b-betrag').value);
+    var soll = $('hb-b-soll').value;
+    var haben = $('hb-b-haben').value;
+    var text = $('hb-b-text').value.trim();
+
+    if (!datum) { U.toast('Bitte ein Datum waehlen.', 'fehler'); return; }
+    if (!wert || wert <= 0 || isNaN(wert)) { U.toast('Bitte einen gueltigen Betrag eingeben.', 'fehler'); return; }
+    if (soll === haben) { U.toast('Soll- und Haben-Konto duerfen nicht identisch sein.', 'fehler'); return; }
 
     HB.buchungen.push({
       id: Date.now(),
-      datum, sollKonto:soll, habenKonto:haben, betrag, text
+      datum: datum, sollKonto: soll, habenKonto: haben, betrag: wert, text: text
     });
-    await persistLicense();
-    document.getElementById('bs-betrag').value='';
-    document.getElementById('bs-text').value='';
-    renderRecentBookings();
+    HZ.app.geaendert();
+
+    $('hb-b-betrag').value = '';
+    $('hb-b-text').value = '';
+    $('hb-b-betrag').focus();
+    buchungslisteZeichnen();
+    U.toast('Buchung erfasst: ' + betrag(wert), 'erfolg');
   }
 
-  async function deleteBooking(id){
-    if(!confirm('Diese Buchung wirklich löschen?')) return;
-    HB.buchungen = HB.buchungen.filter(b=>b.id!==id);
-    await persistLicense();
-    renderRecentBookings();
+  async function buchungLoeschen(id) {
+    var b = HB.buchungen.filter(function (x) { return x.id === id; })[0];
+    if (!b) return;
+    var ok = await U.bestaetigen(
+      'Buchung vom ' + U.datumDe(b.datum) + ' ueber ' + betrag(b.betrag) + ' wirklich loeschen?',
+      'Buchung loeschen', 'Ja, loeschen', true);
+    if (!ok) return;
+    HB.buchungen = HB.buchungen.filter(function (x) { return x.id !== id; });
+    HZ.app.geaendert();
+    buchungslisteZeichnen();
+    U.toast('Buchung geloescht.', 'erfolg');
   }
 
-  function refreshBuchenSelects(){
-    const sollEl = document.getElementById('bs-soll');
-    const habenEl = document.getElementById('bs-haben');
-    if(sollEl) sollEl.innerHTML = kontoOptionsHtml();
-    if(habenEl) habenEl.innerHTML = kontoOptionsHtml();
+  /* ---------- Kontenblatt ---------- */
+  function kontenblatt() {
+    $('hb-inhalt').innerHTML =
+      '<div class="hz-karte">' +
+        '<h3>Kontenblatt</h3>' +
+        '<div class="hz-feld" style="max-width:440px;"><label>Konto auswaehlen</label>' +
+        '<select id="hb-kb-konto">' + kontoOptionen() + '</select></div>' +
+        '<div id="hb-kb-details"></div>' +
+      '</div>';
+
+    $('hb-kb-konto').addEventListener('change', function () { kontenblattDetails(this.value); });
+    if (HB.konten.length) kontenblattDetails(HB.konten[0].nummer);
   }
 
-  // ---------- Kontenblatt ----------
-  function renderKontenblattPanel(){
-    const panel = document.getElementById('hb-panel-kontenblatt');
-    panel.innerHTML = `
-      <h4>Kontenblatt / Konto-Suche</h4>
-      <div class="hb-field" style="max-width:420px;margin-bottom:16px;">
-        <label>Konto auswählen</label>
-        <select id="kb-konto" onchange="renderKontoblattDetails(this.value)">${kontoOptionsHtml()}</select>
-      </div>
-      <div id="kb-details"></div>
-    `;
-    if(HB.konten.length>0) renderKontoblattDetails(HB.konten[0].nummer);
-  }
-  function refreshKontenblattSelect(){
-    const el = document.getElementById('kb-konto');
-    if(el) el.innerHTML = kontoOptionsHtml();
-  }
+  function kontenblattDetails(nummer) {
+    var konto = findeKonto(nummer);
+    var el = $('hb-kb-details');
+    if (!konto || !el) return;
 
-  function renderKontoblattDetails(nummer){
-    const konto = findKonto(nummer);
-    const el = document.getElementById('kb-details');
-    if(!konto || !el) return;
-    const debitNormal = (konto.typ==='aktiva' || konto.typ==='aufwand');
+    var sollNormal = (konto.typ === 'aktiva' || konto.typ === 'aufwand');
+    var posten = HB.buchungen.filter(function (b) {
+      return b.sollKonto === nummer || b.habenKonto === nummer;
+    }).sort(function (a, b) {
+      return a.datum.localeCompare(b.datum) || a.id - b.id;
+    });
 
-    const posten = HB.buchungen
-      .filter(b=>b.sollKonto===nummer || b.habenKonto===nummer)
-      .sort((a,b)=> a.datum.localeCompare(b.datum) || a.id - b.id);
-
-    let laufend = 0;
-    let rows = posten.map(b=>{
-      const istSoll = b.sollKonto===nummer;
-      const gegenkonto = istSoll ? b.habenKonto : b.sollKonto;
-      const vorzeichen = debitNormal ? (istSoll?1:-1) : (istSoll?-1:1);
+    var laufend = 0;
+    var zeilen = posten.map(function (b) {
+      var istSoll = b.sollKonto === nummer;
+      var gegen = istSoll ? b.habenKonto : b.sollKonto;
+      var gegenKonto = findeKonto(gegen);
+      var vorzeichen = sollNormal ? (istSoll ? 1 : -1) : (istSoll ? -1 : 1);
       laufend += vorzeichen * b.betrag;
-      return `<tr>
-        <td>${formatDateDe(b.datum)}</td>
-        <td>${istSoll ? 'Soll' : 'Haben'}</td>
-        <td>${gegenkonto} – ${(findKonto(gegenkonto)||{}).name||''}</td>
-        <td>${b.text||''}</td>
-        <td class="num">${fmtBetrag(b.betrag)}</td>
-        <td class="num">${fmtBetrag(laufend)}</td>
-      </tr>`;
+      return '<tr>' +
+        '<td>' + U.datumDe(b.datum) + '</td>' +
+        '<td>' + (istSoll ? 'Soll' : 'Haben') + '</td>' +
+        '<td>' + U.esc(gegen + (gegenKonto ? ' – ' + gegenKonto.name : '')) + '</td>' +
+        '<td>' + U.esc(b.text || '') + '</td>' +
+        '<td class="zahl">' + betrag(b.betrag) + '</td>' +
+        '<td class="zahl">' + betrag(laufend) + '</td>' +
+      '</tr>';
     }).join('');
 
-    if(posten.length===0){
-      rows = `<tr><td colspan="6" class="hb-empty">Keine Buchungen auf diesem Konto.</td></tr>`;
+    if (!posten.length) {
+      zeilen = '<tr><td colspan="6" class="hz-leer">Keine Buchungen auf diesem Konto.</td></tr>';
     }
 
-    el.innerHTML = `
-      <div class="page-sub" style="margin-bottom:10px;">${konto.nummer} – ${konto.name} (${HB_TYP_LABEL[konto.typ]})</div>
-      <table class="hb-table">
-        <thead><tr><th>Datum</th><th>Soll/Haben</th><th>Gegenkonto</th><th>Text</th><th style="text-align:right;">Betrag</th><th style="text-align:right;">Saldo</th></tr></thead>
-        <tbody>${rows}</tbody>
-        <tfoot><tr class="hb-total-row"><td colspan="5">Endsaldo</td><td class="num">${fmtBetrag(kontoSaldo(nummer))}</td></tr></tfoot>
-      </table>
-    `;
+    el.innerHTML =
+      '<div class="konto-kopf">' + U.esc(konto.nummer + ' – ' + konto.name) +
+      ' <span class="hz-marke">' + TYP_NAME[konto.typ] + '</span></div>' +
+      '<div class="hz-tabelle-rahmen"><table class="hz-tabelle">' +
+        '<thead><tr><th>Datum</th><th>S/H</th><th>Gegenkonto</th><th>Text</th>' +
+        '<th style="text-align:right;">Betrag</th><th style="text-align:right;">Saldo</th></tr></thead>' +
+        '<tbody>' + zeilen + '</tbody>' +
+        '<tfoot><tr><td colspan="5">Endsaldo</td><td class="zahl">' + betrag(saldo(nummer)) + '</td></tr></tfoot>' +
+      '</table></div>';
   }
 
-  // ---------- Bilanz ----------
-  function guvErgebnis(){
-    let ertraege=0, aufwendungen=0;
-    HB.konten.filter(k=>k.typ==='ertrag').forEach(k=> ertraege += kontoSaldo(k.nummer));
-    HB.konten.filter(k=>k.typ==='aufwand').forEach(k=> aufwendungen += kontoSaldo(k.nummer));
-    return { ertraege, aufwendungen, ergebnis: ertraege - aufwendungen };
+  /* ---------- Bilanz ---------- */
+  function bilanz() {
+    var aktiva = HB.konten.filter(function (k) { return k.typ === 'aktiva'; });
+    var passiva = HB.konten.filter(function (k) { return k.typ === 'passiva'; });
+    var ergebnis = guv().ergebnis;
+
+    function zeilen(liste) {
+      if (!liste.length) return '<tr><td colspan="3" class="hz-leer">Keine Konten.</td></tr>';
+      return liste.map(function (k) {
+        return '<tr><td class="hz-mono">' + U.esc(k.nummer) + '</td><td>' + U.esc(k.name) +
+          '</td><td class="zahl">' + betrag(saldo(k.nummer)) + '</td></tr>';
+      }).join('');
+    }
+
+    var aktivaSumme = aktiva.reduce(function (s, k) { return s + saldo(k.nummer); }, 0);
+    var passivaZeilen = zeilen(passiva) +
+      '<tr><td></td><td>' + (ergebnis >= 0 ? 'Jahresueberschuss' : 'Jahresfehlbetrag') +
+      '</td><td class="zahl">' + betrag(ergebnis) + '</td></tr>';
+    var passivaSumme = passiva.reduce(function (s, k) { return s + saldo(k.nummer); }, 0) + ergebnis;
+    var differenz = aktivaSumme - passivaSumme;
+
+    $('hb-inhalt').innerHTML =
+      '<div class="hz-karte"><h3>Bilanz</h3>' +
+        '<div class="bilanz-spalten">' +
+          '<div><div class="seiten-titel">Aktiva</div>' +
+            '<div class="hz-tabelle-rahmen"><table class="hz-tabelle"><tbody>' + zeilen(aktiva) + '</tbody>' +
+            '<tfoot><tr><td colspan="2">Bilanzsumme</td><td class="zahl">' + betrag(aktivaSumme) +
+            '</td></tr></tfoot></table></div></div>' +
+          '<div><div class="seiten-titel">Passiva</div>' +
+            '<div class="hz-tabelle-rahmen"><table class="hz-tabelle"><tbody>' + passivaZeilen + '</tbody>' +
+            '<tfoot><tr><td colspan="2">Bilanzsumme</td><td class="zahl">' + betrag(passivaSumme) +
+            '</td></tr></tfoot></table></div></div>' +
+        '</div>' +
+        (Math.abs(differenz) > 0.01
+          ? '<div class="hz-box warn" style="margin:16px 0 0;">Aktiva und Passiva stimmen nicht ueberein. ' +
+            'Differenz ' + betrag(differenz) + '. Bitte die Buchungen pruefen.</div>'
+          : '<div class="hz-box erfolg" style="margin:16px 0 0;">Aktiva und Passiva stimmen ueberein.</div>') +
+      '</div>';
   }
 
-  function renderBilanzPanel(){
-    const panel = document.getElementById('hb-panel-bilanz');
-    const aktivaKonten = HB.konten.filter(k=>k.typ==='aktiva');
-    const passivaKonten = HB.konten.filter(k=>k.typ==='passiva');
-    const { ergebnis } = guvErgebnis();
+  /* ---------- GuV ---------- */
+  function guvAnsicht() {
+    var e = guv();
+    var ertragKonten = HB.konten.filter(function (k) { return k.typ === 'ertrag'; });
+    var aufwandKonten = HB.konten.filter(function (k) { return k.typ === 'aufwand'; });
 
-    const aktivaRows = aktivaKonten.map(k=>{
-      const s = kontoSaldo(k.nummer);
-      return `<tr><td>${k.nummer}</td><td>${k.name}</td><td class="num">${fmtBetrag(s)}</td></tr>`;
-    }).join('');
-    const aktivaSumme = aktivaKonten.reduce((sum,k)=>sum+kontoSaldo(k.nummer),0);
+    function zeilen(liste, leerText) {
+      if (!liste.length) return '<tr><td colspan="3" class="hz-leer">' + leerText + '</td></tr>';
+      return liste.map(function (k) {
+        return '<tr><td class="hz-mono">' + U.esc(k.nummer) + '</td><td>' + U.esc(k.name) +
+          '</td><td class="zahl">' + betrag(saldo(k.nummer)) + '</td></tr>';
+      }).join('');
+    }
 
-    let passivaRows = passivaKonten.map(k=>{
-      const s = kontoSaldo(k.nummer);
-      return `<tr><td>${k.nummer}</td><td>${k.name}</td><td class="num">${fmtBetrag(s)}</td></tr>`;
-    }).join('');
-    const passivaKontenSumme = passivaKonten.reduce((sum,k)=>sum+kontoSaldo(k.nummer),0);
-    passivaRows += `<tr><td>&nbsp;</td><td>${ergebnis>=0?'Jahresüberschuss':'Jahresfehlbetrag'}</td><td class="num">${fmtBetrag(ergebnis)}</td></tr>`;
-    const passivaSumme = passivaKontenSumme + ergebnis;
-
-    panel.innerHTML = `
-      <h4>Bilanz</h4>
-      <div class="hb-bilanz-cols">
-        <div>
-          <div class="side-title">Aktiva</div>
-          <table class="hb-table">
-            <tbody>${aktivaRows || '<tr><td colspan="3" class="hb-empty">Keine Aktiv-Konten.</td></tr>'}</tbody>
-            <tfoot><tr class="hb-total-row"><td colspan="2">Bilanzsumme Aktiva</td><td class="num">${fmtBetrag(aktivaSumme)}</td></tr></tfoot>
-          </table>
-        </div>
-        <div>
-          <div class="side-title">Passiva</div>
-          <table class="hb-table">
-            <tbody>${passivaRows}</tbody>
-            <tfoot><tr class="hb-total-row"><td colspan="2">Bilanzsumme Passiva</td><td class="num">${fmtBetrag(passivaSumme)}</td></tr></tfoot>
-          </table>
-        </div>
-      </div>
-      ${Math.abs(aktivaSumme-passivaSumme)>0.01 ? `<div class="hb-result-box loss" style="margin-top:14px;"><span>Hinweis: Aktiva und Passiva stimmen nicht überein (Differenz ${fmtBetrag(aktivaSumme-passivaSumme)}). Bitte Buchungen prüfen.</span></div>` : ''}
-    `;
+    $('hb-inhalt').innerHTML =
+      '<div class="hz-karte"><h3>Gewinn- und Verlustrechnung</h3>' +
+        '<div class="seiten-titel">Ertraege</div>' +
+        '<div class="hz-tabelle-rahmen"><table class="hz-tabelle"><tbody>' +
+          zeilen(ertragKonten, 'Keine Ertragskonten.') + '</tbody>' +
+          '<tfoot><tr><td colspan="2">Summe Ertraege</td><td class="zahl">' + betrag(e.ertraege) +
+          '</td></tr></tfoot></table></div>' +
+        '<div class="seiten-titel" style="margin-top:22px;">Aufwendungen</div>' +
+        '<div class="hz-tabelle-rahmen"><table class="hz-tabelle"><tbody>' +
+          zeilen(aufwandKonten, 'Keine Aufwandskonten.') + '</tbody>' +
+          '<tfoot><tr><td colspan="2">Summe Aufwendungen</td><td class="zahl">' + betrag(e.aufwendungen) +
+          '</td></tr></tfoot></table></div>' +
+        '<div class="ergebnis-box ' + (e.ergebnis >= 0 ? 'gewinn' : 'verlust') + '">' +
+          '<span>' + (e.ergebnis >= 0 ? 'Jahresueberschuss' : 'Jahresfehlbetrag') + '</span>' +
+          '<span>' + betrag(Math.abs(e.ergebnis)) + '</span>' +
+        '</div>' +
+      '</div>';
   }
 
-  // ---------- GuV ----------
-  function renderGuVPanel(){
-    const panel = document.getElementById('hb-panel-guv');
-    const ertragKonten = HB.konten.filter(k=>k.typ==='ertrag');
-    const aufwandKonten = HB.konten.filter(k=>k.typ==='aufwand');
-    const { ertraege, aufwendungen, ergebnis } = guvErgebnis();
+  /* ---------- Anmeldung bei der Schale ---------- */
+  HZ.app.modul({
+    key: 'hauptbuch',
+    name: 'Hauptbuch',
+    gebaut: true,
+    icon: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>',
+    kachelText: function () {
+      var d = HZ.app.daten();
+      var hb = d.hauptbuch;
+      if (!hb || !hb.buchungen || !hb.buchungen.length) return 'Konten, Bilanz und GuV';
+      return hb.buchungen.length + ' Buchungen erfasst';
+    },
+    oeffnen: oeffnen
+  });
 
-    const ertragRows = ertragKonten.map(k=>{
-      const s = kontoSaldo(k.nummer);
-      return `<tr><td>${k.nummer}</td><td>${k.name}</td><td class="num">${fmtBetrag(s)}</td></tr>`;
-    }).join('');
-    const aufwandRows = aufwandKonten.map(k=>{
-      const s = kontoSaldo(k.nummer);
-      return `<tr><td>${k.nummer}</td><td>${k.name}</td><td class="num">${fmtBetrag(s)}</td></tr>`;
-    }).join('');
+  /* Die uebrigen Module folgen demselben Muster: eine eigene
+     Datei, ein Aufruf von HZ.app.modul(), ein Eintrag in
+     build.ps1. Die Schale kuemmert sich um Navigation, Kachel,
+     Freischaltung und Speichern. */
+  HZ.app.modul({
+    key: 'lager', name: 'Lagerverwaltung', gebaut: false,
+    icon: '<path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/>',
+    oeffnen: function () {}
+  });
+  HZ.app.modul({
+    key: 'lohn', name: 'Lohnabrechnung', gebaut: false,
+    icon: '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><path d="M6 15h4"/>',
+    oeffnen: function () {}
+  });
+  HZ.app.modul({
+    key: 'crm', name: 'CRM', gebaut: false,
+    icon: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+    oeffnen: function () {}
+  });
+})();
 
-    panel.innerHTML = `
-      <h4>Gewinn- und Verlustrechnung (GuV)</h4>
-      <div class="side-title">Erträge</div>
-      <table class="hb-table">
-        <tbody>${ertragRows || '<tr><td colspan="3" class="hb-empty">Keine Ertragsbuchungen.</td></tr>'}</tbody>
-        <tfoot><tr class="hb-total-row"><td colspan="2">Summe Erträge</td><td class="num">${fmtBetrag(ertraege)}</td></tr></tfoot>
-      </table>
-      <div class="side-title" style="margin-top:18px;">Aufwendungen</div>
-      <table class="hb-table">
-        <tbody>${aufwandRows || '<tr><td colspan="3" class="hb-empty">Keine Aufwandsbuchungen.</td></tr>'}</tbody>
-        <tfoot><tr class="hb-total-row"><td colspan="2">Summe Aufwendungen</td><td class="num">${fmtBetrag(aufwendungen)}</td></tr></tfoot>
-      </table>
-      <div class="hb-result-box ${ergebnis>=0?'profit':'loss'}">
-        <span>${ergebnis>=0 ? 'Jahresüberschuss (Gewinn)' : 'Jahresfehlbetrag (Verlust)'}</span>
-        <span>${fmtBetrag(Math.abs(ergebnis))}</span>
-      </div>
-    `;
-  }
 </script>
 </body>
 </html>
