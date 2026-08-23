@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HZ Lizenz-Generator (intern)</title>
+<style>
+  :root{
+    --shell:#354a5f; --shell-dark:#28374a; --primary:#0a6ed1; --primary-dark:#085caf;
+    --bg:#f5f6f7; --border:#d9dde1; --text:#32363a; --text-muted:#6a6d70;
+    --success:#107e3e; --danger:#bb0000;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{font-family:"Segoe UI","72",Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+  .shellbar{
+    background:var(--shell);color:#fff;height:48px;display:flex;align-items:center;
+    padding:0 16px;gap:12px;position:sticky;top:0;box-shadow:0 1px 3px rgba(0,0,0,.25);
+  }
+  .shellbar .logo{
+    width:28px;height:28px;border-radius:4px;background:#fff;color:var(--shell);
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;
+  }
+  .shellbar .title{font-size:16px;font-weight:600;}
+  .shellbar .tag{
+    margin-left:auto;background:#e9730c;color:#fff;font-size:11px;font-weight:700;
+    padding:3px 9px;border-radius:3px;text-transform:uppercase;letter-spacing:.3px;
+  }
+  .content{max-width:640px;margin:0 auto;padding:28px 16px 60px;}
+  .page-title{font-size:21px;font-weight:600;margin:4px 0 4px;}
+  .page-sub{font-size:13px;color:var(--text-muted);margin:0 0 22px;}
+  .card{background:#fff;border:1px solid var(--border);border-radius:6px;padding:22px;margin-bottom:18px;}
+  .card h3{margin:0 0 14px;font-size:14.5px;font-weight:700;color:var(--text);}
+  .field{display:flex;flex-direction:column;gap:5px;margin-bottom:16px;}
+  .field label{font-size:12.5px;font-weight:600;color:var(--text-muted);}
+  .field input{border:1px solid var(--border);border-radius:4px;padding:9px 10px;font-size:14px;font-family:inherit;}
+  .field input:focus{outline:2px solid var(--primary);outline-offset:0;border-color:var(--primary);}
+  .pw-row{display:flex;gap:8px;}
+  .pw-row input{flex:1;}
+  .btn{
+    border:1px solid var(--primary);background:var(--primary);color:#fff;font-size:13px;
+    font-weight:600;padding:9px 16px;border-radius:4px;cursor:pointer;white-space:nowrap;
+  }
+  .btn:hover{background:var(--primary-dark);}
+  .btn.secondary{background:#fff;color:var(--primary);}
+  .btn.secondary:hover{background:#eaf2fc;}
+  .btn.block{width:100%;padding:12px;font-size:14.5px;margin-top:6px;}
+  .module-list{display:flex;flex-direction:column;gap:2px;}
+  .module-row{
+    display:flex;align-items:center;gap:12px;padding:10px 8px;border-radius:4px;
+  }
+  .module-row:hover{background:#f7f8f9;}
+  .module-row input{width:17px;height:17px;flex-shrink:0;}
+  .module-row .m-name{font-size:14px;font-weight:600;flex:1;}
+  .module-row .m-tag{font-size:10.5px;color:#fff;background:#c4c9cd;padding:2px 7px;border-radius:3px;font-weight:700;text-transform:uppercase;}
+  .module-row .m-tag.ready{background:var(--success);}
+  .result-card{display:none;}
+  .result-card.show{display:block;}
+  .result-row{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    background:#f7f8f9;border:1px solid var(--border);border-radius:4px;padding:10px 12px;margin-bottom:10px;
+  }
+  .result-row .r-label{font-size:11.5px;color:var(--text-muted);font-weight:600;}
+  .result-row .r-value{font-size:14px;font-weight:600;word-break:break-all;}
+  .copy-btn{
+    border:1px solid var(--border);background:#fff;color:var(--text);font-size:12px;
+    padding:6px 10px;border-radius:4px;cursor:pointer;flex-shrink:0;
+  }
+  .copy-btn:hover{background:#eee;}
+  .quick-dates{display:flex;gap:8px;margin-top:8px;}
+  .chip-btn{
+    border:1px solid var(--border);background:#fff;color:var(--primary);font-size:12px;
+    font-weight:600;padding:6px 11px;border-radius:14px;cursor:pointer;
+  }
+  .chip-btn:hover{background:#eaf2fc;}
+  .gen-tabbar{
+    display:flex;gap:4px;background:#fff;border:1px solid var(--border);border-radius:4px;
+    padding:4px;margin-bottom:18px;
+  }
+  .gen-tab{
+    flex:1;border:none;background:transparent;color:var(--text-muted);font-size:13px;font-weight:600;
+    padding:9px 10px;border-radius:4px;cursor:pointer;
+  }
+  .gen-tab:hover{background:#f0f2f4;color:var(--text);}
+  .gen-tab.active{background:var(--primary);color:#fff;}
+  .file-chip{
+    display:none;align-items:center;gap:8px;background:#eaf2fc;border:1px solid #cfe2f8;
+    border-radius:4px;padding:8px 10px;font-size:12.5px;color:var(--primary-dark);margin-top:10px;
+    word-break:break-all;
+  }
+  .btn.block.secondary{background:#fff;color:var(--primary);}
+  .btn.block.secondary:hover{background:#eaf2fc;}
+  .warn-box{
+    background:#fff6e6;border:1px solid #f0d999;color:#7a4b00;border-radius:4px;
+    padding:10px 12px;font-size:12.5px;line-height:1.6;margin-top:14px;
+  }
+  .error-box{
+    display:none;background:#fdecec;color:var(--danger);border:1px solid #f3c8c8;
+    border-radius:4px;padding:8px 10px;font-size:12.5px;margin-bottom:14px;
+  }
+</style>
+</head>
+<body>
+
+  <div class="shellbar">
+    <div class="logo">HZ</div>
+    <div class="title">HZ Lizenz-Generator</div>
+    <div class="tag">Intern &middot; nicht für Kunden</div>
+  </div>
+
+  <div class="content">
+    <div class="page-title">Lizenzverwaltung</div>
+    <div class="page-sub">Neue Lizenzen erstellen oder bestehende Lizenzen upgraden/verlängern.</div>
+
+    <div class="gen-tabbar">
+      <button class="gen-tab active" data-tab="neu" onclick="switchGenTab('neu')">Neue Lizenz erstellen</button>
+      <button class="gen-tab" data-tab="bearbeiten" onclick="switchGenTab('bearbeiten')">Bestehende Lizenz bearbeiten</button>
+    </div>
+
+    <!-- ===================== TAB: NEUE LIZENZ ===================== -->
+    <div id="tab-neu">
+      <div class="card">
+        <h3>1. Kundendaten</h3>
+        <div class="error-box" id="form-error"></div>
+        <div class="field">
+          <label>Kundenname</label>
+          <input type="text" id="kunde-name" placeholder="z. B. Mustermann GmbH">
+        </div>
+        <div class="field">
+          <label>Passwort</label>
+          <div class="pw-row">
+            <input type="text" id="kunde-pass" placeholder="Passwort eingeben oder generieren">
+            <button type="button" class="btn secondary" onclick="generatePassword()">Generieren</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Gültig bis (Ablaufdatum des Abos)</label>
+          <input type="date" id="kunde-gueltig-bis">
+          <div class="quick-dates">
+            <button type="button" class="chip-btn" onclick="setValidityDays(30)">+1 Monat</button>
+            <button type="button" class="chip-btn" onclick="setValidityDays(90)">+3 Monate</button>
+            <button type="button" class="chip-btn" onclick="setValidityDays(365)">+1 Jahr</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>2. Module freischalten</h3>
+        <div class="module-list" id="module-list"></div>
+      </div>
+
+      <button class="btn block" onclick="createLicense()">Lizenzdatei erstellen</button>
+
+      <div class="card result-card" id="result-card">
+        <h3>Lizenz erstellt</h3>
+        <div class="result-row">
+          <div><div class="r-label">DATEINAME</div><div class="r-value" id="res-filename"></div></div>
+        </div>
+        <div class="result-row">
+          <div><div class="r-label">PASSWORT</div><div class="r-value" id="res-password"></div></div>
+          <button class="copy-btn" onclick="copyText('res-password')">Kopieren</button>
+        </div>
+        <div class="result-row">
+          <div><div class="r-label">LIZENZ-ID (für die Kundenliste im Sheet)</div><div class="r-value" id="res-lizenzid"></div></div>
+          <button class="copy-btn" onclick="copyText('res-lizenzid')">Kopieren</button>
+        </div>
+        <div class="result-row">
+          <div><div class="r-label">GÜLTIG BIS</div><div class="r-value" id="res-gueltig"></div></div>
+        </div>
+        <button class="btn block" onclick="downloadLicense()">Lizenzdatei herunterladen</button>
+        <div class="warn-box">
+          Sicherheitstipp: Senden Sie die Lizenzdatei und das Passwort möglichst über getrennte Kanäle
+          (z. B. Datei per WhatsApp, Passwort per SMS oder Telefon).
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== TAB: BESTEHENDE LIZENZ BEARBEITEN ===================== -->
+    <div id="tab-bearbeiten" style="display:none;">
+      <div class="card">
+        <h3>1. Lizenzdatei des Kunden hochladen</h3>
+        <div class="error-box" id="edit-error"></div>
+        <input type="file" id="edit-file-input" accept=".json,application/json" style="display:none;" onchange="handleEditFileChosen(event)">
+        <button type="button" class="btn secondary block" onclick="document.getElementById('edit-file-input').click()">Vom Kunden erhaltene Lizenzdatei auswählen (.json)</button>
+        <div class="file-chip" id="edit-file-chip"></div>
+      </div>
+
+      <div id="edit-form-wrap" style="display:none;">
+        <div class="card">
+          <h3>2. Kundendaten &amp; Gültigkeit</h3>
+          <div class="field">
+            <label>Kundenname</label>
+            <input type="text" id="edit-kunde-name">
+          </div>
+          <div class="field">
+            <label>Gültig bis (Ablaufdatum des Abos)</label>
+            <input type="date" id="edit-gueltig-bis">
+            <div class="quick-dates">
+              <button type="button" class="chip-btn" onclick="setValidityDaysEdit(30)">+1 Monat</button>
+              <button type="button" class="chip-btn" onclick="setValidityDaysEdit(90)">+3 Monate</button>
+              <button type="button" class="chip-btn" onclick="setValidityDaysEdit(365)">+1 Jahr</button>
+            </div>
+          </div>
+          <div class="field">
+            <label>Neues Passwort (leer lassen = Passwort bleibt unverändert)</label>
+            <div class="pw-row">
+              <input type="text" id="edit-kunde-pass" placeholder="nur ausfüllen, um Passwort zu ändern">
+              <button type="button" class="btn secondary" onclick="generatePasswordEdit()">Generieren</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>3. Module freischalten</h3>
+          <div class="module-list" id="edit-module-list"></div>
+        </div>
+
+        <button class="btn block" onclick="updateLicense()">Lizenzdatei aktualisieren</button>
+
+        <div class="card result-card" id="edit-result-card">
+          <h3>Lizenz aktualisiert</h3>
+          <div class="result-row">
+            <div><div class="r-label">DATEINAME</div><div class="r-value" id="eres-filename"></div></div>
+          </div>
+          <div class="result-row" id="eres-password-row" style="display:none;">
+            <div><div class="r-label">NEUES PASSWORT</div><div class="r-value" id="eres-password"></div></div>
+            <button class="copy-btn" onclick="copyText('eres-password')">Kopieren</button>
+          </div>
+          <div class="result-row">
+            <div><div class="r-label">GÜLTIG BIS</div><div class="r-value" id="eres-gueltig"></div></div>
+          </div>
+          <button class="btn block" onclick="downloadUpdatedLicense()">Aktualisierte Lizenzdatei herunterladen</button>
+          <div class="warn-box">
+            Wichtig: Die gebuchten Daten des Kunden (Zeiterfassung, Hauptbuch) bleiben beim Upgrade vollständig erhalten &ndash; nur Module, Gültigkeit und ggf. Passwort werden geändert. Datei per WhatsApp zurückschicken; ein geändertes Passwort separat mitteilen.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const MODULE_CONFIG = [
+    { key:'zeiterfassung', name:'Zeiterfassung', ready:true },
+    { key:'lager', name:'Lagerverwaltung', ready:false },
+    { key:'hauptbuch', name:'Hauptbuch', ready:true },
+    { key:'lohn', name:'Lohnabrechnung', ready:false },
+    { key:'crm', name:'CRM', ready:false }
+  ];
+
+  function switchGenTab(tab){
+    document.querySelectorAll('.gen-tab').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+    document.getElementById('tab-neu').style.display = tab==='neu' ? 'block' : 'none';
+    document.getElementById('tab-bearbeiten').style.display = tab==='bearbeiten' ? 'block' : 'none';
+  }
+
+  function renderModuleList(){
+    document.getElementById('module-list').innerHTML = MODULE_CONFIG.map(m=>`
+      <label class="module-row">
+        <input type="checkbox" id="mod-${m.key}" ${m.key==='zeiterfassung' ? 'checked' : ''}>
+        <span class="m-name">${m.name}</span>
+        <span class="m-tag ${m.ready?'ready':''}">${m.ready?'nutzbar':'in Entwicklung'}</span>
+      </label>`).join('');
+  }
+  renderModuleList();
+
+  function generatePassword(){
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+    let pw = '';
+    const arr = new Uint32Array(10);
+    crypto.getRandomValues(arr);
+    for(let i=0;i<10;i++){ pw += chars[arr[i] % chars.length]; }
+    document.getElementById('kunde-pass').value = pw;
+  }
+
+  function setValidityDays(days){
+    const d = new Date();
+    d.setDate(d.getDate() + days);
+    document.getElementById('kunde-gueltig-bis').value = d.toISOString().slice(0,10);
+  }
+
+  async function sha256Hex(str){
+    const enc = new TextEncoder().encode(str);
+    const buf = await crypto.subtle.digest('SHA-256', enc);
+    return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  }
+  function randomSalt(){
+    const arr = new Uint8Array(16);
+    crypto.getRandomValues(arr);
+    return Array.from(arr).map(b=>b.toString(16).padStart(2,'0')).join('');
+  }
+
+  let lastLicenseJson = null;
+  let lastFilename = null;
+  let lastPassword = null;
+
+  function showFormError(msg){
+    const el = document.getElementById('form-error');
+    el.textContent = msg; el.style.display='block';
+  }
+
+  async function createLicense(){
+    document.getElementById('form-error').style.display='none';
+    const kunde = document.getElementById('kunde-name').value.trim();
+    const pass = document.getElementById('kunde-pass').value;
+    const gueltigBis = document.getElementById('kunde-gueltig-bis').value;
+    if(!kunde){ showFormError('Bitte Kundennamen eingeben.'); return; }
+    if(!pass || pass.length<4){ showFormError('Bitte ein Passwort mit mindestens 4 Zeichen eingeben oder generieren.'); return; }
+    if(!gueltigBis){ showFormError('Bitte ein Gültigkeitsdatum auswählen.'); return; }
+
+    const module = {};
+    MODULE_CONFIG.forEach(m=>{
+      module[m.key] = document.getElementById('mod-'+m.key).checked;
+    });
+
+    const salt = randomSalt();
+    const hash = await sha256Hex(salt + pass);
+    const lizenzId = generateUUID();
+
+    const license = {
+      lizenzId: lizenzId,
+      kunde: kunde,
+      erstelltAm: new Date().toISOString(),
+      gueltigBis: gueltigBis,
+      auth: { salt, hash },
+      module: module,
+      daten: { zeiterfassung: {} }
+    };
+
+    lastLicenseJson = JSON.stringify(license, null, 2);
+    lastFilename = kunde.replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_\-]/g,'') + '.json';
+    lastPassword = pass;
+
+    document.getElementById('res-filename').textContent = lastFilename;
+    document.getElementById('res-password').textContent = lastPassword;
+    document.getElementById('res-lizenzid').textContent = lizenzId;
+    document.getElementById('res-gueltig').textContent = formatDateDe(gueltigBis);
+    document.getElementById('result-card').classList.add('show');
+    document.getElementById('result-card').scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  function formatDateDe(isoDate){
+    const [y,m,d] = isoDate.split('-');
+    return `${d}.${m}.${y}`;
+  }
+
+  function generateUUID(){
+    if(crypto.randomUUID) return crypto.randomUUID();
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c){
+      const r = Math.random()*16|0, v = c==='x' ? r : (r&0x3|0x8);
+      return v.toString(16);
+    });
+  }
+
+  function downloadLicense(){
+    if(!lastLicenseJson) return;
+    try{
+      const blob = new Blob([lastLicenseJson], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = lastFilename;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }catch(e){
+      // Fallback, falls Downloads in dieser Umgebung blockiert sind:
+      // Inhalt in neuem Tab öffnen, damit er manuell gespeichert werden kann.
+      const w = window.open('', '_blank');
+      if(w){
+        w.document.write('<pre style="white-space:pre-wrap;font-family:monospace;">'+lastLicenseJson.replace(/</g,'&lt;')+'</pre>');
+      } else {
+        alert('Download blockiert. Bitte diese Seite direkt im Browser öffnen (nicht in einer Vorschau).');
+      }
+    }
+  }
+
+  function copyText(id){
+    const text = document.getElementById(id).textContent;
+    navigator.clipboard.writeText(text);
+  }
+
+  // ===================================================================
+  // ===================== BESTEHENDE LIZENZ BEARBEITEN ===============
+  // ===================================================================
+  let editingLicense = null;
+  let editUpdatedJson = null;
+  let editUpdatedFilename = null;
+
+  function showEditError(msg){
+    const el = document.getElementById('edit-error');
+    el.textContent = msg; el.style.display='block';
+  }
+
+  function handleEditFileChosen(evt){
+    document.getElementById('edit-error').style.display='none';
+    const file = evt.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = function(){
+      try{
+        const parsed = JSON.parse(reader.result);
+        if(!parsed.auth || !parsed.auth.hash || !parsed.auth.salt){
+          showEditError('Diese Datei ist keine gültige HZ-Lizenzdatei.');
+          return;
+        }
+        editingLicense = parsed;
+        document.getElementById('edit-file-chip').style.display='flex';
+        document.getElementById('edit-file-chip').textContent = 'Geladen: ' + file.name;
+
+        document.getElementById('edit-kunde-name').value = parsed.kunde || '';
+        document.getElementById('edit-gueltig-bis').value = parsed.gueltigBis || '';
+        document.getElementById('edit-kunde-pass').value = '';
+
+        document.getElementById('edit-module-list').innerHTML = MODULE_CONFIG.map(m=>`
+          <label class="module-row">
+            <input type="checkbox" id="emod-${m.key}" ${(parsed.module && parsed.module[m.key]) ? 'checked' : ''}>
+            <span class="m-name">${m.name}</span>
+            <span class="m-tag ${m.ready?'ready':''}">${m.ready?'nutzbar':'in Entwicklung'}</span>
+          </label>`).join('');
+
+        document.getElementById('edit-form-wrap').style.display='block';
+        document.getElementById('edit-result-card').classList.remove('show');
+      }catch(e){
+        showEditError('Die Datei konnte nicht gelesen werden. Ist es wirklich die Lizenzdatei (.json)?');
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  function generatePasswordEdit(){
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+    let pw = '';
+    const arr = new Uint32Array(10);
+    crypto.getRandomValues(arr);
+    for(let i=0;i<10;i++){ pw += chars[arr[i] % chars.length]; }
+    document.getElementById('edit-kunde-pass').value = pw;
+  }
+
+  function setValidityDaysEdit(days){
+    const feld = document.getElementById('edit-gueltig-bis');
+    let basis = new Date();
+    if(feld.value){
+      const bestehend = new Date(feld.value + 'T00:00:00');
+      if(bestehend > basis) basis = bestehend; // noch nicht abgelaufen -> ab bestehendem Datum verlängern
+    }
+    basis.setDate(basis.getDate() + days);
+    feld.value = basis.toISOString().slice(0,10);
+  }
+
+  async function updateLicense(){
+    document.getElementById('edit-error').style.display='none';
+    if(!editingLicense){ showEditError('Bitte zuerst eine Lizenzdatei hochladen.'); return; }
+
+    const kunde = document.getElementById('edit-kunde-name').value.trim();
+    const gueltigBis = document.getElementById('edit-gueltig-bis').value;
+    const neuesPass = document.getElementById('edit-kunde-pass').value;
+
+    if(!kunde){ showEditError('Bitte Kundennamen eingeben.'); return; }
+    if(!gueltigBis){ showEditError('Bitte ein Gültigkeitsdatum auswählen.'); return; }
+    if(neuesPass && neuesPass.length<4){ showEditError('Das neue Passwort muss mindestens 4 Zeichen haben.'); return; }
+
+    const module = {};
+    MODULE_CONFIG.forEach(m=>{
+      module[m.key] = document.getElementById('emod-'+m.key).checked;
+    });
+
+    // Kopie der Original-Lizenz, nur gezielt aktualisieren.
+    // lizenzId, erstelltAm und vor allem "daten" (Zeiterfassung/Hauptbuch) bleiben unangetastet.
+    const updated = JSON.parse(JSON.stringify(editingLicense));
+    updated.kunde = kunde;
+    updated.gueltigBis = gueltigBis;
+    updated.module = module;
+    updated.aktualisiertAm = new Date().toISOString();
+
+    let passwortGeaendert = false;
+    if(neuesPass){
+      const salt = randomSalt();
+      const hash = await sha256Hex(salt + neuesPass);
+      updated.auth = { salt, hash };
+      passwortGeaendert = true;
+    }
+
+    editUpdatedJson = JSON.stringify(updated, null, 2);
+    editUpdatedFilename = kunde.replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_\-]/g,'') + '.json';
+
+    document.getElementById('eres-filename').textContent = editUpdatedFilename;
+    document.getElementById('eres-gueltig').textContent = formatDateDe(gueltigBis);
+    if(passwortGeaendert){
+      document.getElementById('eres-password').textContent = neuesPass;
+      document.getElementById('eres-password-row').style.display='flex';
+    } else {
+      document.getElementById('eres-password-row').style.display='none';
+    }
+    document.getElementById('edit-result-card').classList.add('show');
+    document.getElementById('edit-result-card').scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  function downloadUpdatedLicense(){
+    if(!editUpdatedJson) return;
+    try{
+      const blob = new Blob([editUpdatedJson], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = editUpdatedFilename;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }catch(e){
+      const w = window.open('', '_blank');
+      if(w){
+        w.document.write('<pre style="white-space:pre-wrap;font-family:monospace;">'+editUpdatedJson.replace(/</g,'&lt;')+'</pre>');
+      } else {
+        alert('Download blockiert. Bitte diese Seite direkt im Browser öffnen (nicht in einer Vorschau).');
+      }
+    }
+  }
+</script>
+</body>
+</html>

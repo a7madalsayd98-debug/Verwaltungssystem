@@ -1,0 +1,1467 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HZ Erp-System</title>
+<style>
+  :root{
+    --shell:#354a5f;
+    --shell-dark:#28374a;
+    --primary:#0a6ed1;
+    --primary-dark:#085caf;
+    --bg:#f5f6f7;
+    --tile-bg:#ffffff;
+    --border:#d9dde1;
+    --text:#32363a;
+    --text-muted:#6a6d70;
+    --success:#107e3e;
+    --warning:#e9730c;
+    --danger:#bb0000;
+    --grey-tile:#eef0f2;
+    --grey-text:#a9acae;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:"Segoe UI","72",Arial,Helvetica,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    min-height:100vh;
+  }
+
+  /* ===== Login ===== */
+  .login-screen{
+    display:flex;
+    min-height:100vh;
+    align-items:center;justify-content:center;
+    background:linear-gradient(135deg,var(--shell) 0%,var(--shell-dark) 100%);
+    padding:20px;
+  }
+  .login-card{
+    background:#fff;border-radius:6px;width:100%;max-width:380px;
+    box-shadow:0 20px 50px rgba(0,0,0,.3);
+    padding:32px 28px 26px;
+  }
+  .login-logo{
+    width:44px;height:44px;border-radius:6px;background:var(--primary);
+    color:#fff;display:flex;align-items:center;justify-content:center;
+    font-weight:700;font-size:16px;letter-spacing:.5px;margin-bottom:16px;
+  }
+  .login-title{font-size:19px;font-weight:700;margin:0 0 4px;}
+  .login-sub{font-size:13px;color:var(--text-muted);margin:0 0 20px;}
+  .login-field{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
+  .login-field label{font-size:12px;font-weight:600;color:var(--text-muted);}
+  .login-field input{
+    border:1px solid var(--border);border-radius:4px;padding:9px 10px;font-size:14px;
+    font-family:inherit;color:var(--text);
+  }
+  .login-field input:focus{outline:2px solid var(--primary);outline-offset:0;border-color:var(--primary);}
+  .login-error{
+    display:none;background:#fdecec;color:var(--danger);border:1px solid #f3c8c8;
+    border-radius:4px;padding:8px 10px;font-size:12.5px;margin-bottom:14px;
+  }
+  .login-success{
+    display:none;background:#eaf6ee;color:var(--success);border:1px solid #c5e8d1;
+    border-radius:4px;padding:8px 10px;font-size:12.5px;margin-bottom:14px;
+  }
+  .login-btn{
+    width:100%;border:none;background:var(--primary);color:#fff;font-weight:600;
+    font-size:14.5px;padding:11px;border-radius:4px;cursor:pointer;margin-top:4px;
+  }
+  .login-btn:hover{background:var(--primary-dark);}
+  .login-btn:disabled{opacity:.55;cursor:not-allowed;}
+  .login-btn.secondary-outline{
+    background:#fff;color:var(--primary);border:1px solid var(--primary);margin-top:8px;
+  }
+  .login-btn.secondary-outline:hover{background:#eaf2fc;}
+  .file-chip{
+    display:none;align-items:center;gap:8px;background:#eaf2fc;border:1px solid #cfe2f8;
+    border-radius:4px;padding:8px 10px;font-size:12.5px;color:var(--primary-dark);margin-bottom:14px;
+    word-break:break-all;
+  }
+  .file-chip svg{flex-shrink:0;width:16px;height:16px;}
+  .login-note{
+    text-align:center;font-size:11.5px;color:var(--text-muted);margin-top:18px;
+    line-height:1.6;
+  }
+  .login-note a{color:var(--primary);text-decoration:none;font-weight:600;}
+  .login-note a:hover{text-decoration:underline;}
+  .login-divider{
+    display:flex;align-items:center;gap:10px;margin:16px 0;color:var(--text-muted);font-size:11.5px;
+  }
+  .login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:var(--border);}
+  .password-field-wrap{position:relative;}
+  .password-toggle{
+    position:absolute;right:8px;top:29px;background:none;border:none;cursor:pointer;
+    font-size:11.5px;color:var(--primary);font-weight:600;
+  }
+
+  /* ===== Banner ===== */
+  .banner{
+    background:#fff6e6;color:#7a4b00;border-bottom:1px solid #f0d999;
+    font-size:12.5px;padding:8px 16px;text-align:center;display:none;
+  }
+
+  /* ===== User menu ===== */
+  .user-wrap{position:relative;}
+  .user-menu{
+    display:none;position:absolute;top:38px;right:0;background:#fff;color:var(--text);
+    border:1px solid var(--border);border-radius:4px;min-width:190px;
+    box-shadow:0 8px 24px rgba(0,0,0,.18);z-index:60;overflow:hidden;
+  }
+  .user-menu.open{display:block;}
+  .user-menu-name{
+    padding:10px 14px;font-size:12.5px;font-weight:600;color:var(--text-muted);
+    border-bottom:1px solid var(--border);word-break:break-all;
+  }
+  .user-menu-item{
+    padding:10px 14px;font-size:13.5px;cursor:pointer;color:var(--text);
+  }
+  .user-menu-item:hover{background:#f0f2f4;}
+  .user-menu-validity{
+    padding:6px 14px 10px;font-size:11.5px;color:var(--text-muted);border-bottom:1px solid var(--border);
+  }
+
+  /* ===== Shell Bar ===== */
+  .shellbar{
+    background:var(--shell);color:#fff;height:48px;display:flex;align-items:center;
+    padding:0 12px;gap:12px;position:sticky;top:0;z-index:50;box-shadow:0 1px 3px rgba(0,0,0,.25);
+  }
+  .shellbar .logo{
+    width:28px;height:28px;border-radius:4px;background:#fff;color:var(--shell);
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;
+    letter-spacing:.5px;flex-shrink:0;
+  }
+  .shellbar .title{font-size:16px;font-weight:600;letter-spacing:.2px;white-space:nowrap;}
+  .shellbar .crumb{
+    font-size:13px;color:#c7d0d9;display:flex;align-items:center;gap:6px;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .shellbar .spacer{flex:1;}
+  .save-status{font-size:11.5px;color:#c7d0d9;white-space:nowrap;}
+  .shellbar .user{
+    width:30px;height:30px;border-radius:50%;background:#5a7590;display:flex;
+    align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;cursor:pointer;
+  }
+
+  /* ===== Layout ===== */
+  .content{max-width:1180px;margin:0 auto;padding:20px 16px 60px;}
+  .page-title{font-size:22px;font-weight:600;margin:4px 0 4px;color:var(--text);}
+  .page-sub{font-size:13px;color:var(--text-muted);margin:0 0 20px;}
+
+  /* ===== Dashboard tiles ===== */
+  .tile-group-label{
+    font-size:13px;font-weight:600;color:var(--text-muted);text-transform:uppercase;
+    letter-spacing:.4px;margin:24px 0 10px;
+  }
+  .tile-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(176px,1fr));gap:14px;}
+  .tile{
+    background:var(--tile-bg);border:1px solid var(--border);border-radius:4px;height:152px;
+    padding:14px;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;
+    position:relative;transition:box-shadow .15s ease, transform .1s ease;box-shadow:0 1px 2px rgba(0,0,0,.05);
+  }
+  .tile:hover{box-shadow:0 4px 12px rgba(0,0,0,.12);transform:translateY(-1px);}
+  .tile:active{transform:translateY(0);}
+  .tile-icon{
+    width:34px;height:34px;border-radius:4px;background:var(--primary);color:#fff;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .tile-icon svg{width:19px;height:19px;}
+  .tile-name{font-size:14.5px;font-weight:600;color:var(--text);line-height:1.25;}
+  .tile-meta{font-size:12px;color:var(--text-muted);}
+  .tile-meta.hours{color:var(--primary);font-weight:600;font-size:20px;}
+  .tile.disabled{background:var(--grey-tile);box-shadow:none;}
+  .tile.disabled:hover{transform:none;box-shadow:none;}
+  .tile.disabled .tile-icon{background:#c4c9cd;color:#eef0f2;}
+  .tile.disabled .tile-name{color:var(--grey-text);}
+  .tile.disabled .tile-meta{color:var(--grey-text);}
+  .badge-soon{
+    position:absolute;top:10px;right:10px;background:#c4c9cd;color:#fff;font-size:9.5px;
+    font-weight:700;letter-spacing:.3px;padding:2px 6px;border-radius:3px;text-transform:uppercase;
+  }
+  .badge-locked{background:#e9730c;}
+
+  /* ===== Back link ===== */
+  .back-link{
+    display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--primary);
+    cursor:pointer;margin-bottom:10px;font-weight:600;user-select:none;
+  }
+  .back-link:hover{text-decoration:underline;}
+
+  /* ===== Zeiterfassung: month bar ===== */
+  .month-bar{
+    display:flex;align-items:center;gap:10px;background:var(--tile-bg);border:1px solid var(--border);
+    border-radius:4px;padding:10px 14px;margin-bottom:14px;flex-wrap:wrap;
+  }
+  .month-bar .mb-label{font-size:16px;font-weight:600;min-width:150px;}
+  .icon-btn{
+    width:30px;height:30px;border-radius:4px;border:1px solid var(--border);background:#fff;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text);
+  }
+  .icon-btn:hover{background:#f0f2f4;}
+  .btn{
+    border:1px solid var(--primary);background:var(--primary);color:#fff;font-size:13px;
+    font-weight:600;padding:7px 14px;border-radius:4px;cursor:pointer;
+  }
+  .btn:hover{background:var(--primary-dark);}
+  .btn.secondary{background:#fff;color:var(--primary);}
+  .btn.secondary:hover{background:#eaf2fc;}
+  .btn.ghost{background:transparent;border:1px solid var(--border);color:var(--text);}
+  .btn.ghost:hover{background:#f0f2f4;}
+  .btn.danger-ghost{background:transparent;border:1px solid var(--border);color:var(--danger);padding:6px 10px;font-size:12px;}
+  .spacer-flex{flex:1;}
+  .month-summary{font-size:13px;color:var(--text-muted);}
+  .month-summary b{color:var(--text);}
+
+  /* ===== Calendar ===== */
+  .calendar{background:var(--tile-bg);border:1px solid var(--border);border-radius:4px;overflow:hidden;}
+  .cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);background:#fafbfc;border-bottom:1px solid var(--border);}
+  .cal-weekdays div{padding:8px 0;text-align:center;font-size:11.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.3px;}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);}
+  .cal-cell{min-height:88px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:6px 8px;cursor:pointer;position:relative;background:#fff;}
+  .cal-cell:hover{background:#eaf2fc;}
+  .cal-cell.empty{cursor:default;background:#fafbfc;}
+  .cal-cell.empty:hover{background:#fafbfc;}
+  .cal-cell.weekend{background:#fafbfc;}
+  .cal-cell.weekend:hover{background:#eaf2fc;}
+  .cal-cell:nth-child(7n){border-right:none;}
+  .cal-daynum{font-size:13px;font-weight:600;color:var(--text);}
+  .cal-cell.today .cal-daynum{
+    display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
+    border-radius:50%;background:var(--primary);color:#fff;
+  }
+  .cal-hours{margin-top:10px;font-size:15px;font-weight:700;color:var(--success);}
+  .cal-hours.zero{color:var(--text-muted);font-weight:400;font-size:12px;}
+  .cal-bookings-count{font-size:10.5px;color:var(--text-muted);margin-top:2px;}
+  .cal-dot{position:absolute;top:8px;right:8px;width:6px;height:6px;border-radius:50%;background:var(--primary);}
+
+  /* ===== Modal (generic) ===== */
+  .modal-overlay{
+    display:none;position:fixed;inset:0;background:rgba(40,55,74,.45);z-index:100;
+    align-items:flex-start;justify-content:center;padding:5vh 14px;overflow-y:auto;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal{background:#fff;border-radius:6px;max-width:480px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,.25);animation:pop .12s ease;}
+  .modal.wide{max-width:560px;}
+  @keyframes pop{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+  .modal-head{
+    background:var(--shell);color:#fff;padding:14px 18px;border-radius:6px 6px 0 0;
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .modal-head h3{margin:0;font-size:15.5px;font-weight:600;}
+  .modal-head .sub{font-size:12px;color:#c7d0d9;margin-top:2px;}
+  .modal-close{background:transparent;border:none;color:#fff;font-size:20px;cursor:pointer;line-height:1;padding:2px 6px;opacity:.85;}
+  .modal-close:hover{opacity:1;}
+  .modal-body{padding:16px 18px;}
+  .modal-body p{font-size:13.5px;line-height:1.6;color:var(--text);margin:0 0 12px;}
+
+  .booking-card{border:1px solid var(--border);border-radius:4px;padding:12px;margin-bottom:12px;background:#fafbfc;}
+  .booking-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+  .booking-card-head .lbl{font-size:12.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.3px;}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+  .field{display:flex;flex-direction:column;gap:4px;}
+  .field label{font-size:11.5px;color:var(--text-muted);font-weight:600;}
+  .field input{border:1px solid var(--border);border-radius:4px;padding:7px 8px;font-size:13.5px;font-family:inherit;color:var(--text);}
+  .field input:focus{outline:2px solid var(--primary);outline-offset:0;border-color:var(--primary);}
+  .booking-net{font-size:12.5px;color:var(--text-muted);margin-top:2px;}
+  .booking-net b{color:var(--success);}
+  .add-booking-btn{
+    width:100%;border:1.5px dashed var(--border);background:transparent;color:var(--primary);
+    font-weight:600;font-size:13px;padding:9px;border-radius:4px;cursor:pointer;margin-bottom:14px;
+  }
+  .add-booking-btn:hover{background:#eaf2fc;border-color:var(--primary);}
+  .day-total{
+    display:flex;justify-content:space-between;align-items:center;background:#eaf2fc;
+    border-radius:4px;padding:10px 12px;margin-bottom:14px;font-size:13.5px;
+  }
+  .day-total b{font-size:17px;color:var(--primary-dark);}
+  .modal-foot{display:flex;justify-content:flex-end;gap:8px;padding:12px 18px 16px;border-top:1px solid var(--border);}
+  .empty-state{text-align:center;color:var(--text-muted);font-size:13px;padding:18px 0;}
+  .wa-btn{
+    display:inline-flex;align-items:center;gap:8px;background:#25D366;color:#fff;
+    border:none;border-radius:4px;padding:9px 14px;font-weight:600;font-size:13.5px;
+    text-decoration:none;cursor:pointer;
+  }
+  .wa-btn:hover{background:#1ebe57;}
+
+  @media (max-width:480px){
+    .field-row{grid-template-columns:1fr 1fr;}
+    .tile-grid{grid-template-columns:repeat(2,1fr);}
+    .month-bar .mb-label{font-size:14px;min-width:auto;}
+  }
+
+  /* ===== Hauptbuch ===== */
+  .hb-tabbar{
+    display:flex;gap:4px;background:#fff;border:1px solid var(--border);border-radius:4px;
+    padding:4px;margin-bottom:14px;overflow-x:auto;
+  }
+  .hb-tab{
+    border:none;background:transparent;color:var(--text-muted);font-size:13px;font-weight:600;
+    padding:8px 14px;border-radius:4px;cursor:pointer;white-space:nowrap;flex-shrink:0;
+  }
+  .hb-tab:hover{background:#f0f2f4;color:var(--text);}
+  .hb-tab.active{background:var(--primary);color:#fff;}
+  .hb-panel{background:#fff;border:1px solid var(--border);border-radius:4px;padding:18px;}
+  .hb-panel h4{margin:0 0 12px;font-size:14.5px;font-weight:700;color:var(--text);}
+  .hb-panel h4.spaced{margin-top:22px;}
+  .hb-table{width:100%;border-collapse:collapse;font-size:13.5px;margin-bottom:6px;}
+  .hb-table th{
+    text-align:left;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;
+    letter-spacing:.3px;padding:7px 8px;border-bottom:2px solid var(--border);
+  }
+  .hb-table td{padding:8px;border-bottom:1px solid var(--border);}
+  .hb-table tr:hover td{background:#fafbfc;}
+  .hb-table td.num{text-align:right;font-variant-numeric:tabular-nums;}
+  .hb-table td.center{text-align:center;}
+  .hb-group-row td{
+    background:#f2f4f6;font-weight:700;font-size:12px;color:var(--text-muted);
+    text-transform:uppercase;letter-spacing:.3px;padding:6px 8px;
+  }
+  .hb-total-row td{font-weight:700;border-top:2px solid var(--border);border-bottom:none;}
+  .hb-form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+  .hb-form-row.three{grid-template-columns:1fr 1fr 1fr;}
+  .hb-field{display:flex;flex-direction:column;gap:5px;}
+  .hb-field label{font-size:11.5px;color:var(--text-muted);font-weight:600;}
+  .hb-field input, .hb-field select{
+    border:1px solid var(--border);border-radius:4px;padding:8px 9px;font-size:13.5px;font-family:inherit;
+  }
+  .hb-field input:focus, .hb-field select:focus{outline:2px solid var(--primary);outline-offset:0;border-color:var(--primary);}
+  .hb-mini-form{
+    display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-top:16px;padding-top:14px;
+    border-top:1px dashed var(--border);
+  }
+  .hb-bilanz-cols{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+  .hb-bilanz-cols .side-title{
+    font-size:12.5px;font-weight:700;color:var(--primary-dark);text-transform:uppercase;
+    letter-spacing:.3px;margin-bottom:8px;
+  }
+  .hb-result-box{
+    margin-top:16px;padding:12px 14px;border-radius:4px;font-size:14px;font-weight:700;
+    display:flex;justify-content:space-between;align-items:center;
+  }
+  .hb-result-box.profit{background:#eaf6ee;color:var(--success);}
+  .hb-result-box.loss{background:#fdecec;color:var(--danger);}
+  .hb-empty{color:var(--text-muted);font-size:13px;padding:10px 0;}
+  @media (max-width:600px){
+    .hb-form-row, .hb-form-row.three{grid-template-columns:1fr;}
+    .hb-bilanz-cols{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+  <!-- ===================== LOGIN ===================== -->
+  <div class="login-screen" id="view-login">
+    <div class="login-card">
+      <div class="login-logo">HZ</div>
+      <div class="login-title">HZ Erp-System</div>
+      <div class="login-sub">Melden Sie sich mit Ihrer Lizenzdatei an.</div>
+
+      <div class="login-error" id="login-error"></div>
+      <div class="login-success" id="login-success"></div>
+
+      <input type="file" id="file-input" accept=".json,application/json" style="display:none;">
+      <button type="button" class="login-btn secondary-outline" id="pick-file-btn" onclick="pickLicenseFile()">
+        Lizenzdatei auswählen (.json)
+      </button>
+
+      <div class="file-chip" id="file-chip">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+        <span id="file-chip-name">Keine Datei</span>
+      </div>
+
+      <div class="login-field password-field-wrap" id="password-wrap" style="display:none;">
+        <label>Passwort</label>
+        <input type="password" id="login-pass" autocomplete="current-password">
+        <button type="button" class="password-toggle" onclick="togglePasswordVisibility()">anzeigen</button>
+      </div>
+
+      <button type="button" class="login-btn" id="login-btn" style="display:none;" onclick="handleLogin()">Anmelden</button>
+
+      <div class="login-divider">oder</div>
+      <div class="login-note">
+        Noch keine Lizenz? Kontaktieren Sie uns per<br>
+        <a href="https://wa.me/49XXXXXXXXXX" target="_blank" rel="noopener">WhatsApp</a>, um ein Abo einzurichten.
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== BANNER ===================== -->
+  <div class="banner" id="fs-banner">Ihr Browser unterstützt kein direktes Speichern in die Lizenzdatei. Nach jeder Änderung wird eine aktualisierte Datei heruntergeladen &ndash; bitte ersetzen Sie damit Ihre bisherige Datei.</div>
+
+  <!-- ===================== APP ===================== -->
+  <div id="app-shell" style="display:none;">
+
+    <div class="shellbar">
+      <div class="logo">HZ</div>
+      <div class="title">HZ Erp-System</div>
+      <div class="crumb" id="crumb">/ Dashboard</div>
+      <div class="spacer"></div>
+      <div class="save-status" id="save-status"></div>
+      <div class="user-wrap">
+        <div class="user" id="user-initials" onclick="toggleUserMenu()">KD</div>
+        <div class="user-menu" id="user-menu">
+          <div class="user-menu-name" id="user-name-label"></div>
+          <div class="user-menu-validity" id="license-validity" style="display:none;"></div>
+          <div class="user-menu-item" onclick="openPasswordModal()">Passwort ändern</div>
+          <div class="user-menu-item" onclick="manualSave()">Datei jetzt speichern</div>
+          <div class="user-menu-item" onclick="logout()">Abmelden</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ===================== DASHBOARD ===================== -->
+      <div id="view-dashboard">
+        <div class="page-title">Willkommen zurück</div>
+        <div class="page-sub">Wählen Sie eine Anwendung aus, um zu starten.</div>
+        <div class="tile-group-label">Anwendungen</div>
+        <div class="tile-grid" id="tile-grid"></div>
+      </div>
+
+      <!-- ===================== ZEITERFASSUNG ===================== -->
+      <div id="view-zeiterfassung" style="display:none;">
+        <div class="back-link" onclick="goToDashboard()">&larr; Zurück zum Dashboard</div>
+        <div class="page-title">Zeiterfassung</div>
+        <div class="page-sub">Klicken Sie auf einen Tag, um Buchungen zu erfassen.</div>
+
+        <div class="month-bar">
+          <button class="icon-btn" onclick="shiftMonth(-1)" aria-label="Vorheriger Monat">&#8249;</button>
+          <div class="mb-label" id="month-label">August 2026</div>
+          <button class="icon-btn" onclick="shiftMonth(1)" aria-label="Nächster Monat">&#8250;</button>
+          <button class="btn secondary" onclick="goToToday()">Heute</button>
+          <div class="spacer-flex"></div>
+          <div class="month-summary">Monatssumme: <b id="month-total">0,0 Std</b></div>
+        </div>
+
+        <div class="calendar">
+          <div class="cal-weekdays"><div>Mo</div><div>Di</div><div>Mi</div><div>Do</div><div>Fr</div><div>Sa</div><div>So</div></div>
+          <div class="cal-grid" id="cal-grid"></div>
+        </div>
+      </div>
+
+      <!-- ===================== HAUPTBUCH ===================== -->
+      <div id="view-hauptbuch" style="display:none;">
+        <div class="back-link" onclick="goToDashboard()">&larr; Zurück zum Dashboard</div>
+        <div class="page-title">Hauptbuch</div>
+        <div class="page-sub">Kontenplan, Buchungen, Kontenblätter, Bilanz und GuV.</div>
+
+        <div class="hb-tabbar">
+          <button class="hb-tab" data-tab="konten" onclick="switchHbTab('konten')">Kontenplan</button>
+          <button class="hb-tab" data-tab="buchen" onclick="switchHbTab('buchen')">Buchen</button>
+          <button class="hb-tab" data-tab="kontenblatt" onclick="switchHbTab('kontenblatt')">Kontenblatt</button>
+          <button class="hb-tab" data-tab="bilanz" onclick="switchHbTab('bilanz')">Bilanz</button>
+          <button class="hb-tab" data-tab="guv" onclick="switchHbTab('guv')">GuV</button>
+        </div>
+
+        <div id="hb-panel-konten" class="hb-panel"></div>
+        <div id="hb-panel-buchen" class="hb-panel" style="display:none;"></div>
+        <div id="hb-panel-kontenblatt" class="hb-panel" style="display:none;"></div>
+        <div id="hb-panel-bilanz" class="hb-panel" style="display:none;"></div>
+        <div id="hb-panel-guv" class="hb-panel" style="display:none;"></div>
+      </div>
+
+    </div>
+
+    <!-- ===================== MODAL: Tagesbuchung ===================== -->
+    <div class="modal-overlay" id="modal-overlay">
+      <div class="modal">
+        <div class="modal-head">
+          <div><h3>Zeitbuchung</h3><div class="sub" id="modal-date-label">Datum</div></div>
+          <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="day-total"><span>Gesamtzeit an diesem Tag</span><b id="modal-day-total">0,0 Std</b></div>
+          <div id="bookings-container"></div>
+          <button class="add-booking-btn" onclick="addBookingRow()">+ Weitere Buchung (nächstes Kommen / Gehen)</button>
+        </div>
+        <div class="modal-foot">
+          <button class="btn ghost" onclick="closeModal()">Abbrechen</button>
+          <button class="btn" onclick="saveDay()">Speichern</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== MODAL: Passwort ändern ===================== -->
+    <div class="modal-overlay" id="pw-modal-overlay">
+      <div class="modal">
+        <div class="modal-head">
+          <div><h3>Passwort ändern</h3><div class="sub">Wird in Ihrer Lizenzdatei gespeichert</div></div>
+          <button class="modal-close" onclick="closePasswordModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="login-error" id="pw-modal-error"></div>
+          <div class="field" style="margin-bottom:12px;">
+            <label>Neues Passwort</label>
+            <input type="password" id="pw-new1">
+          </div>
+          <div class="field">
+            <label>Neues Passwort wiederholen</label>
+            <input type="password" id="pw-new2">
+          </div>
+        </div>
+        <div class="modal-foot">
+          <button class="btn ghost" onclick="closePasswordModal()">Abbrechen</button>
+          <button class="btn" onclick="changePassword()">Ändern &amp; speichern</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== MODAL: Info / Modul gesperrt ===================== -->
+    <div class="modal-overlay" id="info-modal-overlay">
+      <div class="modal">
+        <div class="modal-head">
+          <div><h3 id="info-modal-title">Hinweis</h3></div>
+          <button class="modal-close" onclick="closeInfoModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p id="info-modal-text"></p>
+          <a class="wa-btn" id="info-modal-wa" href="https://wa.me/49XXXXXXXXXX" target="_blank" rel="noopener" style="display:none;">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.35 5.08L2 22l5.05-1.32C8.5 21.5 10.2 22 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm0 18c-1.6 0-3.1-.44-4.38-1.2l-.31-.19-3 .78.8-2.93-.2-.3A7.94 7.94 0 0 1 4 12c0-4.41 3.59-8 8-8s8 3.59 8 8-3.59 8-8 8z"/></svg>
+            WhatsApp kontaktieren
+          </a>
+        </div>
+        <div class="modal-foot"><button class="btn ghost" onclick="closeInfoModal()">Schließen</button></div>
+      </div>
+    </div>
+
+  </div><!-- /app-shell -->
+
+<script>
+  // ===================== Kryptografie-Helfer =====================
+  async function sha256Hex(str){
+    const enc = new TextEncoder().encode(str);
+    const buf = await crypto.subtle.digest('SHA-256', enc);
+    return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  }
+  function randomSalt(){
+    const arr = new Uint8Array(16);
+    crypto.getRandomValues(arr);
+    return Array.from(arr).map(b=>b.toString(16).padStart(2,'0')).join('');
+  }
+
+  // ===================== Modul-Konfiguration =====================
+  const MODULE_CONFIG = [
+    { key:'zeiterfassung', name:'Zeiterfassung', built:true,
+      icon:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/>' },
+    { key:'lager', name:'Lagerverwaltung', built:false,
+      icon:'<path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/>' },
+    { key:'hauptbuch', name:'Hauptbuch', built:true,
+      icon:'<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>' },
+    { key:'lohn', name:'Lohnabrechnung', built:false,
+      icon:'<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><path d="M6 15h4"/>' },
+    { key:'crm', name:'CRM', built:false,
+      icon:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>' }
+  ];
+
+  // ===================== Login-State =====================
+  let pendingLicense = null;
+  let pendingFileHandle = null;
+  let fsApiSupported = ('showOpenFilePicker' in window);
+
+  function togglePasswordVisibility(){
+    const inp = document.getElementById('login-pass');
+    inp.type = inp.type==='password' ? 'text' : 'password';
+  }
+
+  function pickFileViaInput(){
+    return new Promise((resolve,reject)=>{
+      const input = document.getElementById('file-input');
+      input.value = '';
+      input.onchange = ()=> input.files[0] ? resolve(input.files[0]) : reject(new Error('no-file'));
+      input.click();
+    });
+  }
+
+  async function pickLicenseFile(){
+    document.getElementById('login-error').style.display='none';
+    document.getElementById('login-success').style.display='none';
+    let file = null;
+
+    // Schritt 1: Datei auswählen (mit automatischem Fallback, falls die
+    // erweiterte Datei-API in dieser Umgebung nicht nutzbar ist)
+    if(fsApiSupported){
+      try{
+        const [handle] = await window.showOpenFilePicker({
+          types:[{ description:'HZ Lizenzdatei', accept:{'application/json':['.json']} }],
+          multiple:false
+        });
+        pendingFileHandle = handle;
+        file = await handle.getFile();
+      }catch(fsErr){
+        if(fsErr && fsErr.name==='AbortError') return; // Nutzer hat abgebrochen
+        // API vorhanden, aber in dieser Umgebung blockiert -> auf Standard-Dialog umschalten
+        fsApiSupported = false;
+        pendingFileHandle = null;
+        try{
+          file = await pickFileViaInput();
+        }catch(inputErr){
+          return; // Nutzer hat auch hier abgebrochen
+        }
+      }
+    } else {
+      pendingFileHandle = null;
+      try{
+        file = await pickFileViaInput();
+      }catch(inputErr){
+        return; // Nutzer hat abgebrochen
+      }
+    }
+
+    if(!file){
+      showLoginError('Es wurde keine Datei ausgewählt.');
+      return;
+    }
+
+    // Schritt 2: Inhalt lesen und prüfen
+    try{
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      if(!parsed.auth || !parsed.auth.hash || !parsed.auth.salt){
+        showLoginError('Diese Datei ist keine gültige HZ-Lizenzdatei.');
+        return;
+      }
+      pendingLicense = parsed;
+      document.getElementById('file-chip').style.display='flex';
+      document.getElementById('file-chip-name').textContent = file.name;
+      document.getElementById('password-wrap').style.display='flex';
+      document.getElementById('login-btn').style.display='block';
+      document.getElementById('login-pass').focus();
+    }catch(readErr){
+      showLoginError('Die Datei konnte nicht gelesen werden. Ist es wirklich die Lizenzdatei (.json)?');
+    }
+  }
+
+  function showLoginError(msg){
+    const el = document.getElementById('login-error');
+    el.textContent = msg;
+    el.style.display='block';
+  }
+
+  // ---------- Online-/Geräte-Kontrolle (Google Sheet) ----------
+  // Diese URL nach dem Deployment des Apps Script (siehe Anleitung) eintragen.
+  const GAS_WEBAPP_URL = 'DEINE_APPS_SCRIPT_WEBAPP_URL';
+  let heartbeatTimer = null;
+
+  function getDeviceId(){
+    let id = localStorage.getItem('hz_device_id');
+    if(!id){
+      id = (crypto.randomUUID ? crypto.randomUUID() :
+        'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c){
+          const r = Math.random()*16|0, v = c==='x' ? r : (r&0x3|0x8);
+          return v.toString(16);
+        }));
+      localStorage.setItem('hz_device_id', id);
+    }
+    return id;
+  }
+
+  async function reportCheckin(license){
+    if(!license.lizenzId || GAS_WEBAPP_URL.includes('DEINE_APPS_SCRIPT')){
+      // Keine Lizenz-ID (alte Lizenzdatei) oder Online-Kontrolle noch nicht eingerichtet
+      // -> ohne Online-Prüfung weiterarbeiten
+      return { erlaubt:true, geprueft:false };
+    }
+    try{
+      const res = await fetch(GAS_WEBAPP_URL, {
+        method:'POST',
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify({
+          lizenzId: license.lizenzId,
+          kunde: license.kunde,
+          deviceId: getDeviceId()
+        })
+      });
+      const json = await res.json();
+      return { ...json, geprueft:true };
+    }catch(netErr){
+      // Kein Internet o.ä. -> nicht aussperren, aber als ungeprüft markieren
+      return { erlaubt:true, geprueft:false };
+    }
+  }
+
+  function startHeartbeat(){
+    stopHeartbeat();
+    heartbeatTimer = setInterval(()=>{ if(LICENSE) reportCheckin(LICENSE); }, 4*60*1000);
+  }
+  function stopHeartbeat(){
+    if(heartbeatTimer){ clearInterval(heartbeatTimer); heartbeatTimer = null; }
+  }
+
+  function isLicenseExpired(license){
+    if(!license.gueltigBis) return false; // ältere Lizenzen ohne Datum -> nicht sperren
+    const heute = new Date(); heute.setHours(0,0,0,0);
+    const ablauf = new Date(license.gueltigBis + 'T00:00:00');
+    return heute > ablauf;
+  }
+  function formatDateDe(isoDate){
+    const [y,m,d] = isoDate.split('-');
+    return `${d}.${m}.${y}`;
+  }
+
+  async function handleLogin(){
+    const pass = document.getElementById('login-pass').value;
+    if(!pass){ showLoginError('Bitte Passwort eingeben.'); return; }
+    const hash = await sha256Hex(pendingLicense.auth.salt + pass);
+    if(hash !== pendingLicense.auth.hash){
+      showLoginError('Falsches Passwort.');
+      return;
+    }
+
+    if(isLicenseExpired(pendingLicense)){
+      showLoginError('Ihr Abo ist am ' + formatDateDe(pendingLicense.gueltigBis) + ' abgelaufen. Bitte kontaktieren Sie uns per WhatsApp zur Verlängerung.');
+      return;
+    }
+
+    const loginBtn = document.getElementById('login-btn');
+    loginBtn.disabled = true;
+    loginBtn.textContent = 'Anmeldung wird geprüft…';
+    const checkin = await reportCheckin(pendingLicense);
+    loginBtn.disabled = false;
+    loginBtn.textContent = 'Anmelden';
+
+    if(checkin.geprueft && checkin.erlaubt === false){
+      showLoginError('Diese Lizenz wird bereits auf der maximalen Anzahl Geräte genutzt. Bitte kontaktieren Sie uns, falls Sie ein weiteres Gerät benötigen.');
+      return;
+    }
+
+    LICENSE = pendingLicense;
+    fileHandle = pendingFileHandle;
+    DATA = (LICENSE.daten && LICENSE.daten.zeiterfassung) ? LICENSE.daten.zeiterfassung : {};
+    if(!LICENSE.daten) LICENSE.daten = {};
+    LICENSE.daten.zeiterfassung = DATA;
+
+    document.getElementById('view-login').style.display='none';
+    document.getElementById('app-shell').style.display='block';
+    document.getElementById('fs-banner').style.display = fsApiSupported ? 'none' : 'block';
+    document.getElementById('user-initials').textContent = getInitials(LICENSE.kunde || 'Kunde');
+    document.getElementById('user-name-label').textContent = LICENSE.kunde || 'Kunde';
+    if(LICENSE.gueltigBis){
+      document.getElementById('license-validity').textContent = 'Lizenz gültig bis ' + formatDateDe(LICENSE.gueltigBis);
+      document.getElementById('license-validity').style.display='block';
+    }
+
+    renderDashboardTiles();
+    goToDashboard();
+    startHeartbeat();
+  }
+
+  function getInitials(name){
+    const parts = name.trim().split(/\s+/);
+    if(parts.length>1) return (parts[0][0]+parts[1][0]).toUpperCase();
+    return name.trim().slice(0,2).toUpperCase();
+  }
+
+  function logout(){
+    stopHeartbeat();
+    LICENSE = null; fileHandle = null; DATA = {};
+    pendingLicense = null; pendingFileHandle = null;
+    document.getElementById('user-menu').classList.remove('open');
+    document.getElementById('app-shell').style.display='none';
+    document.getElementById('view-login').style.display='flex';
+    document.getElementById('file-chip').style.display='none';
+    document.getElementById('password-wrap').style.display='none';
+    document.getElementById('login-btn').style.display='none';
+    document.getElementById('login-pass').value='';
+    document.getElementById('login-error').style.display='none';
+  }
+
+  function toggleUserMenu(){ document.getElementById('user-menu').classList.toggle('open'); }
+  document.addEventListener('click', function(e){
+    const menu = document.getElementById('user-menu');
+    if(!e.target.closest('.user-wrap')) menu.classList.remove('open');
+  });
+
+  // ===================== Datei speichern =====================
+  async function persistLicense(){
+    LICENSE.daten.zeiterfassung = DATA;
+    if(HB) LICENSE.daten.hauptbuch = HB;
+    const json = JSON.stringify(LICENSE, null, 2);
+    const statusEl = document.getElementById('save-status');
+    try{
+      if(fileHandle){
+        const writable = await fileHandle.createWritable();
+        await writable.write(json);
+        await writable.close();
+        statusEl.textContent = 'Gespeichert um ' + nowTimeStr();
+      } else {
+        downloadJson(json, (LICENSE.kunde || 'lizenz').replace(/\s+/g,'_') + '.json');
+        statusEl.textContent = 'Datei aktualisiert heruntergeladen';
+      }
+    }catch(e){
+      statusEl.textContent = 'Speichern fehlgeschlagen';
+      alert('Speichern fehlgeschlagen. Bitte erneut versuchen.');
+    }
+  }
+  function manualSave(){
+    document.getElementById('user-menu').classList.remove('open');
+    persistLicense();
+  }
+  function downloadJson(text, filename){
+    const blob = new Blob([text], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+  function nowTimeStr(){
+    const d = new Date();
+    return pad(d.getHours())+':'+pad(d.getMinutes());
+  }
+
+  // ===================== Passwort ändern =====================
+  function openPasswordModal(){
+    document.getElementById('user-menu').classList.remove('open');
+    document.getElementById('pw-new1').value='';
+    document.getElementById('pw-new2').value='';
+    document.getElementById('pw-modal-error').style.display='none';
+    document.getElementById('pw-modal-overlay').classList.add('open');
+  }
+  function closePasswordModal(){ document.getElementById('pw-modal-overlay').classList.remove('open'); }
+  async function changePassword(){
+    const p1 = document.getElementById('pw-new1').value;
+    const p2 = document.getElementById('pw-new2').value;
+    const errEl = document.getElementById('pw-modal-error');
+    if(!p1 || p1.length<4){ errEl.textContent='Passwort muss mindestens 4 Zeichen haben.'; errEl.style.display='block'; return; }
+    if(p1!==p2){ errEl.textContent='Passwörter stimmen nicht überein.'; errEl.style.display='block'; return; }
+    const newSalt = randomSalt();
+    const newHash = await sha256Hex(newSalt + p1);
+    LICENSE.auth.salt = newSalt;
+    LICENSE.auth.hash = newHash;
+    await persistLicense();
+    closePasswordModal();
+    alert('Passwort wurde geändert.');
+  }
+
+  // ===================== Info-Modal =====================
+  function showInfoModal(title, text, showWa){
+    document.getElementById('info-modal-title').textContent = title;
+    document.getElementById('info-modal-text').textContent = text;
+    document.getElementById('info-modal-wa').style.display = showWa ? 'inline-flex' : 'none';
+    document.getElementById('info-modal-overlay').classList.add('open');
+  }
+  function closeInfoModal(){ document.getElementById('info-modal-overlay').classList.remove('open'); }
+
+  // ===================== Dashboard-Kacheln =====================
+  function renderDashboardTiles(){
+    const grid = document.getElementById('tile-grid');
+    grid.innerHTML = MODULE_CONFIG.map(mod=>{
+      const activated = LICENSE.module && LICENSE.module[mod.key];
+      const usable = mod.built && activated;
+      const clickAttr = usable ? `onclick="goToModule('${mod.key}')"` :
+        `onclick="showLockedTile('${mod.key}', ${mod.built}, ${!!activated})"`;
+      let metaHtml = '';
+      if(usable && mod.key==='zeiterfassung'){
+        metaHtml = `<div class="tile-meta hours" id="tile-month-hours">0,0 Std</div><div class="tile-meta" id="tile-month-label">diesen Monat</div>`;
+      } else if(usable && mod.key==='hauptbuch'){
+        metaHtml = `<div class="tile-meta">Konten, Buchungen, Bilanz &amp; GuV</div>`;
+      } else if(!mod.built){
+        metaHtml = `<div class="tile-meta">Kommt mit der nächsten Version</div>`;
+      } else {
+        metaHtml = `<div class="tile-meta">Nicht aktiviert</div>`;
+      }
+      const badge = !mod.built ? `<span class="badge-soon">Bald verfügbar</span>` :
+        (!activated ? `<span class="badge-soon badge-locked">Nicht aktiviert</span>` : '');
+      return `
+        <div class="tile${usable?'':' disabled'}" ${clickAttr}>
+          ${badge}
+          <div class="tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${mod.icon}</svg></div>
+          <div>
+            <div class="tile-name">${mod.name}</div>
+            ${metaHtml}
+          </div>
+        </div>`;
+    }).join('');
+    if(LICENSE.module && LICENSE.module.zeiterfassung) refreshDashboardTile();
+  }
+  function goToModule(key){
+    if(key==='zeiterfassung') goToZeiterfassung();
+    else if(key==='hauptbuch') goToHauptbuch();
+  }
+  function showLockedTile(key, built, activated){
+    if(!built){
+      showInfoModal('Bald verfügbar', 'Dieses Modul befindet sich in Entwicklung und kommt mit einer der nächsten Versionen.', false);
+    } else {
+      showInfoModal('Modul nicht aktiviert', 'Dieses Modul ist für Ihre Lizenz nicht freigeschaltet. Kontaktieren Sie uns, um es zu aktivieren.', true);
+    }
+  }
+
+  // ===================== Zeit-Helfer =====================
+  const WEEKDAY_NAMES = ['Mo','Di','Mi','Do','Fr','Sa','So'];
+  const MONTH_NAMES = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+  let DATA = {};
+  let LICENSE = null;
+  let fileHandle = null;
+  let HB = null; // Hauptbuch-Daten (Konten + Buchungen)
+
+  function pad(n){ return n.toString().padStart(2,'0'); }
+  function dateKey(y,m,d){ return `${y}-${pad(m+1)}-${pad(d)}`; }
+  function fmtHours(minutes){
+    if(!minutes || minutes<=0) return '0,0 Std';
+    return (minutes/60).toFixed(1).replace('.',',') + ' Std';
+  }
+  function timeToMinutes(t){
+    if(!t) return null;
+    const [h,m] = t.split(':').map(Number);
+    return h*60+m;
+  }
+  function bookingNetMinutes(b){
+    const start = timeToMinutes(b.kommen), end = timeToMinutes(b.gehen);
+    if(start===null || end===null) return 0;
+    let diff = end - start;
+    if(diff < 0) diff += 24*60;
+    const net = diff - (Number(b.pause1)||0) - (Number(b.pause2)||0);
+    return net>0 ? net : 0;
+  }
+  function dayTotalMinutes(key){
+    return (DATA[key]||[]).reduce((s,b)=>s+bookingNetMinutes(b),0);
+  }
+  function monthTotalMinutes(y,m){
+    let sum=0;
+    Object.keys(DATA).forEach(key=>{
+      const [ky,km] = key.split('-').map(Number);
+      if(ky===y && km===m+1) sum += dayTotalMinutes(key);
+    });
+    return sum;
+  }
+
+  // ===================== Navigation =====================
+  let calY, calM;
+  function goToDashboard(){
+    document.getElementById('view-dashboard').style.display='block';
+    document.getElementById('view-zeiterfassung').style.display='none';
+    document.getElementById('view-hauptbuch').style.display='none';
+    document.getElementById('crumb').textContent='/ Dashboard';
+    if(LICENSE.module && LICENSE.module.zeiterfassung) refreshDashboardTile();
+  }
+  function goToZeiterfassung(){
+    document.getElementById('view-dashboard').style.display='none';
+    document.getElementById('view-zeiterfassung').style.display='block';
+    document.getElementById('view-hauptbuch').style.display='none';
+    document.getElementById('crumb').textContent='/ Dashboard / Zeiterfassung';
+    const now = new Date();
+    calY = now.getFullYear(); calM = now.getMonth();
+    renderCalendar();
+  }
+  function goToToday(){
+    const now = new Date();
+    calY = now.getFullYear(); calM = now.getMonth();
+    renderCalendar();
+  }
+  function shiftMonth(delta){
+    calM += delta;
+    if(calM<0){ calM=11; calY--; }
+    if(calM>11){ calM=0; calY++; }
+    renderCalendar();
+  }
+  function refreshDashboardTile(){
+    const now = new Date();
+    const el = document.getElementById('tile-month-hours');
+    if(!el) return;
+    el.textContent = fmtHours(monthTotalMinutes(now.getFullYear(), now.getMonth()));
+    document.getElementById('tile-month-label').textContent = MONTH_NAMES[now.getMonth()] + ' ' + now.getFullYear();
+  }
+
+  // ===================== Kalender =====================
+  function renderCalendar(){
+    document.getElementById('month-label').textContent = MONTH_NAMES[calM] + ' ' + calY;
+    document.getElementById('month-total').textContent = fmtHours(monthTotalMinutes(calY,calM));
+    const grid = document.getElementById('cal-grid');
+    grid.innerHTML = '';
+    const firstDay = new Date(calY, calM, 1);
+    let startWeekday = firstDay.getDay();
+    startWeekday = (startWeekday===0) ? 6 : startWeekday-1;
+    const daysInMonth = new Date(calY, calM+1, 0).getDate();
+    const today = new Date();
+    const isCurrentMonth = today.getFullYear()===calY && today.getMonth()===calM;
+    for(let i=0;i<startWeekday;i++){
+      const empty = document.createElement('div');
+      empty.className='cal-cell empty';
+      grid.appendChild(empty);
+    }
+    for(let d=1; d<=daysInMonth; d++){
+      const key = dateKey(calY,calM,d);
+      const jsDate = new Date(calY,calM,d);
+      const isWeekend = jsDate.getDay()===0 || jsDate.getDay()===6;
+      const isToday = isCurrentMonth && today.getDate()===d;
+      const cell = document.createElement('div');
+      cell.className = 'cal-cell' + (isWeekend?' weekend':'') + (isToday?' today':'');
+      cell.onclick = ()=>openModal(key);
+      const bookings = DATA[key] || [];
+      const mins = dayTotalMinutes(key);
+      let html = `<div class="cal-daynum">${d}</div>`;
+      if(bookings.length>0){
+        html += `<div class="cal-dot"></div>`;
+        html += `<div class="cal-hours${mins===0?' zero':''}">${fmtHours(mins)}</div>`;
+        html += `<div class="cal-bookings-count">${bookings.length} Buchung${bookings.length>1?'en':''}</div>`;
+      }
+      cell.innerHTML = html;
+      grid.appendChild(cell);
+    }
+  }
+
+  // ===================== Buchungs-Modal =====================
+  let modalKey = null;
+  let modalBookings = [];
+  function openModal(key){
+    modalKey = key;
+    modalBookings = JSON.parse(JSON.stringify(DATA[key] || []));
+    if(modalBookings.length===0) modalBookings.push({kommen:'', gehen:'', pause1:'', pause2:''});
+    const [y,m,d] = key.split('-').map(Number);
+    const jsDate = new Date(y,m-1,d);
+    const wd = WEEKDAY_NAMES[(jsDate.getDay()+6)%7];
+    document.getElementById('modal-date-label').textContent = `${wd}., ${pad(d)}.${pad(m)}.${y}`;
+    renderBookings();
+    document.getElementById('modal-overlay').classList.add('open');
+  }
+  function closeModal(){
+    document.getElementById('modal-overlay').classList.remove('open');
+    modalKey = null;
+  }
+  function addBookingRow(){
+    modalBookings.push({kommen:'', gehen:'', pause1:'', pause2:''});
+    renderBookings();
+  }
+  function removeBookingRow(idx){
+    modalBookings.splice(idx,1);
+    renderBookings();
+  }
+  function updateBookingField(idx, field, value){
+    modalBookings[idx][field] = value;
+    updateModalTotals();
+  }
+  function renderBookings(){
+    const container = document.getElementById('bookings-container');
+    if(modalBookings.length===0){
+      container.innerHTML = `<div class="empty-state">Keine Buchungen. Fügen Sie eine Buchung hinzu.</div>`;
+    } else {
+      container.innerHTML = modalBookings.map((b,idx)=>`
+        <div class="booking-card">
+          <div class="booking-card-head">
+            <span class="lbl">Buchung ${idx+1}</span>
+            ${modalBookings.length>1 ? `<button class="btn danger-ghost" onclick="removeBookingRow(${idx})">Entfernen</button>` : ''}
+          </div>
+          <div class="field-row">
+            <div class="field"><label>Kommen</label><input type="time" value="${b.kommen||''}" onchange="updateBookingField(${idx},'kommen',this.value)"></div>
+            <div class="field"><label>Gehen</label><input type="time" value="${b.gehen||''}" onchange="updateBookingField(${idx},'gehen',this.value)"></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>Pause 1 (Min.)</label><input type="number" min="0" step="5" placeholder="0" value="${b.pause1||''}" onchange="updateBookingField(${idx},'pause1',this.value)"></div>
+            <div class="field"><label>Pause 2 (Min.)</label><input type="number" min="0" step="5" placeholder="0" value="${b.pause2||''}" onchange="updateBookingField(${idx},'pause2',this.value)"></div>
+          </div>
+          <div class="booking-net">Nettozeit dieser Buchung: <b>${fmtHours(bookingNetMinutes(b))}</b></div>
+        </div>`).join('');
+    }
+    updateModalTotals();
+  }
+  function updateModalTotals(){
+    const total = modalBookings.reduce((sum,b)=>sum+bookingNetMinutes(b),0);
+    document.getElementById('modal-day-total').textContent = fmtHours(total);
+  }
+  async function saveDay(){
+    const valid = modalBookings.filter(b=>b.kommen && b.gehen);
+    if(valid.length>0) DATA[modalKey] = valid; else delete DATA[modalKey];
+    closeModal();
+    renderCalendar();
+    refreshDashboardTile();
+    await persistLicense();
+  }
+  document.getElementById('modal-overlay').addEventListener('click', function(e){ if(e.target===this) closeModal(); });
+  document.getElementById('pw-modal-overlay').addEventListener('click', function(e){ if(e.target===this) closePasswordModal(); });
+  document.getElementById('info-modal-overlay').addEventListener('click', function(e){ if(e.target===this) closeInfoModal(); });
+
+  // ===================================================================
+  // ===================== HAUPTBUCH-MODUL ============================
+  // ===================================================================
+
+  // Vereinfachter Standard-Kontenrahmen (an SKR03 angelehnt, keine
+  // steuerlich geprüfte Vorlage – bei Bedarf mit Steuerberater abstimmen).
+  function defaultKontenrahmen(){
+    return [
+      // Aktiva
+      { nummer:'0100', name:'Grundstücke und Gebäude', typ:'aktiva' },
+      { nummer:'0200', name:'Technische Anlagen und Maschinen', typ:'aktiva' },
+      { nummer:'0300', name:'Betriebs- und Geschäftsausstattung', typ:'aktiva' },
+      { nummer:'0400', name:'Fuhrpark', typ:'aktiva' },
+      { nummer:'1000', name:'Kasse', typ:'aktiva' },
+      { nummer:'1200', name:'Bank', typ:'aktiva' },
+      { nummer:'1400', name:'Forderungen aus Lieferungen und Leistungen', typ:'aktiva' },
+      { nummer:'1500', name:'Vorsteuer', typ:'aktiva' },
+      { nummer:'1600', name:'Warenbestand', typ:'aktiva' },
+      // Passiva
+      { nummer:'2000', name:'Eigenkapital', typ:'passiva' },
+      { nummer:'3000', name:'Bankdarlehen', typ:'passiva' },
+      { nummer:'3300', name:'Verbindlichkeiten aus Lieferungen und Leistungen', typ:'passiva' },
+      { nummer:'3500', name:'Umsatzsteuer', typ:'passiva' },
+      { nummer:'3600', name:'Rückstellungen', typ:'passiva' },
+      // Erträge
+      { nummer:'4000', name:'Umsatzerlöse 19% USt', typ:'ertrag' },
+      { nummer:'4001', name:'Umsatzerlöse 7% USt', typ:'ertrag' },
+      { nummer:'4009', name:'Sonstige betriebliche Erträge', typ:'ertrag' },
+      // Aufwendungen
+      { nummer:'5000', name:'Wareneinkauf', typ:'aufwand' },
+      { nummer:'6000', name:'Löhne und Gehälter', typ:'aufwand' },
+      { nummer:'6100', name:'Sozialabgaben', typ:'aufwand' },
+      { nummer:'6200', name:'Miete', typ:'aufwand' },
+      { nummer:'6300', name:'Nebenkosten (Strom, Wasser, Heizung)', typ:'aufwand' },
+      { nummer:'6400', name:'Werbekosten', typ:'aufwand' },
+      { nummer:'6500', name:'Bürobedarf', typ:'aufwand' },
+      { nummer:'6600', name:'Telefon und Internet', typ:'aufwand' },
+      { nummer:'6700', name:'Versicherungen', typ:'aufwand' },
+      { nummer:'6800', name:'Kfz-Kosten', typ:'aufwand' },
+      { nummer:'6900', name:'Abschreibungen', typ:'aufwand' },
+      { nummer:'7000', name:'Zinsaufwendungen', typ:'aufwand' },
+      { nummer:'7900', name:'Sonstige betriebliche Aufwendungen', typ:'aufwand' }
+    ];
+  }
+  const HB_TYP_LABEL = { aktiva:'Aktiva', passiva:'Passiva', ertrag:'Ertrag', aufwand:'Aufwand' };
+  const HB_TYP_ORDER = ['aktiva','passiva','ertrag','aufwand'];
+
+  function ensureHauptbuch(){
+    if(!LICENSE.daten.hauptbuch){
+      LICENSE.daten.hauptbuch = { konten: defaultKontenrahmen(), buchungen: [] };
+    }
+    if(!LICENSE.daten.hauptbuch.konten) LICENSE.daten.hauptbuch.konten = defaultKontenrahmen();
+    if(!LICENSE.daten.hauptbuch.buchungen) LICENSE.daten.hauptbuch.buchungen = [];
+    HB = LICENSE.daten.hauptbuch;
+  }
+
+  function goToHauptbuch(){
+    ensureHauptbuch();
+    document.getElementById('view-dashboard').style.display='none';
+    document.getElementById('view-zeiterfassung').style.display='none';
+    document.getElementById('view-hauptbuch').style.display='block';
+    document.getElementById('crumb').textContent='/ Dashboard / Hauptbuch';
+    switchHbTab('konten');
+  }
+
+  function findKonto(nummer){
+    return HB.konten.find(k=>k.nummer===nummer);
+  }
+  function fmtBetrag(n){
+    return (Math.round((n+Number.EPSILON)*100)/100).toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' €';
+  }
+  function kontoSaldo(nummer){
+    const konto = findKonto(nummer);
+    if(!konto) return 0;
+    let soll=0, haben=0;
+    HB.buchungen.forEach(b=>{
+      if(b.sollKonto===nummer) soll+=b.betrag;
+      if(b.habenKonto===nummer) haben+=b.betrag;
+    });
+    return (konto.typ==='aktiva' || konto.typ==='aufwand') ? (soll-haben) : (haben-soll);
+  }
+
+  function switchHbTab(tab){
+    document.querySelectorAll('.hb-tab').forEach(btn=>{
+      btn.classList.toggle('active', btn.dataset.tab===tab);
+    });
+    ['konten','buchen','kontenblatt','bilanz','guv'].forEach(t=>{
+      document.getElementById('hb-panel-'+t).style.display = (t===tab) ? 'block' : 'none';
+    });
+    if(tab==='konten') renderKontenplanPanel();
+    else if(tab==='buchen') renderBuchenPanel();
+    else if(tab==='kontenblatt') renderKontenblattPanel();
+    else if(tab==='bilanz') renderBilanzPanel();
+    else if(tab==='guv') renderGuVPanel();
+  }
+
+  // ---------- Kontenplan ----------
+  function renderKontenplanPanel(){
+    const panel = document.getElementById('hb-panel-konten');
+    let rows = '';
+    HB_TYP_ORDER.forEach(typ=>{
+      const konten = HB.konten.filter(k=>k.typ===typ);
+      if(konten.length===0) return;
+      rows += `<tr class="hb-group-row"><td colspan="3">${HB_TYP_LABEL[typ]}</td></tr>`;
+      konten.forEach(k=>{
+        const saldo = kontoSaldo(k.nummer);
+        rows += `<tr>
+          <td>${k.nummer}</td>
+          <td>${k.name}</td>
+          <td class="num">${fmtBetrag(saldo)}</td>
+        </tr>`;
+      });
+    });
+    panel.innerHTML = `
+      <h4>Kontenplan</h4>
+      <table class="hb-table">
+        <thead><tr><th>Nummer</th><th>Bezeichnung</th><th style="text-align:right;">Saldo</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div class="hb-mini-form">
+        <div class="hb-field" style="width:100px;">
+          <label>Nummer</label>
+          <input type="text" id="nk-nummer" placeholder="z. B. 4500">
+        </div>
+        <div class="hb-field" style="flex:1;min-width:180px;">
+          <label>Bezeichnung</label>
+          <input type="text" id="nk-name" placeholder="Kontobezeichnung">
+        </div>
+        <div class="hb-field" style="width:150px;">
+          <label>Typ</label>
+          <select id="nk-typ">
+            <option value="aktiva">Aktiva</option>
+            <option value="passiva">Passiva</option>
+            <option value="ertrag">Ertrag</option>
+            <option value="aufwand">Aufwand</option>
+          </select>
+        </div>
+        <button class="btn" onclick="addKonto()">Konto anlegen</button>
+      </div>
+    `;
+  }
+
+  async function addKonto(){
+    const nummer = document.getElementById('nk-nummer').value.trim();
+    const name = document.getElementById('nk-name').value.trim();
+    const typ = document.getElementById('nk-typ').value;
+    if(!nummer || !name){ alert('Bitte Kontonummer und Bezeichnung eingeben.'); return; }
+    if(findKonto(nummer)){ alert('Diese Kontonummer existiert bereits.'); return; }
+    HB.konten.push({ nummer, name, typ });
+    HB.konten.sort((a,b)=> a.nummer.localeCompare(b.nummer, 'de', {numeric:true}));
+    await persistLicense();
+    renderKontenplanPanel();
+    refreshKontenblattSelect();
+    refreshBuchenSelects();
+  }
+
+  // ---------- Buchen ----------
+  function kontoOptionsHtml(selected){
+    return HB.konten.map(k=>`<option value="${k.nummer}" ${k.nummer===selected?'selected':''}>${k.nummer} – ${k.name}</option>`).join('');
+  }
+
+  function renderBuchenPanel(){
+    const panel = document.getElementById('hb-panel-buchen');
+    const today = new Date().toISOString().slice(0,10);
+    panel.innerHTML = `
+      <h4>Neuen Buchungssatz erfassen</h4>
+      <div class="hb-form-row">
+        <div class="hb-field"><label>Datum</label><input type="date" id="bs-datum" value="${today}"></div>
+        <div class="hb-field"><label>Betrag (€)</label><input type="number" id="bs-betrag" min="0" step="0.01" placeholder="0,00"></div>
+      </div>
+      <div class="hb-form-row">
+        <div class="hb-field"><label>Soll-Konto</label><select id="bs-soll">${kontoOptionsHtml()}</select></div>
+        <div class="hb-field"><label>Haben-Konto</label><select id="bs-haben">${kontoOptionsHtml()}</select></div>
+      </div>
+      <div class="hb-field" style="margin-bottom:14px;">
+        <label>Buchungstext</label>
+        <input type="text" id="bs-text" placeholder="z. B. Büromaterial Rechnung Nr. 123">
+      </div>
+      <button class="btn" onclick="saveBooking()">Buchen</button>
+
+      <h4 class="spaced">Letzte Buchungen</h4>
+      <div id="bs-recent"></div>
+    `;
+    renderRecentBookings();
+  }
+
+  function renderRecentBookings(){
+    const el = document.getElementById('bs-recent');
+    if(!el) return;
+    const sorted = [...HB.buchungen].sort((a,b)=> b.datum.localeCompare(a.datum) || b.id - a.id).slice(0,15);
+    if(sorted.length===0){
+      el.innerHTML = `<div class="hb-empty">Noch keine Buchungen erfasst.</div>`;
+      return;
+    }
+    el.innerHTML = `
+      <table class="hb-table">
+        <thead><tr><th>Datum</th><th>Soll</th><th>Haben</th><th style="text-align:right;">Betrag</th><th>Text</th><th></th></tr></thead>
+        <tbody>
+          ${sorted.map(b=>`
+            <tr>
+              <td>${formatDateDe(b.datum)}</td>
+              <td>${b.sollKonto}</td>
+              <td>${b.habenKonto}</td>
+              <td class="num">${fmtBetrag(b.betrag)}</td>
+              <td>${b.text||''}</td>
+              <td class="center"><button class="btn danger-ghost" onclick="deleteBooking(${b.id})">Löschen</button></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    `;
+  }
+
+  async function saveBooking(){
+    const datum = document.getElementById('bs-datum').value;
+    const betrag = parseFloat(document.getElementById('bs-betrag').value);
+    const soll = document.getElementById('bs-soll').value;
+    const haben = document.getElementById('bs-haben').value;
+    const text = document.getElementById('bs-text').value.trim();
+
+    if(!datum){ alert('Bitte ein Datum wählen.'); return; }
+    if(!betrag || betrag<=0){ alert('Bitte einen gültigen Betrag eingeben.'); return; }
+    if(soll===haben){ alert('Soll-Konto und Haben-Konto dürfen nicht identisch sein.'); return; }
+
+    HB.buchungen.push({
+      id: Date.now(),
+      datum, sollKonto:soll, habenKonto:haben, betrag, text
+    });
+    await persistLicense();
+    document.getElementById('bs-betrag').value='';
+    document.getElementById('bs-text').value='';
+    renderRecentBookings();
+  }
+
+  async function deleteBooking(id){
+    if(!confirm('Diese Buchung wirklich löschen?')) return;
+    HB.buchungen = HB.buchungen.filter(b=>b.id!==id);
+    await persistLicense();
+    renderRecentBookings();
+  }
+
+  function refreshBuchenSelects(){
+    const sollEl = document.getElementById('bs-soll');
+    const habenEl = document.getElementById('bs-haben');
+    if(sollEl) sollEl.innerHTML = kontoOptionsHtml();
+    if(habenEl) habenEl.innerHTML = kontoOptionsHtml();
+  }
+
+  // ---------- Kontenblatt ----------
+  function renderKontenblattPanel(){
+    const panel = document.getElementById('hb-panel-kontenblatt');
+    panel.innerHTML = `
+      <h4>Kontenblatt / Konto-Suche</h4>
+      <div class="hb-field" style="max-width:420px;margin-bottom:16px;">
+        <label>Konto auswählen</label>
+        <select id="kb-konto" onchange="renderKontoblattDetails(this.value)">${kontoOptionsHtml()}</select>
+      </div>
+      <div id="kb-details"></div>
+    `;
+    if(HB.konten.length>0) renderKontoblattDetails(HB.konten[0].nummer);
+  }
+  function refreshKontenblattSelect(){
+    const el = document.getElementById('kb-konto');
+    if(el) el.innerHTML = kontoOptionsHtml();
+  }
+
+  function renderKontoblattDetails(nummer){
+    const konto = findKonto(nummer);
+    const el = document.getElementById('kb-details');
+    if(!konto || !el) return;
+    const debitNormal = (konto.typ==='aktiva' || konto.typ==='aufwand');
+
+    const posten = HB.buchungen
+      .filter(b=>b.sollKonto===nummer || b.habenKonto===nummer)
+      .sort((a,b)=> a.datum.localeCompare(b.datum) || a.id - b.id);
+
+    let laufend = 0;
+    let rows = posten.map(b=>{
+      const istSoll = b.sollKonto===nummer;
+      const gegenkonto = istSoll ? b.habenKonto : b.sollKonto;
+      const vorzeichen = debitNormal ? (istSoll?1:-1) : (istSoll?-1:1);
+      laufend += vorzeichen * b.betrag;
+      return `<tr>
+        <td>${formatDateDe(b.datum)}</td>
+        <td>${istSoll ? 'Soll' : 'Haben'}</td>
+        <td>${gegenkonto} – ${(findKonto(gegenkonto)||{}).name||''}</td>
+        <td>${b.text||''}</td>
+        <td class="num">${fmtBetrag(b.betrag)}</td>
+        <td class="num">${fmtBetrag(laufend)}</td>
+      </tr>`;
+    }).join('');
+
+    if(posten.length===0){
+      rows = `<tr><td colspan="6" class="hb-empty">Keine Buchungen auf diesem Konto.</td></tr>`;
+    }
+
+    el.innerHTML = `
+      <div class="page-sub" style="margin-bottom:10px;">${konto.nummer} – ${konto.name} (${HB_TYP_LABEL[konto.typ]})</div>
+      <table class="hb-table">
+        <thead><tr><th>Datum</th><th>Soll/Haben</th><th>Gegenkonto</th><th>Text</th><th style="text-align:right;">Betrag</th><th style="text-align:right;">Saldo</th></tr></thead>
+        <tbody>${rows}</tbody>
+        <tfoot><tr class="hb-total-row"><td colspan="5">Endsaldo</td><td class="num">${fmtBetrag(kontoSaldo(nummer))}</td></tr></tfoot>
+      </table>
+    `;
+  }
+
+  // ---------- Bilanz ----------
+  function guvErgebnis(){
+    let ertraege=0, aufwendungen=0;
+    HB.konten.filter(k=>k.typ==='ertrag').forEach(k=> ertraege += kontoSaldo(k.nummer));
+    HB.konten.filter(k=>k.typ==='aufwand').forEach(k=> aufwendungen += kontoSaldo(k.nummer));
+    return { ertraege, aufwendungen, ergebnis: ertraege - aufwendungen };
+  }
+
+  function renderBilanzPanel(){
+    const panel = document.getElementById('hb-panel-bilanz');
+    const aktivaKonten = HB.konten.filter(k=>k.typ==='aktiva');
+    const passivaKonten = HB.konten.filter(k=>k.typ==='passiva');
+    const { ergebnis } = guvErgebnis();
+
+    const aktivaRows = aktivaKonten.map(k=>{
+      const s = kontoSaldo(k.nummer);
+      return `<tr><td>${k.nummer}</td><td>${k.name}</td><td class="num">${fmtBetrag(s)}</td></tr>`;
+    }).join('');
+    const aktivaSumme = aktivaKonten.reduce((sum,k)=>sum+kontoSaldo(k.nummer),0);
+
+    let passivaRows = passivaKonten.map(k=>{
+      const s = kontoSaldo(k.nummer);
+      return `<tr><td>${k.nummer}</td><td>${k.name}</td><td class="num">${fmtBetrag(s)}</td></tr>`;
+    }).join('');
+    const passivaKontenSumme = passivaKonten.reduce((sum,k)=>sum+kontoSaldo(k.nummer),0);
+    passivaRows += `<tr><td>&nbsp;</td><td>${ergebnis>=0?'Jahresüberschuss':'Jahresfehlbetrag'}</td><td class="num">${fmtBetrag(ergebnis)}</td></tr>`;
+    const passivaSumme = passivaKontenSumme + ergebnis;
+
+    panel.innerHTML = `
+      <h4>Bilanz</h4>
+      <div class="hb-bilanz-cols">
+        <div>
+          <div class="side-title">Aktiva</div>
+          <table class="hb-table">
+            <tbody>${aktivaRows || '<tr><td colspan="3" class="hb-empty">Keine Aktiv-Konten.</td></tr>'}</tbody>
+            <tfoot><tr class="hb-total-row"><td colspan="2">Bilanzsumme Aktiva</td><td class="num">${fmtBetrag(aktivaSumme)}</td></tr></tfoot>
+          </table>
+        </div>
+        <div>
+          <div class="side-title">Passiva</div>
+          <table class="hb-table">
+            <tbody>${passivaRows}</tbody>
+            <tfoot><tr class="hb-total-row"><td colspan="2">Bilanzsumme Passiva</td><td class="num">${fmtBetrag(passivaSumme)}</td></tr></tfoot>
+          </table>
+        </div>
+      </div>
+      ${Math.abs(aktivaSumme-passivaSumme)>0.01 ? `<div class="hb-result-box loss" style="margin-top:14px;"><span>Hinweis: Aktiva und Passiva stimmen nicht überein (Differenz ${fmtBetrag(aktivaSumme-passivaSumme)}). Bitte Buchungen prüfen.</span></div>` : ''}
+    `;
+  }
+
+  // ---------- GuV ----------
+  function renderGuVPanel(){
+    const panel = document.getElementById('hb-panel-guv');
+    const ertragKonten = HB.konten.filter(k=>k.typ==='ertrag');
+    const aufwandKonten = HB.konten.filter(k=>k.typ==='aufwand');
+    const { ertraege, aufwendungen, ergebnis } = guvErgebnis();
+
+    const ertragRows = ertragKonten.map(k=>{
+      const s = kontoSaldo(k.nummer);
+      return `<tr><td>${k.nummer}</td><td>${k.name}</td><td class="num">${fmtBetrag(s)}</td></tr>`;
+    }).join('');
+    const aufwandRows = aufwandKonten.map(k=>{
+      const s = kontoSaldo(k.nummer);
+      return `<tr><td>${k.nummer}</td><td>${k.name}</td><td class="num">${fmtBetrag(s)}</td></tr>`;
+    }).join('');
+
+    panel.innerHTML = `
+      <h4>Gewinn- und Verlustrechnung (GuV)</h4>
+      <div class="side-title">Erträge</div>
+      <table class="hb-table">
+        <tbody>${ertragRows || '<tr><td colspan="3" class="hb-empty">Keine Ertragsbuchungen.</td></tr>'}</tbody>
+        <tfoot><tr class="hb-total-row"><td colspan="2">Summe Erträge</td><td class="num">${fmtBetrag(ertraege)}</td></tr></tfoot>
+      </table>
+      <div class="side-title" style="margin-top:18px;">Aufwendungen</div>
+      <table class="hb-table">
+        <tbody>${aufwandRows || '<tr><td colspan="3" class="hb-empty">Keine Aufwandsbuchungen.</td></tr>'}</tbody>
+        <tfoot><tr class="hb-total-row"><td colspan="2">Summe Aufwendungen</td><td class="num">${fmtBetrag(aufwendungen)}</td></tr></tfoot>
+      </table>
+      <div class="hb-result-box ${ergebnis>=0?'profit':'loss'}">
+        <span>${ergebnis>=0 ? 'Jahresüberschuss (Gewinn)' : 'Jahresfehlbetrag (Verlust)'}</span>
+        <span>${fmtBetrag(Math.abs(ergebnis))}</span>
+      </div>
+    `;
+  }
+</script>
+</body>
+</html>
