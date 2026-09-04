@@ -120,9 +120,21 @@ nicht gebaut.
 
 ---
 
+## Weiterentwickeln durch andere (SpecKit)
+
+Wer an diesem Projekt weiterarbeitet — Mensch oder KI-Modell — beginnt bei
+[CLAUDE.md](CLAUDE.md). Von dort führt ein Wegweiser in `spec/`, wo Prinzipien,
+Architektur, Lizenzformat, Code-Stil, Oberfläche, Arbeitsablauf, offene Aufgaben
+und Schritt-für-Schritt-Rezepte getrennt abgelegt sind. Die Aufteilung ist
+Absicht: für eine Textänderung muss niemand das gesamte Regelwerk lesen.
+
+`spec/00-konstitution.md` ist dabei bindend und gilt vor allem anderen.
+
 ## Entwicklung
 
 ```
+CLAUDE.md            Einstieg für alle, die weiterentwickeln
+spec/                Regelwerk: Konstitution, Architektur, Format, Stil, Rezepte
 src/
   core/          gemeinsam genutzt von beiden Anwendungen
     hz-crypto.js      Primitive: PBKDF2, AES-GCM, ECDSA, ECDH, kanonisches JSON
